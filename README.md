@@ -105,7 +105,8 @@ curl -s http://localhost:8080/api/health | jq .
 curl -s -X POST http://localhost:8080/api/sites \
   -H "Content-Type: application/json" \
   -d '{"url":"https://www.service-public.fr","name":"Service Public"}' | jq .
-
+ou plutôt:
+curl -X POST http://localhost:8080/api/audits -H "Content-Type: application/json" -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Service Public\"}"
 # 3. Créer un second site
 curl -s -X POST http://localhost:8080/api/sites \
   -H "Content-Type: application/json" \
