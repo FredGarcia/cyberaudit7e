@@ -1,16 +1,17 @@
-package com.cyberaudit7e.service;
+package com.CyberAudit7E.service;
 
-import com.cyberaudit7e.domain.entity.AuditReport;
-import com.cyberaudit7e.domain.entity.Site;
-import com.cyberaudit7e.dto.AuditRequestDto;
-import com.cyberaudit7e.dto.AuditResponseDto;
-import com.cyberaudit7e.dto.RuleResultDto;
-import com.cyberaudit7e.repository.AuditReportRepository;
-import com.cyberaudit7e.repository.SiteRepository;
-import com.cyberaudit7e.service.cycle.*;
+import com.CyberAudit7E.domain.entity.AuditReport;
+import com.CyberAudit7E.domain.entity.Site;
+import com.CyberAudit7E.dto.AuditRequestDto;
+import com.CyberAudit7E.dto.AuditResponseDto;
+import com.CyberAudit7E.dto.RuleResultDto;
+import com.CyberAudit7E.repository.AuditReportRepository;
+import com.CyberAudit7E.repository.SiteRepository;
+import com.CyberAudit7E.service.cycle.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -18,13 +19,12 @@ import java.util.Map;
 /**
  * Orchestrateur du cycle Axiome 7E.
  *
- * Chaîne les 7 phases dans l'ordre :
- * Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer
+ * M3 : ajout de @Transactional pour garantir la cohérence
+ * des écritures JPA (Site + AuditReport dans la même transaction).
  *
- * Chaque phase est un @Service indépendant, injecté par constructeur.
- * L'orchestrateur ne contient aucune logique métier — il coordonne.
- *
- * Analogie GitManager : c'est le "Moëlle Épinière" (S2) de CyberAudit7E.
+ * Si une phase échoue, toute la transaction est rollback.
+ * C'est la garantie ACID que les repositories in-memory M2
+ * ne pouvaient pas offrir.
  */
 @Service
 public class AuditOrchestrator {
@@ -61,19 +61,25 @@ public class AuditOrchestrator {
     }
 
     /**
-     * Exécute le cycle 7E complet sur un site.
+     * Exécute le cycle 7E complet dans une transaction unique.
      *
-     * @param request DTO de la requête d'audit
-     * @return DTO de réponse avec scores et détails
+     * @Transactional garantit :
+     *                - Toutes les écritures (site + report) sont atomiques
+     *                - Un rollback si une phase lève une exception
+     *                - Le contexte de persistance JPA est actif pendant tout le
+     *                cycle
+     *                (pas de LazyInitializationException)
      */
+    @Transactional
     public AuditResponseDto executeFullCycle(AuditRequestDto request) {
         log.info("╔══════════════════════════════════════════════════════╗");
-        log.info("║  CYCLE 7E — Démarrage audit pour {}",  request.url());
+        log.info("║  CYCLE 7E — Démarrage audit pour {}", request.url());
         log.info("╚══════════════════════════════════════════════════════╝");
 
         // ── Résolution ou création du site ──
         Site site = siteRepository.findByUrl(request.url())
                 .orElseGet(() -> {
+                    log.info("[JPA] Création du site : {}", request.name());
                     Site newSite = new Site(request.url(), request.name());
                     return siteRepository.save(newSite);
                 });
@@ -93,12 +99,18 @@ public class AuditOrchestrator {
         // ── Phase 5 : ÉVOLUER (tendance) ──
         String trend = evolveService.evolve(site, scores);
 
-        // ── Persistance du rapport ──
+        // ── Persistance du rapport (JPA) ──
         AuditReport report = new AuditReport(site, scores, results);
+        report.setTrend(trend);
         report = reportRepository.save(report);
-        site.getReports().add(report);
 
-        // ── Phase 6 : ÉMETTRE (événement) ──
+        // Bidirectionnel : mise à jour du côté Site
+        site.addReport(report);
+        siteRepository.save(site);
+
+        log.info("[JPA] Rapport #{} persisté — score_global: {}", report.getId(), scores.get("global"));
+
+        // ── Phase 6 : ÉMETTRE (événement — hors transaction) ──
         emitService.emit(report, trend);
 
         // ── Phase 7 : ÉQUILIBRER (asynchrone via FeedbackLoopListener) ──

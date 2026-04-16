@@ -1,4 +1,4 @@
-package com.cyberaudit7e.dto;
+package com.CyberAudit7E.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

@@ -1,6 +1,6 @@
-package com.cyberaudit7e.controller;
+package com.CyberAudit7E.controller;
 
-import com.cyberaudit7e.service.AuditEngine;
+import com.CyberAudit7E.service.AuditEngine;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

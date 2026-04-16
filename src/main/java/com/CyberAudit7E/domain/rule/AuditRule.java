@@ -1,7 +1,7 @@
-package com.cyberaudit7e.domain.rule;
+package com.CyberAudit7E.domain.rule;
 
-import com.cyberaudit7e.domain.enums.RuleCategory;
-import com.cyberaudit7e.dto.RuleResultDto;
+import com.CyberAudit7E.domain.enums.RuleCategory;
+import com.CyberAudit7E.dto.RuleResultDto;
 
 /**
  * Contrat Strategy Pattern pour les règles d'audit.

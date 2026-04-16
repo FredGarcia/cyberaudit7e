@@ -1,40 +1,70 @@
-package com.cyberaudit7e.domain.entity;
+package com.CyberAudit7E.domain.entity;
 
-import com.cyberaudit7e.domain.enums.Phase7E;
+import com.CyberAudit7E.domain.enums.Phase7E;
+import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entité Site — un site web à auditer.
- * Inspiré du modèle AuditAccess (Django) transposé en Java.
+ * Entité JPA Site — un site web à auditer.
  *
- * M2 : POJO simple avec getters/setters.
- * M3 : ajout des annotations JPA (@Entity, @Table, etc.)
- *
- * Note : en production, utiliser Lombok (@Data, @Builder)
- * pour éliminer le boilerplate. Ici on est explicite pour la pédagogie.
+ * M3 : POJO M2 transformé en entité JPA.
+ * Changements vs M2 :
+ * - @Entity, @Table, @Id, @GeneratedValue
+ * - @Enumerated(STRING) pour Phase7E
+ * - @OneToMany bidirectionnel avec AuditReport
+ * - @PrePersist / @PreUpdate pour les timestamps
+ * - @Column constraints alignées sur V1__create_schema.sql
  */
+@Entity
+@Table(name = "sites")
 public class Site {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, length = 500, unique = true)
     private String url;
+
+    @Column(nullable = false, length = 255)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "current_phase", length = 20)
     private Phase7E currentPhase = Phase7E.EVALUER;
+
+    @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("auditedAt DESC")
     private List<AuditReport> reports = new ArrayList<>();
+
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // ── Lifecycle callbacks ──
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 
     // ── Constructeurs ──
 
     public Site() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
     public Site(String url, String name) {
-        this();
         this.url = url;
         this.name = name;
     }
@@ -57,15 +87,24 @@ public class Site {
     public void setReports(List<AuditReport> reports) { this.reports = reports; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
     /**
      * Avance le site à la phase suivante du cycle 7E.
      */
     public void advancePhase() {
         this.currentPhase = this.currentPhase.next();
-        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Helper bidirectionnel : ajoute un rapport et maintient la relation.
+     */
+    public void addReport(AuditReport report) {
+        reports.add(report);
+        report.setSite(this);
     }
 
     @Override

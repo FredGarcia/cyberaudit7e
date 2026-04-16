@@ -1,4 +1,4 @@
-package com.cyberaudit7e.domain.enums;
+package com.CyberAudit7E.domain.enums;
 
 /**
  * Axiome 7E — Les 7 phases du cycle cybernétique.

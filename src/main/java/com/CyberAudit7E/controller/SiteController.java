@@ -1,19 +1,27 @@
-package com.cyberaudit7e.controller;
+package com.CyberAudit7E.controller;
 
-import com.cyberaudit7e.domain.entity.Site;
-import com.cyberaudit7e.repository.SiteRepository;
+import com.CyberAudit7E.domain.entity.Site;
+import com.CyberAudit7E.dto.SiteDto;
+import com.CyberAudit7E.repository.SiteRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * REST Controller pour la gestion des sites à auditer.
- * Inspiré du registre d'organes GitManager.
+ * REST Controller pour la gestion des sites.
+ *
+ * M3 : retourne des SiteDto (pas des entités JPA) pour éviter :
+ * - Sérialisation circulaire Site ↔ AuditReport
+ * - LazyInitializationException hors transaction
+ * - Exposition de détails internes (colonnes, relations)
+ *
+ * Règle d'or JPA : Entités = couche interne, DTOs = couche API.
  */
 @RestController
 @RequestMapping("/api/sites")
@@ -38,40 +46,60 @@ public class SiteController {
 
         Site site = new Site(request.url(), request.name());
         site = siteRepository.save(site);
-        return ResponseEntity.status(HttpStatus.CREATED).body(site);
+        return ResponseEntity.status(HttpStatus.CREATED).body(SiteDto.from(site));
     }
 
     /**
      * GET /api/sites — Lister tous les sites.
+     * @Transactional(readOnly) : optimise les lectures JPA,
+     * et garde la session ouverte pour le lazy loading dans SiteDto.from().
      */
     @GetMapping
-    public List<Site> listSites() {
-        return siteRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<SiteDto> listSites() {
+        return siteRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(SiteDto::from)
+                .toList();
     }
 
     /**
      * GET /api/sites/{id} — Détail d'un site.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Site> getSite(@PathVariable Long id) {
+    @Transactional(readOnly = true)
+    public ResponseEntity<SiteDto> getSite(@PathVariable Long id) {
         return siteRepository.findById(id)
+                .map(SiteDto::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
-     * DELETE /api/sites/{id} — Supprimer un site.
+     * GET /api/sites/search?name=xxx — Recherche par nom.
+     */
+    @GetMapping("/search")
+    @Transactional(readOnly = true)
+    public List<SiteDto> searchSites(@RequestParam String name) {
+        return siteRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(SiteDto::from)
+                .toList();
+    }
+
+    /**
+     * DELETE /api/sites/{id} — Supprimer un site et ses rapports (CASCADE).
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSite(@PathVariable Long id) {
-        if (siteRepository.findById(id).isEmpty()) {
+        if (!siteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
         siteRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ── Request DTO interne ──
+    // ── Request DTO ──
 
     public record CreateSiteRequest(
             @NotBlank(message = "L'URL est obligatoire")

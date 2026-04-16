@@ -1,4 +1,4 @@
-package com.cyberaudit7e.controller;
+package com.CyberAudit7E.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;

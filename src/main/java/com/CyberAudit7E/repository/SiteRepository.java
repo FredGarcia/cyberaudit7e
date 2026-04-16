@@ -1,66 +1,65 @@
-package com.cyberaudit7e.repository;
+package com.CyberAudit7E.repository;
 
-import com.cyberaudit7e.domain.entity.Site;
-import com.cyberaudit7e.domain.enums.Phase7E;
+import com.CyberAudit7E.domain.entity.Site;
+import com.CyberAudit7E.domain.enums.Phase7E;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Repository in-memory pour les Sites.
+ * Repository JPA pour les Sites.
  *
- * M2 : implémentation ConcurrentHashMap (pas de BDD).
- * M3 : sera remplacé par une interface JpaRepository<Site, Long>.
+ * M3 : l'implémentation ConcurrentHashMap de M2 est remplacée par
+ * une interface JpaRepository. Spring Data génère automatiquement
+ * l'implémentation à partir des noms de méthodes (Query Methods).
  *
- * Le pattern est identique : on code contre une interface stable,
- * l'implémentation change sans toucher aux services.
- * C'est l'IoC en action.
+ * Comparaison avec les autres stacks :
+ * - Django : Site.objects.filter(url=url)
+ * - Laravel : Site::where('url', $url)->first()
+ * - Spring : findByUrl(String url) → Spring génère le SQL
+ *
+ * JpaRepository hérite de CrudRepository + PagingAndSortingRepository,
+ * offrant save(), findById(), findAll(), delete(), count(), etc.
  */
 @Repository
-public class SiteRepository {
+public interface SiteRepository extends JpaRepository<Site, Long> {
 
-    private final Map<Long, Site> store = new ConcurrentHashMap<>();
-    private final AtomicLong sequence = new AtomicLong(1);
+    /**
+     * Trouve un site par son URL exacte.
+     * SQL généré : SELECT * FROM sites WHERE url = ?
+     */
+    Optional<Site> findByUrl(String url);
 
-    public Site save(Site site) {
-        if (site.getId() == null) {
-            site.setId(sequence.getAndIncrement());
-        }
-        store.put(site.getId(), site);
-        return site;
-    }
+    /**
+     * Vérifie l'existence d'un site par URL (optimisé, pas de SELECT *).
+     * SQL généré : SELECT COUNT(*) > 0 FROM sites WHERE url = ?
+     */
+    boolean existsByUrl(String url);
 
-    public Optional<Site> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
+    /**
+     * Liste les sites par phase 7E courante.
+     * SQL généré : SELECT * FROM sites WHERE current_phase = ?
+     */
+    List<Site> findByCurrentPhase(Phase7E phase);
 
-    public Optional<Site> findByUrl(String url) {
-        return store.values().stream()
-                .filter(s -> s.getUrl().equals(url))
-                .findFirst();
-    }
+    /**
+     * Liste les sites triés par date de création décroissante.
+     */
+    List<Site> findAllByOrderByCreatedAtDesc();
 
-    public List<Site> findAll() {
-        return new ArrayList<>(store.values());
-    }
+    /**
+     * Recherche par nom (LIKE, insensible à la casse).
+     * SQL généré : SELECT * FROM sites WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?,
+     * '%'))
+     */
+    List<Site> findByNameContainingIgnoreCase(String name);
 
-    public List<Site> findByCurrentPhase(Phase7E phase) {
-        return store.values().stream()
-                .filter(s -> s.getCurrentPhase() == phase)
-                .toList();
-    }
-
-    public boolean existsByUrl(String url) {
-        return store.values().stream().anyMatch(s -> s.getUrl().equals(url));
-    }
-
-    public void deleteById(Long id) {
-        store.remove(id);
-    }
-
-    public long count() {
-        return store.size();
-    }
+    /**
+     * Compte les sites par phase (query custom JPQL).
+     */
+    @Query("SELECT s.currentPhase, COUNT(s) FROM Site s GROUP BY s.currentPhase")
+    List<Object[]> countByPhase();
 }

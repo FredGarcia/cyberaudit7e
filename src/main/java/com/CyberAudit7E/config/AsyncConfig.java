@@ -1,4 +1,4 @@
-package com.cyberaudit7e.config;
+package com.CyberAudit7E.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

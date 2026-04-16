@@ -1,4 +1,4 @@
-package com.cyberaudit7e.dto;
+package com.CyberAudit7E.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

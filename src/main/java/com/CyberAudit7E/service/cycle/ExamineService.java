@@ -1,7 +1,7 @@
-package com.cyberaudit7e.service.cycle;
+package com.CyberAudit7E.service.cycle;
 
-import com.cyberaudit7e.dto.RuleResultDto;
-import com.cyberaudit7e.service.ScoringService;
+import com.CyberAudit7E.dto.RuleResultDto;
+import com.CyberAudit7E.service.ScoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

@@ -1,8 +1,8 @@
-package com.cyberaudit7e.service.cycle;
+package com.CyberAudit7E.service.cycle;
 
-import com.cyberaudit7e.domain.entity.AuditReport;
-import com.cyberaudit7e.domain.entity.Site;
-import com.cyberaudit7e.repository.AuditReportRepository;
+import com.CyberAudit7E.domain.entity.AuditReport;
+import com.CyberAudit7E.domain.entity.Site;
+import com.CyberAudit7E.repository.AuditReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,11 @@ import java.util.Optional;
 /**
  * Phase 7E : ÉVOLUER
  * Compare le score actuel avec l'audit précédent pour détecter la tendance.
- * C'est la mémoire du système — cybernétique de 2e ordre.
+ *
+ * M3 : aucun changement de code ! La signature du repository est identique
+ * entre le ConcurrentHashMap M2 et le JpaRepository M3.
+ * C'est la puissance de l'IoC — le service ne sait pas comment les données
+ * sont stockées, il travaille avec une abstraction.
  */
 @Service
 public class EvolveService {
@@ -31,7 +35,7 @@ public class EvolveService {
      *
      * @param site   Le site audité
      * @param scores Les scores du cycle en cours
-     * @return Tendance : "UP", "DOWN", "STABLE", ou "FIRST" (premier audit)
+     * @return Tendance : "UP", "DOWN", "STABLE", ou "FIRST"
      */
     public String evolve(Site site, Map<String, Double> scores) {
         double currentScore = scores.getOrDefault("global", 0.0);

@@ -1,31 +1,48 @@
 ##############################################
 # CyberAudit7E — Profile DEV
-# Stockage in-memory, logs verbeux
-# M3 : ajoutera H2 + JPA + Flyway ici
+# H2 in-memory + JPA + Flyway + H2 Console
 ##############################################
 
-# M2 : pas de datasource (repositories in-memory)
-# M3 : décommenter les lignes suivantes :
-#
 spring:
+  # ── DataSource H2 ──
   datasource:
-    url: jdbc:h2:mem:cyberaudit7e
+    url: jdbc:h2:mem:cyberaudit7e;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+  # ── Console H2 (accessible sur /h2-console) ──
   h2:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: false
+
+  # ── JPA / Hibernate ──
   jpa:
-    show-sql: true
+    # validate : Hibernate vérifie que les entités matchent le schéma
+    # (créé par Flyway), mais ne le modifie pas
     hibernate:
       ddl-auto: validate
-#   flyway:
-#     enabled: true
-#     locations: classpath:db/migration
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        # Gestion du lazy loading hors transaction (POC only)
+        enable_lazy_load_no_trans: true
+
+  # ── Flyway (migrations SQL versionnées) ──
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 logging:
   level:
-    com.cyberaudit7e: DEBUG
-    com.cyberaudit7e.service.cycle: DEBUG
+    com.CyberAudit7E: DEBUG
+    com.CyberAudit7E.service.cycle: DEBUG
+    # Voir les requêtes SQL avec les paramètres
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

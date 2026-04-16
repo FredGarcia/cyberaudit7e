@@ -1,29 +1,44 @@
 ##############################################
 # CyberAudit7E — Profile PROD
-# PostgreSQL, logs réduits, JPA optimisé
+# PostgreSQL + Flyway + JPA optimisé
 # Activé via : SPRING_PROFILES_ACTIVE=prod
+# ou docker-compose environment variable
 ##############################################
 
-# M3+ : configuration PostgreSQL
-# spring:
-#   datasource:
-#     url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:cyberaudit7e}
-#     username: ${DB_USER:audit}
-#     password: ${DB_PASSWORD:audit7e}
-#   jpa:
-#     show-sql: false
-#     hibernate:
-#       ddl-auto: validate
-#     properties:
-#       hibernate:
-#         dialect: org.hibernate.dialect.PostgreSQLDialect
-#         jdbc.batch_size: 25
-#         order_inserts: true
-#   flyway:
-#     enabled: true
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:cyberaudit7e}
+    username: ${DB_USER:audit}
+    password: ${DB_PASSWORD:audit7e}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc.batch_size: 25
+        order_inserts: true
+        order_updates: true
+        enable_lazy_load_no_trans: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  h2:
+    console:
+      enabled: false
 
 logging:
   level:
-    com.cyberaudit7e: INFO
-    com.cyberaudit7e.service.cycle: INFO
+    com.CyberAudit7E: INFO
     org.springframework: WARN
+    org.hibernate: WARN

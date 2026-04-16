@@ -1,52 +1,75 @@
-package com.cyberaudit7e.repository;
+package com.CyberAudit7E.repository;
 
-import com.cyberaudit7e.domain.entity.AuditReport;
+import com.CyberAudit7E.domain.entity.AuditReport;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 /**
- * Repository in-memory pour les rapports d'audit.
+ * Repository JPA pour les rapports d'audit.
  *
- * M2 : ConcurrentHashMap.
- * M3 : JpaRepository<AuditReport, Long>.
+ * M3 : remplace le ConcurrentHashMap de M2.
+ * Les Query Methods de Spring Data dérivent le SQL du nom de la méthode.
+ *
+ * Convention de nommage :
+ *   findBy[Champ][Condition]OrderBy[Champ][Direction]
+ *   → Spring parse le nom et génère la requête SQL/JPQL correspondante.
  */
 @Repository
-public class AuditReportRepository {
+public interface AuditReportRepository extends JpaRepository<AuditReport, Long> {
 
-    private final Map<Long, AuditReport> store = new ConcurrentHashMap<>();
-    private final AtomicLong sequence = new AtomicLong(1);
+    /**
+     * Historique des audits d'un site (plus récent en premier).
+     * SQL généré : SELECT * FROM audit_reports WHERE site_id = ? ORDER BY audited_at DESC
+     */
+    List<AuditReport> findBySiteIdOrderByAuditedAtDesc(Long siteId);
 
-    public AuditReport save(AuditReport report) {
-        if (report.getId() == null) {
-            report.setId(sequence.getAndIncrement());
-        }
-        store.put(report.getId(), report);
-        return report;
-    }
+    /**
+     * Dernier audit d'un site.
+     * Spring Data : "First" limite à 1 résultat.
+     */
+    Optional<AuditReport> findFirstBySiteIdOrderByAuditedAtDesc(Long siteId);
 
-    public Optional<AuditReport> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
+    /**
+     * Tous les rapports avec un score global supérieur au seuil.
+     */
+    List<AuditReport> findByScoreGlobalGreaterThanEqual(Double threshold);
 
-    public List<AuditReport> findBySiteIdOrderByAuditedAtDesc(Long siteId) {
-        return store.values().stream()
-                .filter(r -> r.getSite() != null && siteId.equals(r.getSite().getId()))
-                .sorted(Comparator.comparing(AuditReport::getAuditedAt).reversed())
-                .toList();
-    }
+    /**
+     * Tous les rapports avec un score global inférieur au seuil (alertes).
+     */
+    List<AuditReport> findByScoreGlobalLessThan(Double threshold);
 
-    public Optional<AuditReport> findFirstBySiteIdOrderByAuditedAtDesc(Long siteId) {
-        return findBySiteIdOrderByAuditedAtDesc(siteId).stream().findFirst();
-    }
+    /**
+     * Rapports d'audit dans une plage de dates.
+     */
+    List<AuditReport> findByAuditedAtBetweenOrderByAuditedAtDesc(
+            LocalDateTime start, LocalDateTime end);
 
-    public List<AuditReport> findAll() {
-        return new ArrayList<>(store.values());
-    }
+    /**
+     * Nombre d'audits pour un site donné.
+     */
+    long countBySiteId(Long siteId);
 
-    public long count() {
-        return store.size();
-    }
+    /**
+     * Score moyen global (JPQL custom).
+     */
+    @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r")
+    Double averageGlobalScore();
+
+    /**
+     * Score moyen par site (JPQL custom).
+     */
+    @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r WHERE r.site.id = :siteId")
+    Double averageGlobalScoreBySite(@Param("siteId") Long siteId);
+
+    /**
+     * Rapports avec tendance spécifique.
+     */
+    List<AuditReport> findByTrend(String trend);
 }

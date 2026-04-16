@@ -1,25 +1,22 @@
-package com.cyberaudit7e.service.cycle;
+package com.CyberAudit7E.service.cycle;
 
-import com.cyberaudit7e.domain.entity.AuditReport;
-import com.cyberaudit7e.domain.enums.Phase7E;
-import com.cyberaudit7e.event.AuditCompletedEvent;
+import com.CyberAudit7E.domain.entity.AuditReport;
+import com.CyberAudit7E.domain.enums.Phase7E;
+import com.CyberAudit7E.event.AuditCompletedEvent;
+import com.CyberAudit7E.repository.SiteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Phase 7E : ÉQUILIBRER
- * Boucle de rétroaction cybernétique — cœur du système.
+ * Phase 7E : ÉQUILIBRER — Boucle de rétroaction cybernétique.
  *
- * Écoute les AuditCompletedEvent et ajuste le comportement :
- * - Score faible → recommande d'augmenter les poids RGAA
- * - Tendance DOWN → alerte de régression
- * - Tendance UP → renforcement positif
- *
- * L'exécution est @Async pour ne pas bloquer le cycle principal.
- * C'est l'équivalent Spring du worker Celery d'AuditAccess.
+ * M3 : ajout de @Transactional car la mise à jour de la phase du site
+ * doit être persistée via JPA. En M2, le POJO in-memory était
+ * directement modifiable ; avec JPA, il faut une transaction.
  */
 @Component
 public class FeedbackLoopListener {
@@ -29,8 +26,15 @@ public class FeedbackLoopListener {
     private static final double SCORE_THRESHOLD_LOW = 0.5;
     private static final double SCORE_THRESHOLD_GOOD = 0.8;
 
+    private final SiteRepository siteRepository;
+
+    public FeedbackLoopListener(SiteRepository siteRepository) {
+        this.siteRepository = siteRepository;
+    }
+
     @Async
     @EventListener
+    @Transactional
     public void onAuditCompleted(AuditCompletedEvent event) {
         AuditReport report = event.getReport();
         String trend = event.getTrend();
@@ -46,7 +50,6 @@ public class FeedbackLoopListener {
         log.info("  └─ Tendance: {}", trend);
 
         // ── Logique de rétroaction ──
-
         if (report.getScoreGlobal() < SCORE_THRESHOLD_LOW) {
             log.warn("[7E-FEEDBACK] Score critique ({}) — Action : " +
                      "augmenter la pondération RGAA, prioriser les corrections",
@@ -65,10 +68,14 @@ public class FeedbackLoopListener {
                      "les corrections portent leurs fruits.");
         }
 
-        // Marquer le site comme ayant complété le cycle
-        report.getSite().setCurrentPhase(Phase7E.EQUILIBRER);
-        log.info("[7E-CYCLE COMPLET] {} → phase ÉQUILIBRER (cycle bouclé)",
-                report.getSite().getName());
+        // ── Mise à jour JPA de la phase du site ──
+        siteRepository.findById(report.getSite().getId()).ifPresent(site -> {
+            site.setCurrentPhase(Phase7E.EQUILIBRER);
+            siteRepository.save(site);
+            log.info("[7E-CYCLE COMPLET] {} → phase ÉQUILIBRER (persisté en BDD)",
+                    site.getName());
+        });
+
         log.info("══════════════════════════════════════════════════════");
     }
 }

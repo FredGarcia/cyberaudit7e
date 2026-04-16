@@ -1,6 +1,8 @@
 ##############################################
 # CyberAudit7E — Configuration de base
-# Profile actif par défaut : dev
+# M3 : Spring Data JPA + Flyway activés
+# FIX : Jackson 3 (Spring Boot 4) — suppression
+# de write-dates-as-timestamps (ISO par défaut)
 ##############################################
 
 spring:
@@ -9,13 +11,19 @@ spring:
   profiles:
     active: dev
 
+  # Jackson 3 — ISO-8601 dates par défaut, pas besoin de WRITE_DATES_AS_TIMESTAMPS
+  # indent-output et default-property-inclusion restent valides
+  jackson:
+    serialization:
+      indent-output: true
+    default-property-inclusion: non_null
+
 server:
   port: 8080
 
-# Logging — format cybernétique lisible
 logging:
   level:
-    com.cyberaudit7e: INFO
+    com.CyberAudit7E: INFO
     org.springframework: WARN
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
