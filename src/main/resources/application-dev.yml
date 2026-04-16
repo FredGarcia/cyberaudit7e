@@ -1,0 +1,31 @@
+##############################################
+# CyberAudit7E — Profile DEV
+# Stockage in-memory, logs verbeux
+# M3 : ajoutera H2 + JPA + Flyway ici
+##############################################
+
+# M2 : pas de datasource (repositories in-memory)
+# M3 : décommenter les lignes suivantes :
+#
+spring:
+  datasource:
+    url: jdbc:h2:mem:cyberaudit7e
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+#   flyway:
+#     enabled: true
+#     locations: classpath:db/migration
+
+logging:
+  level:
+    com.cyberaudit7e: DEBUG
+    com.cyberaudit7e.service.cycle: DEBUG

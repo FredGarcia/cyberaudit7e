@@ -1,0 +1,21 @@
+##############################################
+# CyberAudit7E — Configuration de base
+# Profile actif par défaut : dev
+##############################################
+
+spring:
+  application:
+    name: CyberAudit7E
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+
+# Logging — format cybernétique lisible
+logging:
+  level:
+    com.cyberaudit7e: INFO
+    org.springframework: WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
