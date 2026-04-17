@@ -71,7 +71,8 @@ public class AuditReport {
 
     // ── Constructeurs ──
 
-    public AuditReport() {}
+    public AuditReport() {
+    }
 
     public AuditReport(Site site, Map<String, Double> scores, List<RuleResultDto> results) {
         this.site = site;

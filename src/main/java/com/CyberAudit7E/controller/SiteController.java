@@ -17,9 +17,9 @@ import java.util.Map;
  * REST Controller pour la gestion des sites.
  *
  * M3 : retourne des SiteDto (pas des entités JPA) pour éviter :
- * - Sérialisation circulaire Site ↔ AuditReport
- * - LazyInitializationException hors transaction
- * - Exposition de détails internes (colonnes, relations)
+ *   - Sérialisation circulaire Site ↔ AuditReport
+ *   - LazyInitializationException hors transaction
+ *   - Exposition de détails internes (colonnes, relations)
  *
  * Règle d'or JPA : Entités = couche interne, DTOs = couche API.
  */

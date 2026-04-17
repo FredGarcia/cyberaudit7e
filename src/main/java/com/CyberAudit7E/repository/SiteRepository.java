@@ -52,8 +52,7 @@ public interface SiteRepository extends JpaRepository<Site, Long> {
 
     /**
      * Recherche par nom (LIKE, insensible à la casse).
-     * SQL généré : SELECT * FROM sites WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?,
-     * '%'))
+     * SQL généré : SELECT * FROM sites WHERE LOWER(name) LIKE LOWER(CONCAT('%', ?, '%'))
      */
     List<Site> findByNameContainingIgnoreCase(String name);
 

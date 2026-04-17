@@ -4,14 +4,13 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * cyberaudit7e — Moteur d'audit cybernétique.
+ * CyberAudit7E — Moteur d'audit cybernétique.
  *
  * Fusion de trois projets :
  * - GitManager → Registre de services (organes)
  * - AuditAccess → Moteur de règles multi-référentiel
  * - Axiome 7E → Boucle cybernétique à 7 phases
  *
- * Uilisation des repositories in-memory. M3 supprimera cette exclusion
  * pour activer Spring Data JPA + H2/PostgreSQL.
  */
 @SpringBootApplication 

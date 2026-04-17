@@ -1,100 +1,163 @@
 package com.cyberaudit7e.service;
 
+import com.cyberaudit7e.domain.entity.RuleConfig;
 import com.cyberaudit7e.domain.enums.RuleCategory;
 import com.cyberaudit7e.dto.RuleResultDto;
+import com.cyberaudit7e.repository.RuleConfigRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-/**
- * NIVEAU 1 — Test unitaire pur.
- *
- * Pas d'annotation Spring. Démarrage instantané (< 1 seconde).
- * On teste uniquement la logique métier du scoring.
- *
- * Utilise :
- *   - JUnit Jupiter (@Test, @DisplayName)
- *   - AssertJ (assertThat...) — fluent assertions, bien plus lisibles que JUnit assert
- */
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ScoringService M4 — Poids dynamiques")
 class ScoringServiceTest {
 
-    private final ScoringService scoringService = new ScoringService();
+    @Mock
+    private RuleConfigRepository ruleConfigRepository;
 
-    @Test
-    @DisplayName("Score de 100% quand toutes les règles passent (toutes catégories)")
-    void perfectScore() {
-        List<RuleResultDto> allPass = List.of(
-                RuleResultDto.success("RGAA-1", RuleCategory.RGAA, "ok"),
-                RuleResultDto.success("WCAG-1", RuleCategory.WCAG, "ok"),
-                RuleResultDto.success("DSFR-1", RuleCategory.DSFR, "ok")
-        );
+    private ScoringService scoringService;
 
-        Map<String, Double> scores = scoringService.computeScores(allPass);
-
-        assertThat(scores.get("rgaa")).isEqualTo(1.0);
-        assertThat(scores.get("wcag")).isEqualTo(1.0);
-        assertThat(scores.get("dsfr")).isEqualTo(1.0);
-        assertThat(scores.get("global")).isEqualTo(1.0);
+    @BeforeEach
+    void setUp() {
+        scoringService = new ScoringService(ruleConfigRepository);
     }
 
-    @Test
-    @DisplayName("Score de 0% quand toutes les règles échouent")
-    void zeroScore() {
-        List<RuleResultDto> allFail = List.of(
-                RuleResultDto.failure("RGAA-1", RuleCategory.RGAA, "ko"),
-                RuleResultDto.failure("WCAG-1", RuleCategory.WCAG, "ko"),
-                RuleResultDto.failure("DSFR-1", RuleCategory.DSFR, "ko")
-        );
+    @Nested
+    @DisplayName("loadWeights()")
+    class LoadWeights {
 
-        Map<String, Double> scores = scoringService.computeScores(allFail);
+        @Test
+        @DisplayName("Charge les poids depuis la BDD")
+        void shouldLoadWeightsFromDb() {
+            when(ruleConfigRepository.findByEnabledTrue()).thenReturn(List.of(
+                    new RuleConfig(RuleCategory.RGAA, 0.5, "RGAA"),
+                    new RuleConfig(RuleCategory.WCAG, 0.3, "WCAG"),
+                    new RuleConfig(RuleCategory.DSFR, 0.2, "DSFR")
+            ));
 
-        assertThat(scores.get("global")).isZero();
+            Map<RuleCategory, Double> weights = scoringService.loadWeights();
+
+            assertEquals(0.5, weights.get(RuleCategory.RGAA));
+            assertEquals(0.3, weights.get(RuleCategory.WCAG));
+            assertEquals(0.2, weights.get(RuleCategory.DSFR));
+        }
+
+        @Test
+        @DisplayName("Fallback sur les valeurs par défaut si BDD vide")
+        void shouldFallbackToDefaults() {
+            when(ruleConfigRepository.findByEnabledTrue()).thenReturn(List.of());
+
+            Map<RuleCategory, Double> weights = scoringService.loadWeights();
+
+            assertEquals(RuleCategory.RGAA.getDefaultWeight(), weights.get(RuleCategory.RGAA));
+            assertEquals(RuleCategory.WCAG.getDefaultWeight(), weights.get(RuleCategory.WCAG));
+            assertEquals(RuleCategory.DSFR.getDefaultWeight(), weights.get(RuleCategory.DSFR));
+        }
     }
 
-    @Test
-    @DisplayName("Formule pondérée RGAA×0.5 + WCAG×0.3 + DSFR×0.2 respectée")
-    void weightedFormulaIsRespected() {
-        // RGAA moyenne = 0.8, WCAG = 0.6, DSFR = 0.4
-        List<RuleResultDto> results = List.of(
-                RuleResultDto.partial("RGAA-1", RuleCategory.RGAA, 0.8, "partiel"),
-                RuleResultDto.partial("WCAG-1", RuleCategory.WCAG, 0.6, "partiel"),
-                RuleResultDto.partial("DSFR-1", RuleCategory.DSFR, 0.4, "partiel")
-        );
+    @Nested
+    @DisplayName("computeScores()")
+    class ComputeScores {
 
-        Map<String, Double> scores = scoringService.computeScores(results);
+        @BeforeEach
+        void setUpWeights() {
+            // Retourner les poids par défaut pour tous les tests de scoring
+            when(ruleConfigRepository.findByEnabledTrue()).thenReturn(List.of(
+                    new RuleConfig(RuleCategory.RGAA, 0.5, "RGAA"),
+                    new RuleConfig(RuleCategory.WCAG, 0.3, "WCAG"),
+                    new RuleConfig(RuleCategory.DSFR, 0.2, "DSFR")
+            ));
+        }
 
-        // Attendu : 0.8×0.5 + 0.6×0.3 + 0.4×0.2 = 0.4 + 0.18 + 0.08 = 0.66
-        assertThat(scores.get("global")).isEqualTo(0.66, within(0.001));
+        @Test
+        @DisplayName("Score global = RGAA×0.5 + WCAG×0.3 + DSFR×0.2")
+        void shouldComputeWeightedScore() {
+            List<RuleResultDto> results = List.of(
+                    RuleResultDto.success("RGAA-1", RuleCategory.RGAA, "OK"),    // 1.0
+                    RuleResultDto.failure("RGAA-2", RuleCategory.RGAA, "KO"),    // 0.0
+                    RuleResultDto.success("WCAG-1", RuleCategory.WCAG, "OK"),    // 1.0
+                    RuleResultDto.partial("DSFR-1", RuleCategory.DSFR, 0.6, "Partiel") // 0.6
+            );
+
+            Map<String, Double> scores = scoringService.computeScores(results);
+
+            // RGAA: (1.0 + 0.0) / 2 = 0.5
+            assertEquals(0.5, scores.get("rgaa"));
+            // WCAG: 1.0 / 1 = 1.0
+            assertEquals(1.0, scores.get("wcag"));
+            // DSFR: 0.6 / 1 = 0.6
+            assertEquals(0.6, scores.get("dsfr"));
+            // Global: 0.5×0.5 + 1.0×0.3 + 0.6×0.2 = 0.25 + 0.30 + 0.12 = 0.67
+            assertEquals(0.67, scores.get("global"));
+        }
+
+        @Test
+        @DisplayName("Score parfait = 1.0")
+        void shouldReturnPerfectScore() {
+            List<RuleResultDto> results = List.of(
+                    RuleResultDto.success("RGAA-1", RuleCategory.RGAA, "OK"),
+                    RuleResultDto.success("WCAG-1", RuleCategory.WCAG, "OK"),
+                    RuleResultDto.success("DSFR-1", RuleCategory.DSFR, "OK")
+            );
+
+            Map<String, Double> scores = scoringService.computeScores(results);
+            assertEquals(1.0, scores.get("global"));
+        }
+
+        @Test
+        @DisplayName("Score zéro si tout échoue")
+        void shouldReturnZeroScore() {
+            List<RuleResultDto> results = List.of(
+                    RuleResultDto.failure("RGAA-1", RuleCategory.RGAA, "KO"),
+                    RuleResultDto.failure("WCAG-1", RuleCategory.WCAG, "KO"),
+                    RuleResultDto.failure("DSFR-1", RuleCategory.DSFR, "KO")
+            );
+
+            Map<String, Double> scores = scoringService.computeScores(results);
+            assertEquals(0.0, scores.get("global"));
+        }
+
+        @Test
+        @DisplayName("Inclut les poids utilisés dans la réponse")
+        void shouldIncludeWeightsInResponse() {
+            List<RuleResultDto> results = List.of(
+                    RuleResultDto.success("RGAA-1", RuleCategory.RGAA, "OK")
+            );
+
+            Map<String, Double> scores = scoringService.computeScores(results);
+
+            assertEquals(0.5, scores.get("weight_rgaa"));
+            assertEquals(0.3, scores.get("weight_wcag"));
+            assertEquals(0.2, scores.get("weight_dsfr"));
+        }
     }
 
-    @Test
-    @DisplayName("Moyenne calculée par catégorie quand plusieurs règles de même catégorie")
-    void averagePerCategory() {
-        List<RuleResultDto> results = List.of(
-                RuleResultDto.partial("RGAA-1", RuleCategory.RGAA, 0.6, ""),
-                RuleResultDto.partial("RGAA-2", RuleCategory.RGAA, 1.0, ""),
-                RuleResultDto.partial("RGAA-3", RuleCategory.RGAA, 0.8, "")
-        );
+    @Nested
+    @DisplayName("updateWeight()")
+    class UpdateWeight {
 
-        Map<String, Double> scores = scoringService.computeScores(results);
+        @Test
+        @DisplayName("Met à jour le poids en BDD")
+        void shouldUpdateWeightInDb() {
+            RuleConfig config = new RuleConfig(RuleCategory.RGAA, 0.5, "RGAA");
+            when(ruleConfigRepository.findByCategory(RuleCategory.RGAA))
+                    .thenReturn(Optional.of(config));
 
-        // Moyenne RGAA = (0.6 + 1.0 + 0.8) / 3 = 0.8
-        assertThat(scores.get("rgaa")).isEqualTo(0.8);
-    }
+            scoringService.updateWeight(RuleCategory.RGAA, 0.6);
 
-    @Test
-    @DisplayName("Liste vide → tous scores à 0")
-    void emptyList() {
-        Map<String, Double> scores = scoringService.computeScores(List.of());
-
-        assertThat(scores).containsEntry("rgaa", 0.0)
-                          .containsEntry("wcag", 0.0)
-                          .containsEntry("dsfr", 0.0)
-                          .containsEntry("global", 0.0);
+            assertEquals(0.6, config.getWeight());
+            verify(ruleConfigRepository).save(config);
+        }
     }
 }

@@ -15,8 +15,7 @@ import java.util.Map;
  * Health check endpoint.
  * M4 : enrichi avec les stats du fetcher et les poids dynamiques.
  */
- 
- @RestController
+@RestController
 @RequestMapping("/api")
 public class HealthController {
 

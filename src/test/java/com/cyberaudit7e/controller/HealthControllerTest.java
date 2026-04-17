@@ -1,52 +1,49 @@
 package com.cyberaudit7e.controller;
 
-import com.cyberaudit7e.controller.HealthController;
 import com.cyberaudit7e.service.AuditEngine;
+import com.cyberaudit7e.service.HtmlFetcherService;
+import com.cyberaudit7e.service.ScoringService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * NIVEAU 3 — Test de tranche Web (@WebMvcTest).
- *
- * @WebMvcTest charge UNIQUEMENT :
- *   - Le controller ciblé (HealthController.class)
- *   - La config web (Jackson, MockMvc, ControllerAdvice)
- *   - Pas de JPA, pas de services complets
- *
- * Les dépendances du controller doivent être mockées via @MockitoBean
- * (équivalent Boot 4 de l'ancien @MockBean).
- *
- * MockMvc permet d'exécuter des requêtes HTTP simulées sans démarrer Tomcat.
- * Nécessite spring-boot-starter-webmvc-test dans le pom.xml (scope test).
- */
-@WebMvcTest(HealthController.class)
+@ExtendWith(MockitoExtension.class)
+@DisplayName("HealthController M4")
 class HealthControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private AuditEngine auditEngine;
+    @Mock
+    private HtmlFetcherService htmlFetcher;
+    @Mock
+    private ScoringService scoringService;
+
+    @InjectMocks
+    private HealthController controller;
 
     @Test
-    @DisplayName("GET /api/health retourne 200 avec le bon statut")
-    void healthEndpointReturnsUp() throws Exception {
-        when(auditEngine.getRulesCount()).thenReturn(7);
+    @DisplayName("health() retourne UP avec les stats M4")
+    void healthEndpointReturnsUp() {
+        when(auditEngine.getRulesCount()).thenReturn(13);
+        when(htmlFetcher.getCacheSize()).thenReturn(0);
+        when(scoringService.loadWeights()).thenReturn(Map.of());
 
-        mockMvc.perform(get("/api/health"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("UP"))
-                .andExpect(jsonPath("$.service").value("cyberaudit7e"))
-                .andExpect(jsonPath("$.phase").value("7E-READY"))
-                .andExpect(jsonPath("$.rulesLoaded").value(7))
-                .andExpect(jsonPath("$.timestamp").exists());
+        Map<String, Object> result = controller.health();
+
+        assertEquals("UP", result.get("status"));
+        assertEquals("CyberAudit7E", result.get("service"));
+        assertEquals("M4", result.get("version"));
+        assertEquals(13, result.get("rulesLoaded"));
+        assertEquals("Jsoup (HTTP réel)", result.get("fetcherMode"));
+        assertEquals(0, result.get("fetcherCacheSize"));
+        assertNotNull(result.get("timestamp"));
     }
 }

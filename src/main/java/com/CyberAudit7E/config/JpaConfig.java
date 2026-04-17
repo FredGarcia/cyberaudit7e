@@ -5,19 +5,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 /**
  * Configuration JPA.
+ * @EnableJpaAuditing active les callbacks @PrePersist/@PreUpdate.
  *
- * M3 (fix Spring Boot 4) : suppression du bean ObjectMapper custom.
- * Jackson 3 est auto-configuré par Spring Boot 4 avec :
- * - Sérialisation ISO-8601 des dates par défaut (plus besoin de JavaTimeModule)
- * - JsonMapper immutable thread-safe
- * - Configuration via spring.jackson.* dans application.yml
- *
- * @EnableJpaAuditing active les callbacks @PrePersist/@PreUpdate
- *                    sur les entités JPA (Site, AuditReport).
+ * Note : Spring Boot 4.x + Jackson 3 gère automatiquement
+ * la sérialisation des dates Java 8 en ISO 8601. Plus besoin
+ * de configurer un ObjectMapper bean manuellement.
  */
 @Configuration
 @EnableJpaAuditing
 public class JpaConfig {
-    // Pas de bean ObjectMapper : Spring Boot 4 auto-configure JsonMapper (Jackson
-    // 3)
 }

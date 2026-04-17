@@ -1,8 +1,6 @@
 ##############################################
 # CyberAudit7E — Configuration de base
 # M3 : Spring Data JPA + Flyway activés
-# FIX : Jackson 3 (Spring Boot 4) — suppression
-# de write-dates-as-timestamps (ISO par défaut)
 ##############################################
 
 spring:
@@ -11,8 +9,7 @@ spring:
   profiles:
     active: dev
 
-  # Jackson 3 — ISO-8601 dates par défaut, pas besoin de WRITE_DATES_AS_TIMESTAMPS
-  # indent-output et default-property-inclusion restent valides
+  # Jackson : format ISO pour les dates, pas de null dans le JSON 
   jackson:
     serialization:
       indent-output: true

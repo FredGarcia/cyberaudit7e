@@ -33,8 +33,8 @@ public class AuditController {
     private final SiteRepository siteRepository;
 
     public AuditController(AuditOrchestrator orchestrator,
-            AuditReportRepository reportRepository,
-            SiteRepository siteRepository) {
+                           AuditReportRepository reportRepository,
+                           SiteRepository siteRepository) {
         this.orchestrator = orchestrator;
         this.reportRepository = reportRepository;
         this.siteRepository = siteRepository;
@@ -113,7 +113,8 @@ public class AuditController {
 
         // Répartition par phase
         Map<String, Long> phaseCounts = new LinkedHashMap<>();
-        siteRepository.countByPhase().forEach(row -> phaseCounts.put(row[0].toString(), (Long) row[1]));
+        siteRepository.countByPhase().forEach(row ->
+                phaseCounts.put(row[0].toString(), (Long) row[1]));
         stats.put("sitesByPhase", phaseCounts);
 
         return stats;

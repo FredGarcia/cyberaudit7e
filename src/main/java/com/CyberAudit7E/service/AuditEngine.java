@@ -1,23 +1,26 @@
 package com.cyberaudit7e.service;
 
+import com.cyberaudit7e.domain.rule.AuditContext;
 import com.cyberaudit7e.domain.rule.AuditRule;
 import com.cyberaudit7e.dto.RuleResultDto;
+import org.jsoup.nodes.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Moteur d'audit — orchestre l'exécution des règles.
  *
- * Démonstration clé de l'IoC Spring :
- * Le constructeur reçoit List<AuditRule>, et Spring y injecte
- * TOUTES les implémentations trouvées via @ComponentScan.
- * Ajouter une règle = créer un @Component, zéro modification ici.
- *
- * C'est le pattern Strategy appliqué avec l'injection de dépendances.
- * Équivalent du moteur à 17 règles d'AuditAccess, en Java idiomatique.
+ * M4 : évolutions majeures vs M2/M3 :
+ * - Intègre HtmlFetcherService pour le crawl réel HTTP (Jsoup)
+ * - Construit un AuditContext (URL + Document) passé aux règles
+ * - Trie les règles par priorité (structurelles d'abord)
+ * - Gère les erreurs de crawl (toutes les règles reçoivent un context vide)
+ * - Vide le cache du fetcher après chaque exécution
  */
 @Service
 public class AuditEngine {
@@ -26,52 +29,78 @@ public class AuditEngine {
 
     private final List<AuditRule> rules;
     private final ScoringService scoringService;
+    private final HtmlFetcherService htmlFetcher;
 
-    /**
-     * Injection par constructeur — la méthode recommandée en Spring.
-     * Pas besoin de @Autowired quand il n'y a qu'un constructeur.
-     *
-     * @param rules          Toutes les implémentations d'AuditRule (injectées par Spring)
-     * @param scoringService Service de calcul des scores pondérés
-     */
-    public AuditEngine(List<AuditRule> rules, ScoringService scoringService) {
-        this.rules = rules;
+    public AuditEngine(List<AuditRule> rules,
+                       ScoringService scoringService,
+                       HtmlFetcherService htmlFetcher) {
+        // Trier les règles par priorité (plus bas = premier)
+        this.rules = rules.stream()
+                .sorted(Comparator.comparingInt(AuditRule::priority))
+                .toList();
         this.scoringService = scoringService;
+        this.htmlFetcher = htmlFetcher;
+
         log.info("══════════════════════════════════════════════════════");
-        log.info("  AuditEngine initialisé — {} règles chargées", rules.size());
-        rules.forEach(r -> log.info("  ├─ [{}] {} ({})", r.category(), r.id(), r.description()));
+        log.info("  AuditEngine M4 initialisé — {} règles (Jsoup actif)", this.rules.size());
+        this.rules.forEach(r ->
+                log.info("  ├─ [{}] p{} {} — {}",
+                        r.category(), r.priority(), r.id(), r.description()));
         log.info("══════════════════════════════════════════════════════");
     }
 
     /**
      * Exécute toutes les règles sur l'URL donnée.
-     * Phase 7E : EXECUTER
+     *
+     * M4 : crawl HTTP réel via Jsoup, puis injection du Document
+     * dans l'AuditContext transmis à chaque règle.
      *
      * @param url URL du site à auditer
-     * @return Liste des résultats de chaque règle
+     * @return Liste des résultats, triés par priorité d'exécution
      */
     public List<RuleResultDto> runAllRules(String url) {
-        log.info("[7E-EXECUTER] Lancement de {} règles sur {}", rules.size(), url);
-        return rules.stream()
+        log.info("[7E-EXECUTER] Crawl + exécution de {} règles sur {}", rules.size(), url);
+
+        // Étape 1 : Crawler la page
+        Optional<Document> docOpt = htmlFetcher.fetch(url);
+
+        AuditContext context = docOpt
+                .map(doc -> AuditContext.withDocument(url, doc))
+                .orElseGet(() -> {
+                    log.warn("[7E-EXECUTER] Crawl échoué pour {} — exécution en mode dégradé", url);
+                    return AuditContext.withoutDocument(url);
+                });
+
+        // Étape 2 : Exécuter chaque règle
+        List<RuleResultDto> results = rules.stream()
                 .map(rule -> {
-                    RuleResultDto result = rule.evaluate(url);
-                    log.debug("  ├─ {} → {} (score: {})",
-                            rule.id(), result.passed() ? "PASS" : "FAIL", result.score());
-                    return result;
+                    try {
+                        RuleResultDto result = rule.evaluate(context);
+                        String status = result.passed() ? "PASS" : (result.score() > 0 ? "PARTIAL" : "FAIL");
+                        log.info("  ├─ [{}] {} → {} (score: {})",
+                                rule.category(), rule.id(), status, result.score());
+                        return result;
+                    } catch (Exception e) {
+                        log.error("  ├─ [{}] {} → ERREUR : {}", rule.category(), rule.id(), e.getMessage());
+                        return RuleResultDto.failure(rule.id(), rule.category(),
+                                "Erreur d'exécution : " + e.getMessage());
+                    }
                 })
                 .toList();
+
+        // Étape 3 : Nettoyer le cache pour la prochaine URL
+        htmlFetcher.clearCache();
+
+        long passed = results.stream().filter(RuleResultDto::passed).count();
+        log.info("[7E-EXECUTER] Terminé — {}/{} règle(s) réussies", passed, results.size());
+
+        return results;
     }
 
-    /**
-     * @return Nombre de règles enregistrées dans le moteur
-     */
     public int getRulesCount() {
         return rules.size();
     }
 
-    /**
-     * @return Le service de scoring (pour l'orchestrateur)
-     */
     public ScoringService getScoringService() {
         return scoringService;
     }

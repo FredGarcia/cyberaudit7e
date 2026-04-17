@@ -23,7 +23,8 @@ spring:
   jpa:
     # validate : Hibernate vérifie que les entités matchent le schéma
     # (créé par Flyway), mais ne le modifie pas
-    open-in-view: false
+    # open-in-view: false
+    
     hibernate:
       ddl-auto: validate
     show-sql: true

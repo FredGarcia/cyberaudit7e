@@ -6,12 +6,11 @@ import com.cyberaudit7e.dto.RuleResultDto;
 /**
  * Contrat Strategy Pattern pour les règles d'audit.
  *
- * Chaque implémentation est un @Component Spring : le conteneur IoC
- * collecte automatiquement toutes les implémentations et les injecte
- * dans AuditEngine via List<AuditRule>.
+ * M4 : la méthode evaluate() reçoit un AuditContext au lieu d'une String url.
+ * Le contexte contient l'URL ET le Document Jsoup parsé (si disponible).
  *
- * Inspiré du moteur à 17 règles d'AuditAccess (Django),
- * transposé en Java idiomatique.
+ * Chaque implémentation est un @Component Spring auto-injecté dans AuditEngine.
+ * Ajouter une règle = créer un @Component, zéro modification ailleurs.
  */
 public interface AuditRule {
 
@@ -25,12 +24,19 @@ public interface AuditRule {
     RuleCategory category();
 
     /**
-     * Évalue la règle sur l'URL donnée.
-     * En mode POC, l'évaluation est simulée.
-     * En production, elle utilisera un crawler HTTP (Jsoup/Playwright).
-     *
-     * @param url URL du site à auditer
-     * @return Résultat de l'évaluation avec score 0.0-1.0
+     * Priorité d'exécution (plus bas = exécuté en premier).
+     * Les règles structurelles (titre, lang) passent avant les règles de contenu.
+     * Par défaut : 100 (priorité normale).
      */
-    RuleResultDto evaluate(String url);
+    default int priority() {
+        return 100;
+    }
+
+    /**
+     * Évalue la règle sur le contexte d'audit.
+     *
+     * @param context Contexte contenant l'URL et le DOM parsé (optionnel)
+     * @return Résultat avec score 0.0-1.0
+     */
+    RuleResultDto evaluate(AuditContext context);
 }

@@ -64,11 +64,10 @@ public class AuditOrchestrator {
      * Exécute le cycle 7E complet dans une transaction unique.
      *
      * @Transactional garantit :
-     *                - Toutes les écritures (site + report) sont atomiques
-     *                - Un rollback si une phase lève une exception
-     *                - Le contexte de persistance JPA est actif pendant tout le
-     *                cycle
-     *                (pas de LazyInitializationException)
+     * - Toutes les écritures (site + report) sont atomiques
+     * - Un rollback si une phase lève une exception
+     * - Le contexte de persistance JPA est actif pendant tout le cycle
+     *   (pas de LazyInitializationException)
      */
     @Transactional
     public AuditResponseDto executeFullCycle(AuditRequestDto request) {
