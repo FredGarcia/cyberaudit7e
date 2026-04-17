@@ -1,11 +1,11 @@
-package com.CyberAudit7E.controller;
+package com.cyberaudit7e.controller;
 
-import com.CyberAudit7E.dto.AuditRequestDto;
-import com.CyberAudit7E.dto.AuditResponseDto;
-import com.CyberAudit7E.dto.ReportSummaryDto;
-import com.CyberAudit7E.repository.AuditReportRepository;
-import com.CyberAudit7E.repository.SiteRepository;
-import com.CyberAudit7E.service.AuditOrchestrator;
+import com.cyberaudit7e.dto.AuditRequestDto;
+import com.cyberaudit7e.dto.AuditResponseDto;
+import com.cyberaudit7e.dto.ReportSummaryDto;
+import com.cyberaudit7e.repository.AuditReportRepository;
+import com.cyberaudit7e.repository.SiteRepository;
+import com.cyberaudit7e.service.AuditOrchestrator;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

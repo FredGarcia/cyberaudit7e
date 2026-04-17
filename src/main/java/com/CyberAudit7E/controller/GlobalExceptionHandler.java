@@ -1,4 +1,4 @@
-package com.CyberAudit7E.controller;
+package com.cyberaudit7e.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -51,6 +51,15 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(
+                    org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+            return ResponseEntity.status(404).body(Map.of(
+                            "status", 404,
+                            "error", "Ressource non trouvée",
+                            "message", ex.getMessage(),
+                            "timestamp", Instant.now().toString()));
+    }
     /**
      * Catch-all pour les erreurs non gérées.
      */

@@ -1,6 +1,6 @@
-package com.CyberAudit7E.dto;
+package com.cyberaudit7e.dto;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
+import com.cyberaudit7e.domain.entity.AuditReport;
 
 import java.time.LocalDateTime;
 import java.util.List;

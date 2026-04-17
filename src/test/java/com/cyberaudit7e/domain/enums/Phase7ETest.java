@@ -1,4 +1,4 @@
-package com.CyberAudit7E.domain.enums;
+package com.cyberaudit7e.domain.enums;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

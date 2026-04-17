@@ -17,6 +17,7 @@ spring:
       connection-timeout: 30000
 
   jpa:
+    open-in-view: false
     show-sql: false
     hibernate:
       ddl-auto: validate
@@ -39,6 +40,6 @@ spring:
 
 logging:
   level:
-    com.CyberAudit7E: INFO
+    com.cyberaudit7e: INFO
     org.springframework: WARN
     org.hibernate: WARN

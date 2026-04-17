@@ -1,4 +1,4 @@
-package com.CyberAudit7E.domain.enums;
+package com.cyberaudit7e.domain.enums;
 
 /**
  * Catégories de règles d'audit — alignées sur les référentiels AuditAccess.

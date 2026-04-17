@@ -1,7 +1,7 @@
-package com.CyberAudit7E.service;
+package com.cyberaudit7e.service;
 
-import com.CyberAudit7E.domain.enums.RuleCategory;
-import com.CyberAudit7E.dto.RuleResultDto;
+import com.cyberaudit7e.domain.enums.RuleCategory;
+import com.cyberaudit7e.dto.RuleResultDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

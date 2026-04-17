@@ -1,4 +1,4 @@
-package com.CyberAudit7E.config;
+package com.cyberaudit7e.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

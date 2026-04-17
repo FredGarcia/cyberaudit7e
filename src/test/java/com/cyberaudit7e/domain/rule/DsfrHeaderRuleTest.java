@@ -1,7 +1,7 @@
-package com.CyberAudit7E.domain.rule;
+package com.cyberaudit7e.domain.rule;
 
-import com.CyberAudit7E.domain.enums.RuleCategory;
-import com.CyberAudit7E.dto.RuleResultDto;
+import com.cyberaudit7e.domain.enums.RuleCategory;
+import com.cyberaudit7e.dto.RuleResultDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

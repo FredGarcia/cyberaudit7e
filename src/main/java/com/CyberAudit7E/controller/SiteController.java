@@ -1,8 +1,8 @@
-package com.CyberAudit7E.controller;
+package com.cyberaudit7e.controller;
 
-import com.CyberAudit7E.domain.entity.Site;
-import com.CyberAudit7E.dto.SiteDto;
-import com.CyberAudit7E.repository.SiteRepository;
+import com.cyberaudit7e.domain.entity.Site;
+import com.cyberaudit7e.dto.SiteDto;
+import com.cyberaudit7e.repository.SiteRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;

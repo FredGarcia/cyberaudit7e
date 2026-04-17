@@ -23,6 +23,7 @@ spring:
   jpa:
     # validate : Hibernate vérifie que les entités matchent le schéma
     # (créé par Flyway), mais ne le modifie pas
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     show-sql: true
@@ -41,8 +42,8 @@ spring:
 
 logging:
   level:
-    com.CyberAudit7E: DEBUG
-    com.CyberAudit7E.service.cycle: DEBUG
+    com.cyberaudit7e: DEBUG
+    com.cyberaudit7e.service.cycle: DEBUG
     # Voir les requêtes SQL avec les paramètres
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE

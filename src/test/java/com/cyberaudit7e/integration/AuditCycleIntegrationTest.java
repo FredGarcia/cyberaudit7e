@@ -1,10 +1,10 @@
-package com.CyberAudit7E.integration;
+package com.cyberaudit7e.integration;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
-import com.CyberAudit7E.dto.AuditRequestDto;
-import com.CyberAudit7E.dto.AuditResponseDto;
-import com.CyberAudit7E.repository.AuditReportRepository;
-import com.CyberAudit7E.service.AuditOrchestrator;
+import com.cyberaudit7e.domain.entity.AuditReport;
+import com.cyberaudit7e.dto.AuditRequestDto;
+import com.cyberaudit7e.dto.AuditResponseDto;
+import com.cyberaudit7e.repository.AuditReportRepository;
+import com.cyberaudit7e.service.AuditOrchestrator;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,10 +1,10 @@
-package com.CyberAudit7E;
+package com.cyberaudit7e;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * CyberAudit7E — Moteur d'audit cybernétique.
+ * cyberaudit7e — Moteur d'audit cybernétique.
  *
  * Fusion de trois projets :
  * - GitManager → Registre de services (organes)

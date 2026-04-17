@@ -1,7 +1,7 @@
-package com.CyberAudit7E.service.cycle;
+package com.cyberaudit7e.service.cycle;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
-import com.CyberAudit7E.event.AuditCompletedEvent;
+import com.cyberaudit7e.domain.entity.AuditReport;
+import com.cyberaudit7e.event.AuditCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;

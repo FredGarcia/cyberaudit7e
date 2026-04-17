@@ -1,6 +1,6 @@
-package com.CyberAudit7E.event;
+package com.cyberaudit7e.event;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
+import com.cyberaudit7e.domain.entity.AuditReport;
 import org.springframework.context.ApplicationEvent;
 
 /**

@@ -1,6 +1,6 @@
-package com.CyberAudit7E.dto;
+package com.cyberaudit7e.dto;
 
-import com.CyberAudit7E.domain.enums.RuleCategory;
+import com.cyberaudit7e.domain.enums.RuleCategory;
 
 /**
  * Résultat d'évaluation d'une règle d'audit.

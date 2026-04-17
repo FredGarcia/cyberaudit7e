@@ -1,7 +1,7 @@
-package com.CyberAudit7E.domain.entity;
+package com.cyberaudit7e.domain.entity;
 
-import com.CyberAudit7E.domain.enums.Phase7E;
-import com.CyberAudit7E.dto.RuleResultDto;
+import com.cyberaudit7e.domain.enums.Phase7E;
+import com.cyberaudit7e.dto.RuleResultDto;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;

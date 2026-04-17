@@ -1,8 +1,8 @@
-package com.CyberAudit7E.service.cycle;
+package com.cyberaudit7e.service.cycle;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
-import com.CyberAudit7E.domain.entity.Site;
-import com.CyberAudit7E.repository.AuditReportRepository;
+import com.cyberaudit7e.domain.entity.AuditReport;
+import com.cyberaudit7e.domain.entity.Site;
+import com.cyberaudit7e.repository.AuditReportRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

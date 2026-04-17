@@ -1,13 +1,13 @@
-package com.CyberAudit7E.service;
+package com.cyberaudit7e.service;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
-import com.CyberAudit7E.domain.entity.Site;
-import com.CyberAudit7E.dto.AuditRequestDto;
-import com.CyberAudit7E.dto.AuditResponseDto;
-import com.CyberAudit7E.dto.RuleResultDto;
-import com.CyberAudit7E.repository.AuditReportRepository;
-import com.CyberAudit7E.repository.SiteRepository;
-import com.CyberAudit7E.service.cycle.*;
+import com.cyberaudit7e.domain.entity.AuditReport;
+import com.cyberaudit7e.domain.entity.Site;
+import com.cyberaudit7e.dto.AuditRequestDto;
+import com.cyberaudit7e.dto.AuditResponseDto;
+import com.cyberaudit7e.dto.RuleResultDto;
+import com.cyberaudit7e.repository.AuditReportRepository;
+import com.cyberaudit7e.repository.SiteRepository;
+import com.cyberaudit7e.service.cycle.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,6 @@
-package com.CyberAudit7E.repository;
+package com.cyberaudit7e.repository;
 
-import com.CyberAudit7E.domain.entity.AuditReport;
+import com.cyberaudit7e.domain.entity.AuditReport;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
