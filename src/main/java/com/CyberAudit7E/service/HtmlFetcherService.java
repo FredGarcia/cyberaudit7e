@@ -70,7 +70,8 @@ public class HtmlFetcherService {
             log.info("[FETCHER] OK — {} ({} octets, titre: '{}')",
                     url, doc.html().length(), doc.title());
             return Optional.of(doc);
-        } catch (Exception e) {
+
+        } catch (IOException e) {
             log.warn("[FETCHER] Erreur crawl {} : {}", url, e.getMessage());
             return Optional.empty();
         }

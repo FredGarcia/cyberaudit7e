@@ -1,6 +1,8 @@
 package com.cyberaudit7e.repository;
 
 import com.cyberaudit7e.domain.entity.AuditReport;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,64 +14,65 @@ import java.util.Optional;
 
 /**
  * Repository JPA pour les rapports d'audit.
- *
- * M3 : remplace le ConcurrentHashMap de M2.
- * Les Query Methods de Spring Data dérivent le SQL du nom de la méthode.
- *
- * Convention de nommage :
- *   findBy[Champ][Condition]OrderBy[Champ][Direction]
- *   → Spring parse le nom et génère la requête SQL/JPQL correspondante.
+ * M6 : ajout des méthodes paginées (Page + Pageable).
  */
 @Repository
 public interface AuditReportRepository extends JpaRepository<AuditReport, Long> {
 
-    /**
-     * Historique des audits d'un site (plus récent en premier).
-     * SQL généré : SELECT * FROM audit_reports WHERE site_id = ? ORDER BY audited_at DESC
-     */
+    // ── Requêtes non-paginées (M3/M4/M5) ──
+
     List<AuditReport> findBySiteIdOrderByAuditedAtDesc(Long siteId);
 
-    /**
-     * Dernier audit d'un site.
-     * Spring Data : "First" limite à 1 résultat.
-     */
     Optional<AuditReport> findFirstBySiteIdOrderByAuditedAtDesc(Long siteId);
 
-    /**
-     * Tous les rapports avec un score global supérieur au seuil.
-     */
     List<AuditReport> findByScoreGlobalGreaterThanEqual(Double threshold);
 
-    /**
-     * Tous les rapports avec un score global inférieur au seuil (alertes).
-     */
     List<AuditReport> findByScoreGlobalLessThan(Double threshold);
 
-    /**
-     * Rapports d'audit dans une plage de dates.
-     */
     List<AuditReport> findByAuditedAtBetweenOrderByAuditedAtDesc(
             LocalDateTime start, LocalDateTime end);
 
-    /**
-     * Nombre d'audits pour un site donné.
-     */
     long countBySiteId(Long siteId);
 
-    /**
-     * Score moyen global (JPQL custom).
-     */
     @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r")
     Double averageGlobalScore();
 
-    /**
-     * Score moyen par site (JPQL custom).
-     */
     @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r WHERE r.site.id = :siteId")
     Double averageGlobalScoreBySite(@Param("siteId") Long siteId);
 
-    /**
-     * Rapports avec tendance spécifique.
-     */
     List<AuditReport> findByTrend(String trend);
+
+    // ── Requêtes paginées (M6 NOUVEAU) ──
+
+    /**
+     * Tous les rapports, paginés et triés.
+     * Exemple : GET /api/audits?page=0&size=10&sort=auditedAt,desc
+     */
+    Page<AuditReport> findAll(Pageable pageable);
+
+    /**
+     * Rapports d'un site, paginés.
+     */
+    Page<AuditReport> findBySiteId(Long siteId, Pageable pageable);
+
+    /**
+     * Rapports sous un seuil de score, paginés.
+     */
+    Page<AuditReport> findByScoreGlobalLessThan(Double threshold, Pageable pageable);
+
+    /**
+     * Rapports au-dessus d'un seuil, paginés.
+     */
+    Page<AuditReport> findByScoreGlobalGreaterThanEqual(Double threshold, Pageable pageable);
+
+    /**
+     * Rapports par tendance, paginés.
+     */
+    Page<AuditReport> findByTrend(String trend, Pageable pageable);
+
+    /**
+     * Recherche full-text sur les résultats JSON (JPQL LIKE).
+     */
+    @Query("SELECT r FROM AuditReport r WHERE r.site.name LIKE %:query% OR r.site.url LIKE %:query%")
+    Page<AuditReport> searchByQuery(@Param("query") String query, Pageable pageable);
 }

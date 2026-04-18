@@ -12,11 +12,11 @@ import java.util.List;
  *
  * M3 : POJO M2 transformé en entité JPA.
  * Changements vs M2 :
- * - @Entity, @Table, @Id, @GeneratedValue
- * - @Enumerated(STRING) pour Phase7E
- * - @OneToMany bidirectionnel avec AuditReport
- * - @PrePersist / @PreUpdate pour les timestamps
- * - @Column constraints alignées sur V1__create_schema.sql
+ *   - @Entity, @Table, @Id, @GeneratedValue
+ *   - @Enumerated(STRING) pour Phase7E
+ *   - @OneToMany bidirectionnel avec AuditReport
+ *   - @PrePersist / @PreUpdate pour les timestamps
+ *   - @Column constraints alignées sur V1__create_schema.sql
  */
 @Entity
 @Table(name = "sites")
@@ -61,8 +61,7 @@ public class Site {
 
     // ── Constructeurs ──
 
-    public Site() {
-    }
+    public Site() {}
 
     public Site(String url, String name) {
         this.url = url;
@@ -87,10 +86,7 @@ public class Site {
     public void setReports(List<AuditReport> reports) { this.reports = reports; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     /**
      * Avance le site à la phase suivante du cycle 7E.

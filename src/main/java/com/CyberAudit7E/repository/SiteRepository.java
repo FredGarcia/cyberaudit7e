@@ -17,9 +17,9 @@ import java.util.Optional;
  * l'implémentation à partir des noms de méthodes (Query Methods).
  *
  * Comparaison avec les autres stacks :
- * - Django : Site.objects.filter(url=url)
- * - Laravel : Site::where('url', $url)->first()
- * - Spring : findByUrl(String url) → Spring génère le SQL
+ *   - Django : Site.objects.filter(url=url)
+ *   - Laravel : Site::where('url', $url)->first()
+ *   - Spring : findByUrl(String url) → Spring génère le SQL
  *
  * JpaRepository hérite de CrudRepository + PagingAndSortingRepository,
  * offrant save(), findById(), findAll(), delete(), count(), etc.

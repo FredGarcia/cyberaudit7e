@@ -15,8 +15,6 @@ import java.util.List;
 /**
  * Converter JPA : List<RuleResultDto> ↔ JSON String (CLOB).
  *
- * M3 (fix Spring Boot 4) : migration Jackson 2 → Jackson 3.
- *
  * Appliqué automatiquement (@Converter autoApply=false) sur le champ
  * AuditReport.ruleResults via @Convert.
  *

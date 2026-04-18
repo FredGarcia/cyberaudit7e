@@ -1,26 +1,31 @@
 -- ============================================================
 -- V1__create_schema.sql
--- CyberAudit7E — Schema initial (H2 2.4+ compatible)
+-- CyberAudit7E — Schéma initial
+-- Flyway migration : exécutée automatiquement au démarrage
 -- ============================================================
 
+-- Table des sites à auditer
+-- Inspirée du registre d'organes GitManager
 CREATE TABLE sites (
-    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    url             VARCHAR       NOT NULL UNIQUE,
-    name            VARCHAR       NOT NULL,
-    current_phase   VARCHAR       DEFAULT 'EVALUER',
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+    url             VARCHAR(500)  NOT NULL UNIQUE,
+    name            VARCHAR(255)  NOT NULL,
+    current_phase   VARCHAR(20)   DEFAULT 'EVALUER',
     created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table des rapports d'audit
+-- Un rapport = un cycle 7E complet
 CREATE TABLE audit_reports (
-    id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY,
     site_id         BIGINT        NOT NULL,
-    score_rgaa      DOUBLE PRECISION,
-    score_wcag      DOUBLE PRECISION,
-    score_dsfr      DOUBLE PRECISION,
-    score_global    DOUBLE PRECISION,
-    completed_phase VARCHAR,
-    trend           VARCHAR,
+    score_rgaa      DOUBLE,
+    score_wcag      DOUBLE,
+    score_dsfr      DOUBLE,
+    score_global    DOUBLE,
+    completed_phase VARCHAR(20),
+    trend           VARCHAR(10),
     results_json    CLOB,
     audited_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
 
@@ -29,6 +34,7 @@ CREATE TABLE audit_reports (
         ON DELETE CASCADE
 );
 
+-- Index pour les requêtes fréquentes
 CREATE INDEX idx_sites_url          ON sites(url);
 CREATE INDEX idx_sites_phase        ON sites(current_phase);
 CREATE INDEX idx_reports_site_id    ON audit_reports(site_id);

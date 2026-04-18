@@ -14,10 +14,10 @@ import java.util.Map;
  *
  * M3 : POJO M2 transformé en entité JPA.
  * Changements vs M2 :
- * - @Entity, @Table, @ManyToOne avec LAZY fetch
- * - Scores stockés en colonnes DOUBLE
- * - RuleResults stockés en JSON (TEXT) via @Convert
- * - @PrePersist pour le timestamp d'audit
+ *   - @Entity, @Table, @ManyToOne avec LAZY fetch
+ *   - Scores stockés en colonnes DOUBLE
+ *   - RuleResults stockés en JSON (TEXT) via @Convert
+ *   - @PrePersist pour le timestamp d'audit
  */
 @Entity
 @Table(name = "audit_reports")
@@ -109,13 +109,8 @@ public class AuditReport {
     public List<RuleResultDto> getRuleResults() { return ruleResults; }
     public void setRuleResults(List<RuleResultDto> ruleResults) { this.ruleResults = ruleResults; }
 
-    public String getTrend() {
-        return trend;
-    }
-
-    public void setTrend(String trend) {
-        this.trend = trend;
-    }
+    public String getTrend() { return trend; }
+    public void setTrend(String trend) { this.trend = trend; }
 
     public LocalDateTime getAuditedAt() { return auditedAt; }
 

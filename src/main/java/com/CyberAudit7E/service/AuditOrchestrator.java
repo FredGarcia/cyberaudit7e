@@ -2,14 +2,18 @@ package com.cyberaudit7e.service;
 
 import com.cyberaudit7e.domain.entity.AuditReport;
 import com.cyberaudit7e.domain.entity.Site;
+import com.cyberaudit7e.domain.enums.Phase7E;
 import com.cyberaudit7e.dto.AuditRequestDto;
 import com.cyberaudit7e.dto.AuditResponseDto;
 import com.cyberaudit7e.dto.RuleResultDto;
+import com.cyberaudit7e.event.AuditProgressEvent;
+import com.cyberaudit7e.event.AuditStartedEvent;
 import com.cyberaudit7e.repository.AuditReportRepository;
 import com.cyberaudit7e.repository.SiteRepository;
 import com.cyberaudit7e.service.cycle.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +23,13 @@ import java.util.Map;
 /**
  * Orchestrateur du cycle Axiome 7E.
  *
- * M3 : ajout de @Transactional pour garantir la cohérence
- * des écritures JPA (Site + AuditReport dans la même transaction).
+ * M5 : publie des événements à chaque transition de phase
+ * pour alimenter le streaming SSE en temps réel.
  *
- * Si une phase échoue, toute la transaction est rollback.
- * C'est la garantie ACID que les repositories in-memory M2
- * ne pouvaient pas offrir.
+ * Flux événementiel :
+ *   AuditStartedEvent → 7× AuditProgressEvent → AuditCompletedEvent
+ *
+ * Les clients SSE voient la progression phase par phase.
  */
 @Service
 public class AuditOrchestrator {
@@ -33,6 +38,7 @@ public class AuditOrchestrator {
 
     private final SiteRepository siteRepository;
     private final AuditReportRepository reportRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final EvaluateService evaluateService;
     private final ElaborateService elaborateService;
     private final ExecuteService executeService;
@@ -43,6 +49,7 @@ public class AuditOrchestrator {
     public AuditOrchestrator(
             SiteRepository siteRepository,
             AuditReportRepository reportRepository,
+            ApplicationEventPublisher eventPublisher,
             EvaluateService evaluateService,
             ElaborateService elaborateService,
             ExecuteService executeService,
@@ -52,6 +59,7 @@ public class AuditOrchestrator {
     ) {
         this.siteRepository = siteRepository;
         this.reportRepository = reportRepository;
+        this.eventPublisher = eventPublisher;
         this.evaluateService = evaluateService;
         this.elaborateService = elaborateService;
         this.executeService = executeService;
@@ -60,59 +68,59 @@ public class AuditOrchestrator {
         this.emitService = emitService;
     }
 
-    /**
-     * Exécute le cycle 7E complet dans une transaction unique.
-     *
-     * @Transactional garantit :
-     * - Toutes les écritures (site + report) sont atomiques
-     * - Un rollback si une phase lève une exception
-     * - Le contexte de persistance JPA est actif pendant tout le cycle
-     *   (pas de LazyInitializationException)
-     */
     @Transactional
     public AuditResponseDto executeFullCycle(AuditRequestDto request) {
         log.info("╔══════════════════════════════════════════════════════╗");
         log.info("║  CYCLE 7E — Démarrage audit pour {}", request.url());
         log.info("╚══════════════════════════════════════════════════════╝");
 
+        // ── Événement de démarrage ──
+        eventPublisher.publishEvent(new AuditStartedEvent(this, request.url(), request.name()));
+
         // ── Résolution ou création du site ──
         Site site = siteRepository.findByUrl(request.url())
                 .orElseGet(() -> {
                     log.info("[JPA] Création du site : {}", request.name());
-                    Site newSite = new Site(request.url(), request.name());
-                    return siteRepository.save(newSite);
+                    return siteRepository.save(new Site(request.url(), request.name()));
                 });
 
         // ── Phase 1 : ÉVALUER ──
+        publishProgress(request.url(), Phase7E.EVALUER, "Collecte des métriques en cours...");
         String validatedUrl = evaluateService.evaluate(site);
 
-        // ── Phase 3 : EXÉCUTER (les règles du moteur) ──
+        // ── Phase 3 : EXÉCUTER ──
+        publishProgress(request.url(), Phase7E.EXECUTER, "Exécution des 13 règles d'audit...");
         List<RuleResultDto> results = executeService.execute(validatedUrl);
 
-        // ── Phase 2 : ÉLABORER (plan de remédiation) ──
+        // ── Phase 2 : ÉLABORER ──
+        publishProgress(request.url(), Phase7E.ELABORER, "Analyse des violations...");
         List<RuleResultDto> violations = elaborateService.elaborate(results);
 
-        // ── Phase 4 : EXAMINER (scoring pondéré) ──
+        // ── Phase 4 : EXAMINER ──
+        publishProgress(request.url(), Phase7E.EXAMINER, "Calcul du score pondéré...");
         Map<String, Double> scores = examineService.examine(results);
 
-        // ── Phase 5 : ÉVOLUER (tendance) ──
+        // ── Phase 5 : ÉVOLUER ──
+        publishProgress(request.url(), Phase7E.EVOLUER,
+                "Comparaison avec l'audit précédent...");
         String trend = evolveService.evolve(site, scores);
 
-        // ── Persistance du rapport (JPA) ──
+        // ── Persistance ──
         AuditReport report = new AuditReport(site, scores, results);
         report.setTrend(trend);
         report = reportRepository.save(report);
-
-        // Bidirectionnel : mise à jour du côté Site
         site.addReport(report);
         siteRepository.save(site);
 
-        log.info("[JPA] Rapport #{} persisté — score_global: {}", report.getId(), scores.get("global"));
-
-        // ── Phase 6 : ÉMETTRE (événement — hors transaction) ──
+        // ── Phase 6 : ÉMETTRE ──
+        publishProgress(request.url(), Phase7E.EMETTRE,
+                String.format("Publication du rapport #%d...", report.getId()));
         emitService.emit(report, trend);
 
-        // ── Phase 7 : ÉQUILIBRER (asynchrone via FeedbackLoopListener) ──
+        // ── Phase 7 : ÉQUILIBRER (asynchrone) ──
+        publishProgress(request.url(), Phase7E.EQUILIBRER,
+                String.format("Rétroaction cybernétique — score: %s, tendance: %s",
+                        scores.get("global"), trend));
 
         log.info("╔══════════════════════════════════════════════════════╗");
         log.info("║  CYCLE 7E TERMINÉ — Rapport #{} — Score: {}",
@@ -120,13 +128,16 @@ public class AuditOrchestrator {
         log.info("╚══════════════════════════════════════════════════════╝");
 
         return AuditResponseDto.from(
-                report.getId(),
-                site.getUrl(),
-                site.getName(),
-                scores,
-                site.getCurrentPhase().name(),
-                results,
-                report.getAuditedAt()
+                report.getId(), site.getUrl(), site.getName(),
+                scores, site.getCurrentPhase().name(),
+                results, report.getAuditedAt()
         );
+    }
+
+    /**
+     * Publie un événement de progression pour le streaming SSE.
+     */
+    private void publishProgress(String siteUrl, Phase7E phase, String message) {
+        eventPublisher.publishEvent(new AuditProgressEvent(this, siteUrl, phase, message));
     }
 }
