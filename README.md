@@ -280,22 +280,35 @@ Copy
 
 ### Prérequis
 
-*   Java 21+
-*   Maven via le wrapper inclus
-*   Optionnel : `jq`, H2 Console, Bruno ou HTTPie pour les tests manuels
+* Java 21+
+* Maven via le wrapper inclus
+* Optionnel : `jq`, H2 Console, Bruno ou HTTPie pour les tests manuels
 
 ### Lancer l'application
+
+Sous Windows / DOS
+mvn -N io.takari:maven:wrapper -Dmaven=3.9.9
+
+ou mieux :
+mvn wrapper:wrapper -Dmaven=3.9.9
+
+
+Sinon
+👍mvn org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.9
+
+puis  :
+mvnw clean spring-boot:run
 
 Sous Windows / PowerShell :
 
 ```powershell
-Copy.\mvnw.cmd clean spring-boot:run
+.\mvnw.cmd clean spring-boot:run
 ```
 
 Sous Linux / macOS :
 
 ```bash
-Copy./mvnw clean spring-boot:run
+./mvnw clean spring-boot:run
 ```
 
 Au démarrage, le profil `dev` doit :
@@ -404,11 +417,15 @@ curl -X POST http://localhost:8080/api/sites `
   -H "Content-Type: application/json" `
   -d '{"url":"https://www.service-public.fr","name":"Service Public"}'
 
-# Lancer un audit synchrone
+# Lancer un audit synchrone dans DOS : 
+curl -X POST http://localhost:8080/api/audits ^
+  -H "Content-Type: application/json" ^
+  -d "{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouvernement FR\"}"
+# Pour PowerShell :
 curl -X POST http://localhost:8080/api/audits `
   -H "Content-Type: application/json" `
   -d '{"url":"https://www.gouvernement.gouv.fr","name":"Gouvernement FR"}'
-
+  
 # Voir les statistiques
 curl -s http://localhost:8080/api/audits/stats
 ```
