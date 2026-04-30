@@ -418,9 +418,7 @@ curl -X POST http://localhost:8080/api/sites `
   -d '{"url":"https://www.service-public.fr","name":"Service Public"}'
 
 # Lancer un audit synchrone dans DOS : 
-curl -X POST http://localhost:8080/api/audits ^
-  -H "Content-Type: application/json" ^
-  -d "{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouvernement FR\"}"
+curl -X POST http://localhost:8080/api/audits -H "Content-Type: application/json" -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Gouvernement FR\"}"
 # Pour PowerShell :
 curl -X POST http://localhost:8080/api/audits `
   -H "Content-Type: application/json" `

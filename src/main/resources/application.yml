@@ -1,6 +1,6 @@
 ##############################################
 # CyberAudit7E — Configuration de base
-# M5 : Async + Events + Scheduler
+# M6 : API REST complète + OpenAPI/Swagger
 ##############################################
 
 spring:
@@ -9,21 +9,38 @@ spring:
   profiles:
     active: dev
 
+  jackson:
+    serialization:
+      indent-output: true
+    default-property-inclusion: non_null
+
 server:
   port: 8080
-
-  # Timeout pour les connexions SSE longue durée
   servlet:
     async:
-      timeout: 1800000  # 30 minutes en ms
+      timeout: 1800000  # 30 min (SSE)
+
+# ── SpringDoc OpenAPI / Swagger UI ──
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    # Grouper par tag et trier alphabétiquement
+    tags-sorter: alpha
+    operations-sorter: method
+    # Afficher le modèle de requête par défaut
+    default-models-expand-depth: 2
+    doc-expansion: list
+  # Inclure les endpoints Spring Boot Actuator (si présent)
+  show-actuator: false
 
 # ── Configuration CyberAudit7E ──
 cyberaudit7e:
   scheduler:
-    # Activer/désactiver les audits programmés
     enabled: false
-    # Cron : tous les jours à 2h du matin
-    # Format : seconde minute heure jour mois jour-semaine
     cron: "0 0 2 * * *"
 
 logging:

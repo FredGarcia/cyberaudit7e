@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberAudit7E — Admin & Tests</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-0: #0a0e17; --bg-1: #111827; --bg-2: #1a2236; --bg-3: #243049;
+  --border: #2d3a52; --border-active: #3b82f6;
+  --text-0: #f1f5f9; --text-1: #94a3b8; --text-2: #64748b;
+  --blue: #3b82f6; --blue-dim: #1e3a5f; --green: #10b981; --green-dim: #064e3b;
+  --orange: #f59e0b; --orange-dim: #713f12; --red: #ef4444; --red-dim: #7f1d1d;
+  --purple: #a78bfa; --purple-dim: #3b2070; --cyan: #22d3ee;
+  --mono: 'JetBrains Mono', monospace; --sans: 'Outfit', sans-serif;
+  --radius: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--sans); background:var(--bg-0); color:var(--text-0); min-height:100vh; }
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--bg-1); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* Layout */
+.app { display:grid; grid-template-columns:220px 1fr; grid-template-rows:56px 1fr; min-height:100vh; }
+.topbar { grid-column:1/-1; background:var(--bg-1); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
+.topbar h1 { font-size:16px; font-weight:600; letter-spacing:-.5px; }
+.topbar h1 span { color:var(--blue); }
+.topbar .status { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--text-1); }
+.topbar .dot { width:8px; height:8px; border-radius:50%; }
+.topbar .dot.up { background:var(--green); box-shadow:0 0 8px var(--green); }
+.topbar .dot.down { background:var(--red); }
+
+.sidebar { background:var(--bg-1); border-right:1px solid var(--border); padding:12px 0; overflow-y:auto; }
+.sidebar .section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-2); padding:16px 16px 6px; font-weight:600; }
+.sidebar a { display:flex; align-items:center; gap:10px; padding:8px 16px; font-size:13px; color:var(--text-1); text-decoration:none; cursor:pointer; transition:all .15s; border-left:3px solid transparent; }
+.sidebar a:hover { background:var(--bg-2); color:var(--text-0); }
+.sidebar a.active { background:var(--blue-dim); color:var(--blue); border-left-color:var(--blue); font-weight:500; }
+.sidebar .icon { width:18px; text-align:center; font-size:14px; }
+
+.main { padding:20px; overflow-y:auto; }
+.page-title { font-size:22px; font-weight:600; margin-bottom:4px; letter-spacing:-.5px; }
+.page-sub { font-size:13px; color:var(--text-2); margin-bottom:20px; }
+
+/* Cards */
+.card { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+.card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.card-header h3 { font-size:14px; font-weight:600; }
+.card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:16px; }
+.stat-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+.stat-card .label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); margin-bottom:4px; }
+.stat-card .value { font-size:24px; font-weight:700; font-family:var(--mono); }
+.stat-card .value.blue { color:var(--blue); }
+.stat-card .value.green { color:var(--green); }
+.stat-card .value.orange { color:var(--orange); }
+.stat-card .value.purple { color:var(--purple); }
+
+/* Forms */
+.form-row { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.form-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:180px; }
+.form-group label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); font-weight:500; }
+input, select, textarea { background:var(--bg-2); border:1px solid var(--border); color:var(--text-0); padding:8px 12px; border-radius:6px; font-family:var(--sans); font-size:13px; outline:none; transition:border .2s; }
+input:focus, select:focus, textarea:focus { border-color:var(--blue); }
+textarea { font-family:var(--mono); font-size:12px; resize:vertical; min-height:60px; }
+
+/* Buttons */
+.btn { padding:8px 16px; border:1px solid var(--border); border-radius:6px; font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; background:var(--bg-2); color:var(--text-0); }
+.btn:hover { background:var(--bg-3); }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-primary { background:var(--blue); border-color:var(--blue); color:#fff; }
+.btn-primary:hover { background:#2563eb; }
+.btn-green { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+.btn-green:hover { background:#065f46; }
+.btn-orange { background:var(--orange-dim); border-color:var(--orange); color:var(--orange); }
+.btn-red { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+.btn-group { display:flex; gap:6px; flex-wrap:wrap; }
+
+/* Table */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); border-bottom:2px solid var(--border); font-weight:600; }
+td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text-1); }
+tr:hover td { background:var(--bg-2); }
+
+/* JSON viewer */
+.json-viewer { background:var(--bg-0); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:var(--mono); font-size:12px; color:var(--green); max-height:400px; overflow:auto; white-space:pre-wrap; word-break:break-all; line-height:1.5; }
+
+/* SSE Console */
+.sse-console { background:#000; border:1px solid var(--green); border-radius:6px; padding:12px; font-family:var(--mono); font-size:11px; max-height:350px; overflow-y:auto; }
+.sse-line { margin-bottom:4px; line-height:1.4; }
+.sse-line .ts { color:var(--text-2); }
+.sse-line .ev { color:var(--cyan); font-weight:600; }
+.sse-line .data { color:var(--green); }
+.sse-line.error { color:var(--red); }
+.sse-dot { display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; }
+.sse-dot.on { background:var(--green); animation:pulse 2s infinite; }
+.sse-dot.off { background:var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* Score badge */
+.score { font-family:var(--mono); font-weight:700; padding:2px 8px; border-radius:4px; font-size:12px; }
+.score.high { background:var(--green-dim); color:var(--green); }
+.score.mid { background:var(--orange-dim); color:var(--orange); }
+.score.low { background:var(--red-dim); color:var(--red); }
+.badge { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:500; }
+.badge.pending { background:var(--blue-dim); color:var(--blue); }
+.badge.running { background:var(--orange-dim); color:var(--orange); }
+.badge.completed { background:var(--green-dim); color:var(--green); }
+.badge.failed { background:var(--red-dim); color:var(--red); }
+
+/* Tabs */
+.tabs { display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid var(--border); }
+.tab { padding:8px 16px; font-size:13px; color:var(--text-2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+.tab:hover { color:var(--text-0); }
+.tab.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
+
+/* Progress bar */
+.progress-bar { height:6px; background:var(--bg-3); border-radius:3px; overflow:hidden; }
+.progress-bar .fill { height:100%; background:linear-gradient(90deg, var(--blue), var(--cyan)); transition:width .3s; border-radius:3px; }
+
+/* Pagination */
+.pagination { display:flex; align-items:center; gap:8px; justify-content:center; margin-top:12px; }
+.pagination .info { font-size:12px; color:var(--text-2); }
+
+/* Toast */
+.toast-container { position:fixed; top:64px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
+.toast { padding:10px 16px; border-radius:6px; font-size:13px; animation:slideIn .3s ease; max-width:400px; }
+.toast.success { background:var(--green-dim); border:1px solid var(--green); color:var(--green); }
+.toast.error { background:var(--red-dim); border:1px solid var(--red); color:var(--red); }
+.toast.info { background:var(--blue-dim); border:1px solid var(--blue); color:var(--blue); }
+@keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:none;opacity:1} }
+</style>
+</head>
+<body>
+<div id="app">
+<div class="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <h1>⚡ Cyber<span>Audit7E</span> — Admin & Tests</h1>
+    <div class="status">
+      <span class="dot" :class="health.status==='UP'?'up':'down'"></span>
+      <span>{{ health.status || '...' }}</span>
+      <span style="color:var(--text-2)">|</span>
+      <span>v{{ health.version || '?' }}</span>
+      <span style="color:var(--text-2)">|</span>
+      <span>{{ health.rulesLoaded || 0 }} règles</span>
+      <span style="color:var(--text-2)">|</span>
+      <span>Profile: {{ health.profile || '?' }}</span>
+      <span style="color:var(--text-2)">|</span>
+      <span v-if="health.runtime">Heap: {{ health.runtime.heapUsedMb }}MB/{{ health.runtime.heapMaxMb }}MB</span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="section-label">Système</div>
+    <a :class="{active:page==='health'}" @click="page='health'"><span class="icon">💚</span> Health & Runtime</a>
+    <a :class="{active:page==='stats'}" @click="page='stats'"><span class="icon">📊</span> Statistiques</a>
+
+    <div class="section-label">Sites</div>
+    <a :class="{active:page==='sites'}" @click="page='sites'"><span class="icon">🌐</span> Gestion des sites</a>
+
+    <div class="section-label">Audits</div>
+    <a :class="{active:page==='audit-sync'}" @click="page='audit-sync'"><span class="icon">🔍</span> Audit synchrone</a>
+    <a :class="{active:page==='audit-async'}" @click="page='audit-async'"><span class="icon">⚡</span> Audit asynchrone</a>
+    <a :class="{active:page==='audit-batch'}" @click="page='audit-batch'"><span class="icon">📦</span> Batch parallèle</a>
+    <a :class="{active:page==='reports'}" @click="page='reports'"><span class="icon">📋</span> Rapports</a>
+    <a :class="{active:page==='alerts'}" @click="page='alerts'"><span class="icon">🚨</span> Alertes</a>
+
+    <div class="section-label">Temps réel</div>
+    <a :class="{active:page==='sse'}" @click="page='sse'"><span class="icon">📡</span> Console SSE</a>
+    <a :class="{active:page==='jobs'}" @click="page='jobs'"><span class="icon">⏳</span> Jobs async</a>
+
+    <div class="section-label">Configuration</div>
+    <a :class="{active:page==='config'}" @click="page='config'"><span class="icon">⚖️</span> Poids scoring</a>
+    <a :class="{active:page==='scheduler'}" @click="page='scheduler'"><span class="icon">⏰</span> Scheduler</a>
+
+    <div class="section-label">Liens</div>
+    <a href="/swagger-ui.html" target="_blank"><span class="icon">📖</span> Swagger UI ↗</a>
+    <a href="/h2-console" target="_blank"><span class="icon">🗄️</span> H2 Console ↗</a>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+
+    <!-- ═══ HEALTH ═══ -->
+    <template v-if="page==='health'">
+      <div class="page-title">Health & Runtime</div>
+      <div class="page-sub">GET /api/health — État complet du service et métriques JVM</div>
+      <div class="btn-group" style="margin-bottom:16px">
+        <button class="btn btn-primary" @click="fetchHealth">🔄 Rafraîchir</button>
+      </div>
+      <div class="card-grid">
+        <div class="stat-card"><div class="label">Statut</div><div class="value green">{{ health.status || '...' }}</div></div>
+        <div class="stat-card"><div class="label">Version</div><div class="value blue">{{ health.version || '?' }}</div></div>
+        <div class="stat-card"><div class="label">Règles</div><div class="value purple">{{ health.rulesLoaded || 0 }}</div></div>
+        <div class="stat-card"><div class="label">SSE Clients</div><div class="value orange">{{ health.sseClients || 0 }}</div></div>
+        <div class="stat-card" v-if="health.runtime"><div class="label">Uptime</div><div class="value blue">{{ health.runtime.uptime }}</div></div>
+        <div class="stat-card" v-if="health.runtime"><div class="label">Heap</div><div class="value" :class="health.runtime.heapPercent>80?'orange':'green'">{{ health.runtime.heapPercent }}%</div></div>
+        <div class="stat-card" v-if="health.runtime"><div class="label">Java</div><div class="value blue" style="font-size:16px">{{ health.runtime.javaVersion }}</div></div>
+        <div class="stat-card" v-if="health.runtime"><div class="label">Hostname</div><div class="value blue" style="font-size:14px">{{ health.runtime.hostname }}</div></div>
+      </div>
+      <div class="card"><div class="card-header"><h3>Réponse brute</h3></div><div class="json-viewer">{{ formatJson(health) }}</div></div>
+    </template>
+
+    <!-- ═══ STATS ═══ -->
+    <template v-if="page==='stats'">
+      <div class="page-title">Statistiques globales</div>
+      <div class="page-sub">GET /api/audits/stats — Agrégations et métriques</div>
+      <button class="btn btn-primary" @click="fetchStats" style="margin-bottom:16px">🔄 Rafraîchir</button>
+      <div class="card-grid">
+        <div class="stat-card"><div class="label">Total Sites</div><div class="value blue">{{ stats.totalSites || 0 }}</div></div>
+        <div class="stat-card"><div class="label">Total Audits</div><div class="value purple">{{ stats.totalAudits || 0 }}</div></div>
+        <div class="stat-card"><div class="label">Score moyen</div><div class="value" :class="scoreClass(stats.averageScore)">{{ stats.averageScore ? stats.averageScore.toFixed(2) : '—' }}</div></div>
+        <div class="stat-card" v-if="stats.metrics"><div class="label">Durée moy.</div><div class="value orange">{{ stats.metrics.averageDurationMs || 0 }}ms</div></div>
+      </div>
+      <div class="card" v-if="stats.trends">
+        <div class="card-header"><h3>Tendances</h3></div>
+        <div class="card-grid">
+          <div class="stat-card" v-for="(v,k) in stats.trends" :key="k"><div class="label">{{ k }}</div><div class="value blue">{{ v }}</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><h3>Réponse brute</h3></div><div class="json-viewer">{{ formatJson(stats) }}</div></div>
+    </template>
+
+    <!-- ═══ SITES ═══ -->
+    <template v-if="page==='sites'">
+      <div class="page-title">Gestion des sites</div>
+      <div class="page-sub">CRUD complet — GET/POST/DELETE /api/sites</div>
+      <div class="card">
+        <div class="card-header"><h3>Ajouter un site</h3></div>
+        <div class="form-row">
+          <div class="form-group"><label>URL</label><input v-model="siteForm.url" placeholder="https://www.example.com"></div>
+          <div class="form-group"><label>Nom</label><input v-model="siteForm.name" placeholder="Mon site"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" @click="createSite" :disabled="!siteForm.url||!siteForm.name">+ Créer</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Sites enregistrés ({{ sitesData.totalElements || 0 }})</h3>
+          <div class="form-row" style="margin:0;gap:6px">
+            <input v-model="siteSearch" placeholder="Recherche..." style="width:150px" @keyup.enter="searchSites">
+            <button class="btn btn-sm" @click="searchSites">🔍</button>
+            <button class="btn btn-sm" @click="siteSearch='';fetchSites()">✕</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Nom</th><th>URL</th><th>Phase</th><th>Audits</th><th>Dernier score</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="s in sitesData.content||[]" :key="s.id">
+                <td style="font-family:var(--mono)">{{ s.id }}</td>
+                <td style="color:var(--text-0);font-weight:500">{{ s.name }}</td>
+                <td><a :href="s.url" target="_blank" style="color:var(--cyan);text-decoration:none;font-size:12px">{{ s.url }}</a></td>
+                <td><span class="badge" :class="s.currentPhase==='EQUILIBRER'?'completed':'pending'">{{ s.currentPhase }}</span></td>
+                <td style="font-family:var(--mono);text-align:center">{{ s.auditsCount }}</td>
+                <td><span v-if="s.lastScore!=null" class="score" :class="scoreClass(s.lastScore)">{{ s.lastScore.toFixed(2) }}</span><span v-else style="color:var(--text-2)">—</span></td>
+                <td>
+                  <button class="btn btn-sm btn-green" @click="quickAudit(s)" title="Lancer un audit">🔍</button>
+                  <button class="btn btn-sm btn-red" @click="deleteSite(s.id)" title="Supprimer">🗑️</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" v-if="sitesData.totalPages>1">
+          <button class="btn btn-sm" :disabled="sitesData.first" @click="sitesPage--;fetchSites()">◀</button>
+          <span class="info">Page {{ sitesPage+1 }} / {{ sitesData.totalPages }}</span>
+          <button class="btn btn-sm" :disabled="sitesData.last" @click="sitesPage++;fetchSites()">▶</button>
+        </div>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Dernière réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+    <!-- ═══ AUDIT SYNC ═══ -->
+    <template v-if="page==='audit-sync'">
+      <div class="page-title">Audit synchrone</div>
+      <div class="page-sub">POST /api/audits — Cycle 7E complet (bloquant)</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>URL</label><input v-model="auditForm.url" placeholder="https://www.service-public.fr"></div>
+          <div class="form-group"><label>Nom</label><input v-model="auditForm.name" placeholder="Service Public"></div>
+          <div style="display:flex;align-items:flex-end;gap:6px">
+            <button class="btn btn-primary" @click="runSyncAudit" :disabled="loading||!auditForm.url||!auditForm.name">{{ loading ? '⏳ Audit en cours...' : '🔍 Lancer l\'audit' }}</button>
+          </div>
+        </div>
+        <div class="progress-bar" v-if="loading" style="margin-top:8px"><div class="fill" style="width:100%;animation:pulse 2s infinite"></div></div>
+      </div>
+      <div class="card" v-if="auditResult">
+        <div class="card-header"><h3>Résultat — Rapport #{{ auditResult.reportId }}</h3></div>
+        <div class="card-grid">
+          <div class="stat-card"><div class="label">Score global</div><div class="value" :class="scoreClass(auditResult.scores.global)">{{ auditResult.scores.global }}</div></div>
+          <div class="stat-card"><div class="label">RGAA (×{{ auditResult.scores.weight_rgaa||0.5 }})</div><div class="value blue">{{ auditResult.scores.rgaa }}</div></div>
+          <div class="stat-card"><div class="label">WCAG (×{{ auditResult.scores.weight_wcag||0.3 }})</div><div class="value purple">{{ auditResult.scores.wcag }}</div></div>
+          <div class="stat-card"><div class="label">DSFR (×{{ auditResult.scores.weight_dsfr||0.2 }})</div><div class="value orange">{{ auditResult.scores.dsfr }}</div></div>
+          <div class="stat-card"><div class="label">Règles</div><div class="value blue">{{ auditResult.passedCount }}/{{ auditResult.rulesCount }}</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Règle</th><th>Catégorie</th><th>Score</th><th>Statut</th><th>Détail</th></tr></thead>
+            <tbody>
+              <tr v-for="r in auditResult.details" :key="r.ruleId">
+                <td style="font-family:var(--mono);color:var(--cyan)">{{ r.ruleId }}</td>
+                <td><span class="badge" :class="r.category==='RGAA'?'completed':r.category==='WCAG'?'pending':'running'">{{ r.category }}</span></td>
+                <td><span class="score" :class="scoreClass(r.score)">{{ r.score.toFixed(2) }}</span></td>
+                <td>{{ r.passed ? '✅' : r.score > 0 ? '⚠️' : '❌' }}</td>
+                <td style="font-size:12px;max-width:400px">{{ r.detail }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" v-if="auditResult"><div class="card-header"><h3>Réponse JSON brute</h3></div><div class="json-viewer">{{ formatJson(auditResult) }}</div></div>
+    </template>
+
+    <!-- ═══ AUDIT ASYNC ═══ -->
+    <template v-if="page==='audit-async'">
+      <div class="page-title">Audit asynchrone</div>
+      <div class="page-sub">POST /api/audits/async — Non-bloquant, retourne un jobId</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>URL</label><input v-model="auditForm.url" placeholder="https://www.legifrance.gouv.fr"></div>
+          <div class="form-group"><label>Nom</label><input v-model="auditForm.name" placeholder="Légifrance"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" @click="runAsyncAudit" :disabled="!auditForm.url||!auditForm.name">⚡ Lancer (async)</button></div>
+        </div>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+    <!-- ═══ AUDIT BATCH ═══ -->
+    <template v-if="page==='audit-batch'">
+      <div class="page-title">Batch d'audits parallèles</div>
+      <div class="page-sub">POST /api/audits/batch — Jusqu'à 10 sites en parallèle</div>
+      <div class="card">
+        <div class="card-header"><h3>Sites du batch</h3><button class="btn btn-sm" @click="batchSites.push({url:'',name:''})">+ Ajouter</button></div>
+        <div v-for="(s,i) in batchSites" :key="i" class="form-row">
+          <div class="form-group"><label>URL {{ i+1 }}</label><input v-model="s.url" placeholder="https://..."></div>
+          <div class="form-group"><label>Nom {{ i+1 }}</label><input v-model="s.name" placeholder="Nom du site"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-sm btn-red" @click="batchSites.splice(i,1)" v-if="batchSites.length>1">✕</button></div>
+        </div>
+        <button class="btn btn-primary" @click="runBatch" :disabled="!batchSites.some(s=>s.url&&s.name)" style="margin-top:8px">📦 Lancer le batch</button>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+    <!-- ═══ REPORTS ═══ -->
+    <template v-if="page==='reports'">
+      <div class="page-title">Rapports d'audit</div>
+      <div class="page-sub">GET /api/audits/list — Rapports paginés et triables</div>
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ reportsData.totalElements || 0 }} rapport(s)</h3>
+          <div class="form-row" style="margin:0;gap:6px">
+            <select v-model="reportSort" @change="fetchReports" style="width:140px">
+              <option value="auditedAt">Date</option>
+              <option value="scoreGlobal">Score</option>
+            </select>
+            <select v-model="reportDir" @change="fetchReports" style="width:80px">
+              <option value="desc">Desc</option>
+              <option value="asc">Asc</option>
+            </select>
+            <input v-model="reportSearch" placeholder="Recherche..." style="width:140px" @keyup.enter="searchReports">
+            <button class="btn btn-sm" @click="searchReports">🔍</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Site</th><th>Global</th><th>RGAA</th><th>WCAG</th><th>DSFR</th><th>Tendance</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="r in reportsData.content||[]" :key="r.id" style="cursor:pointer" @click="viewReport(r.id)">
+                <td style="font-family:var(--mono)">#{{ r.id }}</td>
+                <td style="color:var(--text-0)">{{ r.siteName }}</td>
+                <td><span class="score" :class="scoreClass(r.scoreGlobal)">{{ r.scoreGlobal?.toFixed(2) }}</span></td>
+                <td style="font-family:var(--mono);font-size:12px">{{ r.scoreRgaa?.toFixed(2) }}</td>
+                <td style="font-family:var(--mono);font-size:12px">{{ r.scoreWcag?.toFixed(2) }}</td>
+                <td style="font-family:var(--mono);font-size:12px">{{ r.scoreDsfr?.toFixed(2) }}</td>
+                <td><span class="badge" :class="r.trend==='UP'?'completed':r.trend==='DOWN'?'failed':'pending'">{{ r.trend||'—' }}</span></td>
+                <td style="font-size:11px;color:var(--text-2)">{{ formatDate(r.auditedAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" v-if="reportsData.totalPages>1">
+          <button class="btn btn-sm" :disabled="reportsData.first" @click="reportsPage--;fetchReports()">◀</button>
+          <span class="info">Page {{ reportsPage+1 }} / {{ reportsData.totalPages }}</span>
+          <button class="btn btn-sm" :disabled="reportsData.last" @click="reportsPage++;fetchReports()">▶</button>
+        </div>
+      </div>
+      <div class="card" v-if="selectedReport"><div class="card-header"><h3>Rapport #{{ selectedReport.id }} — {{ selectedReport.siteName }}</h3></div><div class="json-viewer">{{ formatJson(selectedReport) }}</div></div>
+    </template>
+
+    <!-- ═══ ALERTS ═══ -->
+    <template v-if="page==='alerts'">
+      <div class="page-title">Alertes</div>
+      <div class="page-sub">GET /api/audits/alerts — Rapports sous le seuil</div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label>Seuil</label><input v-model.number="alertThreshold" type="number" step="0.1" min="0" max="1"></div>
+          <div style="display:flex;align-items:flex-end"><button class="btn btn-orange" @click="fetchAlerts">🚨 Charger les alertes</button></div>
+        </div>
+      </div>
+      <div class="card" v-if="alertsData.content">
+        <div class="card-header"><h3>{{ alertsData.totalElements }} alerte(s) (score &lt; {{ alertThreshold }})</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Site</th><th>Score</th><th>Tendance</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="r in alertsData.content" :key="r.id">
+                <td style="font-family:var(--mono)">#{{ r.id }}</td>
+                <td>{{ r.siteName }}</td>
+                <td><span class="score low">{{ r.scoreGlobal?.toFixed(2) }}</span></td>
+                <td>{{ r.trend }}</td>
+                <td style="font-size:11px">{{ formatDate(r.auditedAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <!-- ═══ SSE CONSOLE ═══ -->
+    <template v-if="page==='sse'">
+      <div class="page-title">Console SSE temps réel</div>
+      <div class="page-sub">GET /api/audits/stream — Server-Sent Events</div>
+      <div class="card">
+        <div class="card-header">
+          <h3><span class="sse-dot" :class="sseConnected?'on':'off'"></span>{{ sseConnected ? 'Connecté' : 'Déconnecté' }}</h3>
+          <div class="btn-group">
+            <button class="btn btn-green btn-sm" @click="connectSse" v-if="!sseConnected">▶ Connecter</button>
+            <button class="btn btn-red btn-sm" @click="disconnectSse" v-if="sseConnected">⏹ Déconnecter</button>
+            <button class="btn btn-sm" @click="sseMessages=[]">🗑️ Vider</button>
+          </div>
+        </div>
+        <div class="sse-console" ref="sseConsole">
+          <div v-if="!sseMessages.length" style="color:var(--text-2)">En attente d'événements... Connectez-vous puis lancez un audit.</div>
+          <div v-for="(m,i) in sseMessages" :key="i" class="sse-line" :class="{error:m.type==='error'}">
+            <span class="ts">{{ m.time }}</span> <span class="ev">[{{ m.event }}]</span> <span class="data">{{ m.data }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ═══ JOBS ═══ -->
+    <template v-if="page==='jobs'">
+      <div class="page-title">Jobs asynchrones</div>
+      <div class="page-sub">GET /api/audits/async — Suivi des jobs en cours et terminés</div>
+      <div class="btn-group" style="margin-bottom:16px">
+        <button class="btn btn-primary" @click="fetchJobs">🔄 Rafraîchir</button>
+        <button class="btn btn-red" @click="clearJobs">🗑️ Nettoyer terminés</button>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Job ID</th><th>URL</th><th>Statut</th><th>Score</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr v-for="j in jobs" :key="j.jobId">
+                <td style="font-family:var(--mono)">#{{ j.jobId }}</td>
+                <td style="font-size:12px">{{ j.siteUrl }}</td>
+                <td><span class="badge" :class="j.status.toLowerCase()">{{ j.status }}</span></td>
+                <td><span v-if="j.scoreGlobal!=null" class="score" :class="scoreClass(j.scoreGlobal)">{{ j.scoreGlobal.toFixed(2) }}</span></td>
+                <td><button class="btn btn-sm" @click="viewJob(j.jobId)">👁️ Détail</button></td>
+              </tr>
+              <tr v-if="!jobs.length"><td colspan="5" style="text-align:center;color:var(--text-2)">Aucun job</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Détail du job</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+    <!-- ═══ CONFIG ═══ -->
+    <template v-if="page==='config'">
+      <div class="page-title">Poids de scoring</div>
+      <div class="page-sub">GET/PUT /api/config/weights — Configuration dynamique des pondérations</div>
+      <div class="card">
+        <div class="card-header"><h3>Poids actuels</h3><button class="btn btn-sm" @click="fetchWeights">🔄</button></div>
+        <div class="card-grid">
+          <div class="stat-card" v-for="(v,k) in weights" :key="k" v-if="typeof v==='object'">
+            <div class="label">{{ k }}</div>
+            <div class="value blue">{{ v.weight }}</div>
+            <div style="margin-top:8px;display:flex;gap:4px">
+              <input v-model.number="weightEdits[k]" type="number" step="0.05" min="0" max="1" style="width:70px;padding:4px 6px;font-size:12px">
+              <button class="btn btn-sm btn-primary" @click="updateWeight(k)">💾</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <span style="font-size:13px;color:var(--text-1)">Total: <b :style="{color:weights.normalized?'var(--green)':'var(--red)'}">{{ weights.totalWeight }}</b></span>
+          <span class="badge" :class="weights.normalized?'completed':'failed'">{{ weights.normalized ? 'Normalisé ✓' : 'Non normalisé ✗' }}</span>
+          <button class="btn btn-sm btn-orange" @click="resetWeights">↩ Reset défaut</button>
+        </div>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+    <!-- ═══ SCHEDULER ═══ -->
+    <template v-if="page==='scheduler'">
+      <div class="page-title">Scheduler</div>
+      <div class="page-sub">GET /api/audits/schedule — Audits programmés automatiques</div>
+      <button class="btn btn-primary" @click="fetchScheduler" style="margin-bottom:16px">🔄 Rafraîchir</button>
+      <div class="card">
+        <div class="card-grid">
+          <div class="stat-card"><div class="label">Activé</div><div class="value" :class="schedulerInfo.enabled?'green':'orange'">{{ schedulerInfo.enabled ? 'OUI' : 'NON' }}</div></div>
+          <div class="stat-card"><div class="label">Dernier run</div><div class="value blue" style="font-size:14px">{{ schedulerInfo.lastRunAt || '—' }}</div></div>
+          <div class="stat-card"><div class="label">Sites auditables</div><div class="value purple">{{ schedulerInfo.lastRunSiteCount || 0 }}</div></div>
+        </div>
+        <button class="btn btn-green" @click="triggerScheduler" style="margin-top:12px">🚀 Déclencher maintenant</button>
+      </div>
+      <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
+    </template>
+
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toast-container">
+  <div v-for="(t,i) in toasts" :key="i" class="toast" :class="t.type">{{ t.message }}</div>
+</div>
+
+</div>
+
+<script>
+const API = '';  // Même origine — servi depuis Spring Boot static/
+const {createApp,ref,reactive,onMounted,nextTick,watch} = Vue;
+
+createApp({
+  setup() {
+    const page = ref('health');
+    const loading = ref(false);
+    const lastResponse = ref(null);
+    const toasts = ref([]);
+
+    // Health
+    const health = ref({});
+    async function fetchHealth() { health.value = await api('GET','/api/health'); }
+
+    // Stats
+    const stats = ref({});
+    async function fetchStats() { stats.value = await api('GET','/api/audits/stats'); }
+
+    // Sites
+    const siteForm = reactive({url:'',name:''});
+    const sitesData = ref({content:[]});
+    const sitesPage = ref(0);
+    const siteSearch = ref('');
+    async function fetchSites() { sitesData.value = await api('GET',`/api/sites?page=${sitesPage.value}&size=10`); }
+    async function searchSites() {
+      if(!siteSearch.value) return fetchSites();
+      const r = await api('GET',`/api/sites/search?name=${siteSearch.value}`);
+      sitesData.value = {content:r,totalElements:r.length,totalPages:1,first:true,last:true};
+    }
+    async function createSite() {
+      lastResponse.value = await api('POST','/api/sites',{url:siteForm.url,name:siteForm.name});
+      siteForm.url=''; siteForm.name='';
+      fetchSites();
+      toast('success','Site créé');
+    }
+    async function deleteSite(id) {
+      if(!confirm('Supprimer ce site et ses rapports ?')) return;
+      await api('DELETE',`/api/sites/${id}`);
+      fetchSites();
+      toast('info','Site supprimé');
+    }
+    async function quickAudit(s) {
+      page.value='audit-sync';
+      auditForm.url=s.url; auditForm.name=s.name;
+    }
+
+    // Audit sync
+    const auditForm = reactive({url:'',name:''});
+    const auditResult = ref(null);
+    async function runSyncAudit() {
+      loading.value=true; auditResult.value=null;
+      try {
+        auditResult.value = await api('POST','/api/audits',{url:auditForm.url,name:auditForm.name});
+        toast('success',`Audit terminé — score: ${auditResult.value.scores.global}`);
+      } catch(e) { toast('error',e.message); }
+      loading.value=false;
+    }
+
+    // Audit async
+    async function runAsyncAudit() {
+      lastResponse.value = await api('POST','/api/audits/async',{url:auditForm.url,name:auditForm.name});
+      toast('info','Job async soumis #'+lastResponse.value.jobId);
+    }
+
+    // Batch
+    const batchSites = ref([{url:'https://www.service-public.fr',name:'Service Public'},{url:'https://www.gouvernement.gouv.fr',name:'Gouvernement FR'},{url:'https://www.example.com',name:'Example'}]);
+    async function runBatch() {
+      const sites = batchSites.value.filter(s=>s.url&&s.name);
+      lastResponse.value = await api('POST','/api/audits/batch',{sites});
+      toast('info',`Batch de ${sites.length} site(s) soumis`);
+    }
+
+    // Reports
+    const reportsData = ref({content:[]});
+    const reportsPage = ref(0);
+    const reportSort = ref('auditedAt');
+    const reportDir = ref('desc');
+    const reportSearch = ref('');
+    const selectedReport = ref(null);
+    async function fetchReports() {
+      reportsData.value = await api('GET',`/api/audits/list?page=${reportsPage.value}&size=10&sortBy=${reportSort.value}&direction=${reportDir.value}`);
+    }
+    async function searchReports() {
+      if(!reportSearch.value) return fetchReports();
+      reportsData.value = await api('GET',`/api/audits/search?q=${reportSearch.value}&page=0&size=10`);
+    }
+    async function viewReport(id) { selectedReport.value = await api('GET',`/api/audits/${id}`); }
+
+    // Alerts
+    const alertThreshold = ref(0.7);
+    const alertsData = ref({});
+    async function fetchAlerts() { alertsData.value = await api('GET',`/api/audits/alerts?threshold=${alertThreshold.value}&page=0&size=20`); }
+
+    // SSE
+    const sseConnected = ref(false);
+    const sseMessages = ref([]);
+    const sseConsole = ref(null);
+    let sseSource = null;
+    function connectSse() {
+      if(sseSource) sseSource.close();
+      sseSource = new EventSource(`${API}/api/audits/stream`);
+      sseConnected.value=true;
+      ['connected','audit-started','audit-progress','audit-completed'].forEach(ev=>{
+        sseSource.addEventListener(ev,e=>{
+          sseMessages.value.push({time:new Date().toLocaleTimeString(),event:ev,data:e.data});
+          nextTick(()=>{ if(sseConsole.value) sseConsole.value.scrollTop=sseConsole.value.scrollHeight; });
+        });
+      });
+      sseSource.onerror=()=>{
+        sseMessages.value.push({time:new Date().toLocaleTimeString(),event:'error',data:'Connexion perdue',type:'error'});
+        sseConnected.value=false;
+      };
+    }
+    function disconnectSse() { if(sseSource){sseSource.close();sseSource=null;} sseConnected.value=false; }
+
+    // Jobs
+    const jobs = ref([]);
+    async function fetchJobs() { jobs.value = await api('GET','/api/audits/async'); }
+    async function clearJobs() { lastResponse.value=await api('DELETE','/api/audits/async'); fetchJobs(); }
+    async function viewJob(id) { lastResponse.value=await api('GET',`/api/audits/async/${id}`); }
+
+    // Config
+    const weights = ref({});
+    const weightEdits = reactive({RGAA:0.5,WCAG:0.3,DSFR:0.2});
+    async function fetchWeights() {
+      weights.value = await api('GET','/api/config/weights');
+      ['RGAA','WCAG','DSFR'].forEach(k=>{ if(weights.value[k]) weightEdits[k]=weights.value[k].weight; });
+    }
+    async function updateWeight(cat) {
+      lastResponse.value = await api('PUT',`/api/config/weights/${cat}`,{weight:weightEdits[cat]});
+      fetchWeights(); toast('success',`Poids ${cat} mis à jour`);
+    }
+    async function resetWeights() {
+      lastResponse.value=await api('POST','/api/config/weights/reset');
+      fetchWeights(); toast('info','Poids réinitialisés');
+    }
+
+    // Scheduler
+    const schedulerInfo = ref({});
+    async function fetchScheduler() { schedulerInfo.value = await api('GET','/api/audits/schedule'); }
+    async function triggerScheduler() { lastResponse.value=await api('POST','/api/audits/schedule/trigger'); toast('success','Scheduler déclenché'); }
+
+    // Helpers
+    async function api(method, path, body) {
+      try {
+        const opts = {method,headers:{'Content-Type':'application/json'}};
+        if(body) opts.body=JSON.stringify(body);
+        const r = await fetch(`${API}${path}`,opts);
+        if(r.status===204) return {};
+        return await r.json();
+      } catch(e) { toast('error','Erreur réseau: '+e.message); return {}; }
+    }
+    function formatJson(obj) { try{return JSON.stringify(obj,null,2);}catch{return String(obj);} }
+    function scoreClass(v) { if(v==null) return ''; return v>=0.7?'high':v>=0.4?'mid':'low'; }
+    function formatDate(d) { if(!d) return '—'; return new Date(d).toLocaleString('fr-FR'); }
+    function toast(type,message) { toasts.value.push({type,message}); setTimeout(()=>toasts.value.shift(),4000); }
+
+    // Watch page changes to auto-load data
+    watch(page,v=>{
+      lastResponse.value=null; selectedReport.value=null;
+      if(v==='health') fetchHealth();
+      if(v==='stats') fetchStats();
+      if(v==='sites') fetchSites();
+      if(v==='reports') fetchReports();
+      if(v==='jobs') fetchJobs();
+      if(v==='config') fetchWeights();
+      if(v==='scheduler') fetchScheduler();
+    });
+
+    onMounted(()=>{ fetchHealth(); setInterval(fetchHealth,30000); });
+
+    return {
+      page,loading,lastResponse,toasts,health,stats,
+      siteForm,sitesData,sitesPage,siteSearch,fetchSites,searchSites,createSite,deleteSite,quickAudit,
+      auditForm,auditResult,runSyncAudit,runAsyncAudit,
+      batchSites,runBatch,
+      reportsData,reportsPage,reportSort,reportDir,reportSearch,selectedReport,fetchReports,searchReports,viewReport,
+      alertThreshold,alertsData,fetchAlerts,
+      sseConnected,sseMessages,sseConsole,connectSse,disconnectSse,
+      jobs,fetchJobs,clearJobs,viewJob,
+      weights,weightEdits,fetchWeights,updateWeight,resetWeights,
+      schedulerInfo,fetchScheduler,triggerScheduler,fetchHealth,fetchStats,
+      formatJson,scoreClass,formatDate,toast
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

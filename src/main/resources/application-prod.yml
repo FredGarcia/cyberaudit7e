@@ -1,20 +1,21 @@
 ##############################################
-# CyberAudit7E — Profile PROD
-# PostgreSQL + Flyway + JPA optimisé
-# Activé via : SPRING_PROFILES_ACTIVE=prod
-# ou docker-compose environment variable
+# CyberAudit7E — Profile PROD (Docker)
+# PostgreSQL via Docker Compose networking
+# Variables d'env injectées par docker-compose.yml
 ##############################################
 
 spring:
   datasource:
-    url: jdbc:postgresql://${DB_HOST:db}:${DB_PORT:5432}/${DB_NAME:cyberaudit7e}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cyberaudit7e}
     username: ${DB_USER:audit}
-    password: ${DB_PASSWORD:audit7e}
+    password: ${DB_PASSWORD:audit7e_s3cret}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      minimum-idle: 2
+      maximum-pool-size: 15
+      minimum-idle: 3
       connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
 
   jpa:
     show-sql: false
@@ -27,6 +28,7 @@ spring:
         order_inserts: true
         order_updates: true
         enable_lazy_load_no_trans: false
+    open-in-view: false
 
   flyway:
     enabled: true
@@ -37,8 +39,22 @@ spring:
     console:
       enabled: false
 
+# Swagger actif aussi en prod (protéger via Spring Security en vrai)
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+# Scheduler activé en prod
+cyberaudit7e:
+  scheduler:
+    enabled: true
+    cron: "0 0 2 * * *"
+
 logging:
   level:
     com.cyberaudit7e: INFO
     org.springframework: WARN
     org.hibernate: WARN
+    org.flywaydb: INFO

@@ -98,7 +98,7 @@ public class SseNotificationService {
                 "message", event.getMessage(),
                 "progress", event.getProgressPercent(),
                 "step", event.getPhaseIndex() + "/" + event.getTotalPhases(),
-                "timestamp", event.getInstant()
+                "timestamp", event.getEventTime().toString()
         ));
     }
 

@@ -1,0 +1,43 @@
+# ============================================================
+# CyberAudit7E — .dockerignore
+# Exclut les fichiers inutiles du contexte de build Docker
+# Réduit la taille du contexte et accélère le build
+# ============================================================
+
+# Build artifacts
+target/
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# Git
+.git/
+.gitignore
+
+# Docker (éviter la récursion)
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docs
+README.md
+docs/
+*.md

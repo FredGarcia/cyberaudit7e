@@ -16,7 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                         "http://localhost:5173",    // Vite dev server (Vue 3)
-                        "http://localhost:3000"     // Alternative
+                        "http://localhost:3000",
+                        "http://localhost:8080"    // Alternative
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")

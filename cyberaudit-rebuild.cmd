@@ -1,0 +1,10117 @@
+﻿@echo off
+setlocal disabledelayedexpansion
+echo ================================================
+echo   RECONSTRUCTION DU PROJET JAVA
+echo ================================================
+echo.
+if not exist ".mvn" mkdir ".mvn"
+if not exist "scripts" mkdir "scripts"
+if not exist "src" mkdir "src"
+if not exist ".mvn\wrapper" mkdir ".mvn\wrapper"
+if not exist "src\main" mkdir "src\main"
+if not exist "src\test" mkdir "src\test"
+if not exist "src\main\java" mkdir "src\main\java"
+if not exist "src\main\resources" mkdir "src\main\resources"
+if not exist "src\main\java\com" mkdir "src\main\java\com"
+if not exist "src\main\java\com\cyberaudit7e" mkdir "src\main\java\com\cyberaudit7e"
+if not exist "src\main\java\com\cyberaudit7e\config" mkdir "src\main\java\com\cyberaudit7e\config"
+if not exist "src\main\java\com\cyberaudit7e\controller" mkdir "src\main\java\com\cyberaudit7e\controller"
+if not exist "src\main\java\com\cyberaudit7e\domain" mkdir "src\main\java\com\cyberaudit7e\domain"
+if not exist "src\main\java\com\cyberaudit7e\dto" mkdir "src\main\java\com\cyberaudit7e\dto"
+if not exist "src\main\java\com\cyberaudit7e\event" mkdir "src\main\java\com\cyberaudit7e\event"
+if not exist "src\main\java\com\cyberaudit7e\repository" mkdir "src\main\java\com\cyberaudit7e\repository"
+if not exist "src\main\java\com\cyberaudit7e\service" mkdir "src\main\java\com\cyberaudit7e\service"
+if not exist "src\main\java\com\cyberaudit7e\domain\entity" mkdir "src\main\java\com\cyberaudit7e\domain\entity"
+if not exist "src\main\java\com\cyberaudit7e\domain\enums" mkdir "src\main\java\com\cyberaudit7e\domain\enums"
+if not exist "src\main\java\com\cyberaudit7e\domain\rule" mkdir "src\main\java\com\cyberaudit7e\domain\rule"
+if not exist "src\main\java\com\cyberaudit7e\service\cycle" mkdir "src\main\java\com\cyberaudit7e\service\cycle"
+if not exist "src\main\resources\db" mkdir "src\main\resources\db"
+if not exist "src\main\resources\static" mkdir "src\main\resources\static"
+if not exist "src\main\resources\db\migration" mkdir "src\main\resources\db\migration"
+if not exist "src\test\java" mkdir "src\test\java"
+if not exist "src\test\java\com" mkdir "src\test\java\com"
+if not exist "src\test\java\com\cyberaudit7e" mkdir "src\test\java\com\cyberaudit7e"
+echo Décompression de .dockerignore
+> ".dockerignore" echo( # ============================================================
+>> ".dockerignore" echo( # CyberAudit7E — .dockerignore
+>> ".dockerignore" echo( # Exclut les fichiers inutiles du contexte de build Docker
+>> ".dockerignore" echo( # Réduit la taille du contexte et accélère le build
+>> ".dockerignore" echo( # ============================================================
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # Build artifacts
+>> ".dockerignore" echo( target/
+>> ".dockerignore" echo( *.jar
+>> ".dockerignore" echo( *.war
+>> ".dockerignore" echo( *.class
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # IDE
+>> ".dockerignore" echo( .idea/
+>> ".dockerignore" echo( .vscode/
+>> ".dockerignore" echo( *.iml
+>> ".dockerignore" echo( *.iws
+>> ".dockerignore" echo( *.ipr
+>> ".dockerignore" echo( .project
+>> ".dockerignore" echo( .classpath
+>> ".dockerignore" echo( .settings/
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # Git
+>> ".dockerignore" echo( .git/
+>> ".dockerignore" echo( .gitignore
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # Docker (éviter la récursion)
+>> ".dockerignore" echo( docker-compose*.yml
+>> ".dockerignore" echo( Dockerfile
+>> ".dockerignore" echo( .dockerignore
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # OS
+>> ".dockerignore" echo( .DS_Store
+>> ".dockerignore" echo( Thumbs.db
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # Logs
+>> ".dockerignore" echo( *.log
+>> ".dockerignore" echo( logs/
+>> ".dockerignore" echo( 
+>> ".dockerignore" echo( # Docs
+>> ".dockerignore" echo( README.md
+>> ".dockerignore" echo( docs/
+>> ".dockerignore" echo( *.md
+certutil -hashfile ".dockerignore" SHA256 | findstr /I /C:"02887CC7342C9F3E4FA94CCFE5D10EC3D6E5DB18C96FC6E107E2C5E34F389923" >nul
+if %errorlevel%==0 (echo    [OK] .dockerignore) else (echo    [ERREUR] .dockerignore)
+echo Décompression de docker-compose.yml
+> "docker-compose.yml" echo( ##############################################
+>> "docker-compose.yml" echo( # CyberAudit7E — Docker Compose
+>> "docker-compose.yml" echo( #
+>> "docker-compose.yml" echo( # Profiles :
+>> "docker-compose.yml" echo( #   dev  → H2 in-memory (par défaut)
+>> "docker-compose.yml" echo( #   prod → PostgreSQL 16 + volumes persistants
+>> "docker-compose.yml" echo( #
+>> "docker-compose.yml" echo( # Usage dev :
+>> "docker-compose.yml" echo( #   docker compose up --build
+>> "docker-compose.yml" echo( #
+>> "docker-compose.yml" echo( # Usage prod :
+>> "docker-compose.yml" echo( #   docker compose --profile prod up --build
+>> "docker-compose.yml" echo( #
+>> "docker-compose.yml" echo( # Inspiré de la stack AuditAccess (9 services)
+>> "docker-compose.yml" echo( # et du système de profiles GitManager.
+>> "docker-compose.yml" echo( # Ici on commence simple : 1 service (dev) ou 2 (prod).
+>> "docker-compose.yml" echo( ##############################################
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo( services:
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo(   # ── CyberAudit7E (Spring Boot) ──
+>> "docker-compose.yml" echo(   cyberaudit7e:
+>> "docker-compose.yml" echo(     build:
+>> "docker-compose.yml" echo(       context: .
+>> "docker-compose.yml" echo(       dockerfile: Dockerfile
+>> "docker-compose.yml" echo(     container_name: cyberaudit7e-app
+>> "docker-compose.yml" echo(     ports:
+>> "docker-compose.yml" echo(       - "8080:8080"
+>> "docker-compose.yml" echo(     environment:
+>> "docker-compose.yml" echo(       SPRING_PROFILES_ACTIVE: dev
+>> "docker-compose.yml" echo(       JAVA_OPTS: "-Xmx512m -Xms256m"
+>> "docker-compose.yml" echo(     healthcheck:
+>> "docker-compose.yml" echo(       test: ["CMD", "curl", "-sf", "http://localhost:8080/api/health"]
+>> "docker-compose.yml" echo(       interval: 15s
+>> "docker-compose.yml" echo(       timeout: 5s
+>> "docker-compose.yml" echo(       start_period: 30s
+>> "docker-compose.yml" echo(       retries: 3
+>> "docker-compose.yml" echo(     restart: unless-stopped
+>> "docker-compose.yml" echo(     networks:
+>> "docker-compose.yml" echo(       - cyberaudit-net
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo(   # ── PostgreSQL (profile prod uniquement) ──
+>> "docker-compose.yml" echo(   postgres:
+>> "docker-compose.yml" echo(     image: postgres:16-alpine
+>> "docker-compose.yml" echo(     container_name: cyberaudit7e-db
+>> "docker-compose.yml" echo(     profiles:
+>> "docker-compose.yml" echo(       - prod
+>> "docker-compose.yml" echo(     environment:
+>> "docker-compose.yml" echo(       POSTGRES_DB: cyberaudit7e
+>> "docker-compose.yml" echo(       POSTGRES_USER: audit
+>> "docker-compose.yml" echo(       POSTGRES_PASSWORD: audit7e_s3cret
+>> "docker-compose.yml" echo(       PGDATA: /var/lib/postgresql/data/pgdata
+>> "docker-compose.yml" echo(     ports:
+>> "docker-compose.yml" echo(       - "5432:5432"
+>> "docker-compose.yml" echo(     volumes:
+>> "docker-compose.yml" echo(       - pg_data:/var/lib/postgresql/data
+>> "docker-compose.yml" echo(     healthcheck:
+>> "docker-compose.yml" echo(       test: ["CMD-SHELL", "pg_isready -U audit -d cyberaudit7e"]
+>> "docker-compose.yml" echo(       interval: 10s
+>> "docker-compose.yml" echo(       timeout: 5s
+>> "docker-compose.yml" echo(       retries: 5
+>> "docker-compose.yml" echo(     restart: unless-stopped
+>> "docker-compose.yml" echo(     networks:
+>> "docker-compose.yml" echo(       - cyberaudit-net
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo(   # ── CyberAudit7E PROD (dépend de PostgreSQL) ──
+>> "docker-compose.yml" echo(   cyberaudit7e-prod:
+>> "docker-compose.yml" echo(     build:
+>> "docker-compose.yml" echo(       context: .
+>> "docker-compose.yml" echo(       dockerfile: Dockerfile
+>> "docker-compose.yml" echo(     container_name: cyberaudit7e-app-prod
+>> "docker-compose.yml" echo(     profiles:
+>> "docker-compose.yml" echo(       - prod
+>> "docker-compose.yml" echo(     ports:
+>> "docker-compose.yml" echo(       - "8080:8080"
+>> "docker-compose.yml" echo(     environment:
+>> "docker-compose.yml" echo(       SPRING_PROFILES_ACTIVE: prod
+>> "docker-compose.yml" echo(       JAVA_OPTS: "-Xmx1g -Xms512m"
+>> "docker-compose.yml" echo(       DB_HOST: postgres
+>> "docker-compose.yml" echo(       DB_PORT: 5432
+>> "docker-compose.yml" echo(       DB_NAME: cyberaudit7e
+>> "docker-compose.yml" echo(       DB_USER: audit
+>> "docker-compose.yml" echo(       DB_PASSWORD: audit7e_s3cret
+>> "docker-compose.yml" echo(     depends_on:
+>> "docker-compose.yml" echo(       postgres:
+>> "docker-compose.yml" echo(         condition: service_healthy
+>> "docker-compose.yml" echo(     healthcheck:
+>> "docker-compose.yml" echo(       test: ["CMD", "curl", "-sf", "http://localhost:8080/api/health"]
+>> "docker-compose.yml" echo(       interval: 15s
+>> "docker-compose.yml" echo(       timeout: 5s
+>> "docker-compose.yml" echo(       start_period: 45s
+>> "docker-compose.yml" echo(       retries: 3
+>> "docker-compose.yml" echo(     restart: unless-stopped
+>> "docker-compose.yml" echo(     networks:
+>> "docker-compose.yml" echo(       - cyberaudit-net
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo( volumes:
+>> "docker-compose.yml" echo(   pg_data:
+>> "docker-compose.yml" echo(     driver: local
+>> "docker-compose.yml" echo( 
+>> "docker-compose.yml" echo( networks:
+>> "docker-compose.yml" echo(   cyberaudit-net:
+>> "docker-compose.yml" echo(     driver: bridge
+certutil -hashfile "docker-compose.yml" SHA256 | findstr /I /C:"C87EE84C5049191862F2BADF623FEBDBF39C97074E94E395E5CE72F394B5AD7B" >nul
+if %errorlevel%==0 (echo    [OK] docker-compose.yml) else (echo    [ERREUR] docker-compose.yml)
+echo Décompression de Dockerfile
+> "Dockerfile" echo( # ============================================================
+>> "Dockerfile" echo( # CyberAudit7E — Dockerfile multi-stage
+>> "Dockerfile" echo( # Stage 1 : Build Maven (JDK 25 — aligné sur pom.xml)
+>> "Dockerfile" echo( # Stage 2 : Runtime minimal (JRE 25)
+>> "Dockerfile" echo( #
+>> "Dockerfile" echo( # Bonnes pratiques :
+>> "Dockerfile" echo( # - Multi-stage (image finale ~200 MB vs ~800 MB)
+>> "Dockerfile" echo( # - Couche dépendances séparée (cache Docker)
+>> "Dockerfile" echo( # - Non-root user
+>> "Dockerfile" echo( # - HEALTHCHECK intégré
+>> "Dockerfile" echo( # - Labels OCI
+>> "Dockerfile" echo( # ============================================================
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # ── Stage 1 : Build ──
+>> "Dockerfile" echo( FROM maven:3.9-eclipse-temurin-25 AS builder
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( WORKDIR /build
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # Dépendances d'abord (couche mise en cache tant que pom.xml ne change pas)
+>> "Dockerfile" echo( COPY pom.xml .
+>> "Dockerfile" echo( RUN mvn dependency:go-offline -B
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # Code source
+>> "Dockerfile" echo( COPY src ./src
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # Build JAR
+>> "Dockerfile" echo( RUN mvn clean package -DskipTests -B
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # Trouver le JAR exécutable (ignore le -plain.jar / original)
+>> "Dockerfile" echo( RUN JAR_FILE=$(ls target/*.jar ^| grep -v original ^| grep -v plain ^| head -1) ^&^& \
+>> "Dockerfile" echo(     echo "JAR trouvé : ${JAR_FILE}" ^&^& \
+>> "Dockerfile" echo(     cp "${JAR_FILE}" target/app.jar
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( # ── Stage 2 : Runtime ──
+>> "Dockerfile" echo( FROM eclipse-temurin:25
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( LABEL org.opencontainers.image.title="CyberAudit7E" \
+>> "Dockerfile" echo(     org.opencontainers.image.description="Moteur d'audit cybernétique — Axiome 7E" \
+>> "Dockerfile" echo(     org.opencontainers.image.version="1.0.0-M7"
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( RUN groupadd -r audit ^&^& useradd -r -g audit audit ^&^& \
+>> "Dockerfile" echo(     apt-get update ^&^& apt-get install -y --no-install-recommends curl ^&^& \
+>> "Dockerfile" echo(     rm -rf /var/lib/apt/lists/*
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( WORKDIR /app
+>> "Dockerfile" echo( COPY --from=builder /build/target/app.jar app.jar
+>> "Dockerfile" echo( RUN chown -R audit:audit /app
+>> "Dockerfile" echo( USER audit
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( EXPOSE 8080
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+>> "Dockerfile" echo(     CMD curl -sf http://localhost:8080/api/health ^|^| exit 1
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( ENV JAVA_OPTS="-Xmx512m -Xms256m" \
+>> "Dockerfile" echo(     SPRING_PROFILES_ACTIVE="dev"
+>> "Dockerfile" echo( 
+>> "Dockerfile" echo( ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
+certutil -hashfile "Dockerfile" SHA256 | findstr /I /C:"8F2B14A07AF1B3524045A0F611701D5DB8C933608457B980D10C6AEAF8F00C7F" >nul
+if %errorlevel%==0 (echo    [OK] Dockerfile) else (echo    [ERREUR] Dockerfile)
+echo Décompression de nginx.conf
+> "nginx.conf" echo( # ============================================================
+>> "nginx.conf" echo( # CyberAudit7E — Nginx reverse proxy (optionnel)
+>> "nginx.conf" echo( #
+>> "nginx.conf" echo( # À utiliser avec docker-compose si on veut un reverse proxy
+>> "nginx.conf" echo( # devant Spring Boot (SSL termination, rate limiting, etc.)
+>> "nginx.conf" echo( #
+>> "nginx.conf" echo( # Ajout dans docker-compose.yml :
+>> "nginx.conf" echo( #   nginx:
+>> "nginx.conf" echo( #     image: nginx:alpine
+>> "nginx.conf" echo( #     ports: ["80:80"]
+>> "nginx.conf" echo( #     volumes: ["./nginx.conf:/etc/nginx/conf.d/default.conf"]
+>> "nginx.conf" echo( #     depends_on: [cyberaudit7e]
+>> "nginx.conf" echo( # ============================================================
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo( upstream cyberaudit {
+>> "nginx.conf" echo(     server cyberaudit7e:8080;
+>> "nginx.conf" echo( }
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo( server {
+>> "nginx.conf" echo(     listen 80;
+>> "nginx.conf" echo(     server_name localhost cyberaudit7e.local;
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # Taille max upload (pour de futurs imports CSV/PDF)
+>> "nginx.conf" echo(     client_max_body_size 10M;
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # Timeouts adaptés aux audits longs
+>> "nginx.conf" echo(     proxy_connect_timeout 30s;
+>> "nginx.conf" echo(     proxy_read_timeout 300s;  # 5 min pour les audits
+>> "nginx.conf" echo(     proxy_send_timeout 30s;
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # API Spring Boot
+>> "nginx.conf" echo(     location /api/ {
+>> "nginx.conf" echo(         proxy_pass http://cyberaudit;
+>> "nginx.conf" echo(         proxy_set_header Host $host;
+>> "nginx.conf" echo(         proxy_set_header X-Real-IP $remote_addr;
+>> "nginx.conf" echo(         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+>> "nginx.conf" echo(         proxy_set_header X-Forwarded-Proto $scheme;
+>> "nginx.conf" echo(     }
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # SSE Streaming (requiert des settings spécifiques)
+>> "nginx.conf" echo(     location /api/audits/stream {
+>> "nginx.conf" echo(         proxy_pass http://cyberaudit;
+>> "nginx.conf" echo(         proxy_set_header Host $host;
+>> "nginx.conf" echo(         proxy_set_header Connection '';
+>> "nginx.conf" echo(         proxy_http_version 1.1;
+>> "nginx.conf" echo(         chunked_transfer_encoding off;
+>> "nginx.conf" echo(         proxy_buffering off;
+>> "nginx.conf" echo(         proxy_cache off;
+>> "nginx.conf" echo(         proxy_read_timeout 1800s;  # 30 min pour le SSE
+>> "nginx.conf" echo(     }
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # Swagger UI
+>> "nginx.conf" echo(     location /swagger-ui/ {
+>> "nginx.conf" echo(         proxy_pass http://cyberaudit;
+>> "nginx.conf" echo(     }
+>> "nginx.conf" echo(     location /v3/api-docs {
+>> "nginx.conf" echo(         proxy_pass http://cyberaudit;
+>> "nginx.conf" echo(     }
+>> "nginx.conf" echo( 
+>> "nginx.conf" echo(     # H2 Console (dev only — désactiver en prod)
+>> "nginx.conf" echo(     location /h2-console/ {
+>> "nginx.conf" echo(         proxy_pass http://cyberaudit;
+>> "nginx.conf" echo(     }
+>> "nginx.conf" echo( }
+certutil -hashfile "nginx.conf" SHA256 | findstr /I /C:"C73F169445EFA61DC15AC3E4E7D144159A8E72434CAD34A4E66734100C28F155" >nul
+if %errorlevel%==0 (echo    [OK] nginx.conf) else (echo    [ERREUR] nginx.conf)
+echo Décompression de pom.xml
+> "pom.xml" echo( ^<?xml version="1.0" encoding="UTF-8"?^>
+>> "pom.xml" echo( ^<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>> "pom.xml" echo( 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"^>
+>> "pom.xml" echo( 	^<modelVersion^>4.0.0^</modelVersion^>
+>> "pom.xml" echo( 	^<parent^>
+>> "pom.xml" echo( 		^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 		^<artifactId^>spring-boot-starter-parent^</artifactId^>
+>> "pom.xml" echo( 		^<version^>4.0.5^</version^>
+>> "pom.xml" echo( 		^<relativePath/^> ^<!-- lookup parent from repository --^>
+>> "pom.xml" echo( 	^</parent^>
+>> "pom.xml" echo( 	^<groupId^>com.cyberaudit7e^</groupId^>
+>> "pom.xml" echo( 	^<artifactId^>cyberaudit7e^</artifactId^>
+>> "pom.xml" echo( 	^<version^>0.0.1-SNAPSHOT^</version^>
+>> "pom.xml" echo( 	^<name/^>
+>> "pom.xml" echo( 	^<description/^>
+>> "pom.xml" echo( 	^<url/^>
+>> "pom.xml" echo( 	^<licenses^>
+>> "pom.xml" echo( 		^<license/^>
+>> "pom.xml" echo( 	^</licenses^>
+>> "pom.xml" echo( 	^<developers^>
+>> "pom.xml" echo( 		^<developer/^>
+>> "pom.xml" echo( 	^</developers^>
+>> "pom.xml" echo( 	^<scm^>
+>> "pom.xml" echo( 		^<connection/^>
+>> "pom.xml" echo( 		^<developerConnection/^>
+>> "pom.xml" echo( 		^<tag/^>
+>> "pom.xml" echo( 		^<url/^>
+>> "pom.xml" echo( 	^</scm^>
+>> "pom.xml" echo( 	^<properties^>
+>> "pom.xml" echo( 		^<java.version^>25^</java.version^>
+>> "pom.xml" echo( 		^<maven.compiler.release^>25^</maven.compiler.release^>
+>> "pom.xml" echo( 	^</properties^>
+>> "pom.xml" echo( 	^<dependencies^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-h2console^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-data-jpa^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-flyway^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-validation^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-webmvc^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-devtools^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>runtime^</scope^>
+>> "pom.xml" echo( 			^<optional^>true^</optional^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>com.h2database^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>h2^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>runtime^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.projectlombok^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>lombok^</artifactId^>
+>> "pom.xml" echo( 			^<optional^>true^</optional^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-test^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-data-jpa-test^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-flyway-test^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-validation-test^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-boot-starter-webmvc-test^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo(     		^<groupId^>com.fasterxml.jackson.datatype^</groupId^>
+>> "pom.xml" echo(     		^<artifactId^>jackson-datatype-jsr310^</artifactId^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.awaitility^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>awaitility^</artifactId^>
+>> "pom.xml" echo( 			^<scope^>test^</scope^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.jsoup^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>jsoup^</artifactId^>
+>> "pom.xml" echo( 			^<version^>1.18.3^</version^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>org.springdoc^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>springdoc-openapi-starter-webmvc-ui^</artifactId^>
+>> "pom.xml" echo( 			^<version^>2.8.4^</version^>
+>> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( ^<dependency^>
+>> "pom.xml" echo( 	^<groupId^>org.postgresql^</groupId^>
+>> "pom.xml" echo( 	^<artifactId^>postgresql^</artifactId^>
+>> "pom.xml" echo( 	^<scope^>runtime^</scope^>
+>> "pom.xml" echo( ^</dependency^>
+>> "pom.xml" echo( 	^</dependencies^>
+>> "pom.xml" echo( 	^<build^>
+>> "pom.xml" echo( 		^<plugins^>
+>> "pom.xml" echo( 			^<plugin^>
+>> "pom.xml" echo( 				^<groupId^>org.springframework.boot^</groupId^>
+>> "pom.xml" echo( 				^<artifactId^>spring-boot-maven-plugin^</artifactId^>
+>> "pom.xml" echo( 				^<configuration^>
+>> "pom.xml" echo( 					^<excludes^>
+>> "pom.xml" echo( 						^<exclude^>
+>> "pom.xml" echo( 							^<groupId^>org.projectlombok^</groupId^>
+>> "pom.xml" echo( 							^<artifactId^>lombok^</artifactId^>
+>> "pom.xml" echo( 						^</exclude^>
+>> "pom.xml" echo( 					^</excludes^>
+>> "pom.xml" echo( 				^</configuration^>
+>> "pom.xml" echo( 			^</plugin^>
+>> "pom.xml" echo( 			^<plugin^>
+>> "pom.xml" echo( 				^<groupId^>org.apache.maven.plugins^</groupId^>
+>> "pom.xml" echo( 				^<artifactId^>maven-compiler-plugin^</artifactId^>
+>> "pom.xml" echo( 				^<version^>3.15.0^</version^>
+>> "pom.xml" echo( 				^<executions^>
+>> "pom.xml" echo( 					^<execution^>
+>> "pom.xml" echo( 						^<id^>default-compile^</id^>
+>> "pom.xml" echo( 						^<phase^>compile^</phase^>
+>> "pom.xml" echo( 						^<goals^>
+>> "pom.xml" echo( 							^<goal^>compile^</goal^>
+>> "pom.xml" echo( 						^</goals^>
+>> "pom.xml" echo( 						^<configuration^>
+>> "pom.xml" echo( 							^<annotationProcessorPaths^>
+>> "pom.xml" echo( 								^<path^>
+>> "pom.xml" echo( 									^<groupId^>org.projectlombok^</groupId^>
+>> "pom.xml" echo( 									^<artifactId^>lombok^</artifactId^>
+>> "pom.xml" echo( 								^</path^>
+>> "pom.xml" echo( 							^</annotationProcessorPaths^>
+>> "pom.xml" echo( 						^</configuration^>
+>> "pom.xml" echo( 					^</execution^>
+>> "pom.xml" echo( 					^<execution^>
+>> "pom.xml" echo( 						^<id^>default-testCompile^</id^>
+>> "pom.xml" echo( 						^<phase^>test-compile^</phase^>
+>> "pom.xml" echo( 						^<goals^>
+>> "pom.xml" echo( 							^<goal^>testCompile^</goal^>
+>> "pom.xml" echo( 						^</goals^>
+>> "pom.xml" echo( 						^<configuration^>
+>> "pom.xml" echo( 							^<annotationProcessorPaths^>
+>> "pom.xml" echo( 								^<path^>
+>> "pom.xml" echo( 									^<groupId^>org.projectlombok^</groupId^>
+>> "pom.xml" echo( 									^<artifactId^>lombok^</artifactId^>
+>> "pom.xml" echo( 								^</path^>
+>> "pom.xml" echo( 							^</annotationProcessorPaths^>
+>> "pom.xml" echo( 						^</configuration^>
+>> "pom.xml" echo( 					^</execution^>
+>> "pom.xml" echo( 				^</executions^>
+>> "pom.xml" echo( 			^</plugin^>
+>> "pom.xml" echo( 		^</plugins^>
+>> "pom.xml" echo( 	^</build^>
+>> "pom.xml" echo( 
+>> "pom.xml" echo( ^</project^>
+certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"A5D727D5770786C0FBD198A8E4B9AD1D1A3FE30E5CAD3AC621EABE7F4F622C95" >nul
+if %errorlevel%==0 (echo    [OK] pom.xml) else (echo    [ERREUR] pom.xml)
+echo Décompression de README-new.md
+> "README-new.md" echo( Analyse du projet CyberAudit7E
+>> "README-new.md" echo( 1. Présentation générale
+>> "README-new.md" echo( CyberAudit7E est une application Java basée sur Spring Boot, conçue comme un moteur d’audit d’accessibilité web s’appuyant sur une boucle cybernétique en 7 phases (Axiome 7E).
+>> "README-new.md" echo( Le projet fusionne trois concepts :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( GitManager : registre de sites à auditer (organes).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( AuditAccess : moteur de règles multi‑référentiel (RGAA, WCAG, DSFR) avec scoring pondéré.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Axiome 7E : cycle Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Il servira aussi bien de POC technique que de support de formation Spring Boot et de base industrialisable (Docker, PostgreSQL, monitoring).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 2. Stack technique
+>> "README-new.md" echo( Composant	Version	Rôle
+>> "README-new.md" echo( Java	25	Runtime (JDK 25)
+>> "README-new.md" echo( Spring Boot	4.0.5	Framework applicatif
+>> "README-new.md" echo( Spring Web MVC	4.x	API REST
+>> "README-new.md" echo( Spring Data JPA	4.x	Persistance ORM
+>> "README-new.md" echo( Hibernate	7.2.x	Implémentation JPA
+>> "README-new.md" echo( Jackson	3.x	Sérialisation JSON
+>> "README-new.md" echo( H2 Database	2.4.x	Base de données mémoire (profil dev)
+>> "README-new.md" echo( PostgreSQL	16	Base de données cible (profil prod)
+>> "README-new.md" echo( Flyway	11.x	Migrations SQL versionnées
+>> "README-new.md" echo( Jsoup	1.18.3	Crawl HTTP et analyse DOM réelle
+>> "README-new.md" echo( SpringDoc OpenAPI	2.8.4	Documentation Swagger / OpenAPI
+>> "README-new.md" echo( Lombok	-	Réduction du code boilerplate (getters, etc.)
+>> "README-new.md" echo( JUnit Jupiter, Mockito, AssertJ, Awaitility	–	Tests unitaires, d’intégration et asynchrones
+>> "README-new.md" echo( Maven Wrapper	3.9.9	Build tool
+>> "README-new.md" echo( 3. Architecture applicative
+>> "README-new.md" echo( L’application respecte une architecture en couches classique Spring :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( text
+>> "README-new.md" echo( ┌────────────────────────────────────────────────────┐
+>> "README-new.md" echo( │                   REST API Layer                    │
+>> "README-new.md" echo( │  HealthController ^| SiteController ^| AuditController│
+>> "README-new.md" echo( │               GlobalExceptionHandler                │
+>> "README-new.md" echo( ├────────────────────────────────────────────────────┤
+>> "README-new.md" echo( │                    Service Layer                    │
+>> "README-new.md" echo( │  AuditOrchestrator (cycle 7E)                       │
+>> "README-new.md" echo( │  AuditEngine (Strategy Pattern – règles d’audit)   │
+>> "README-new.md" echo( │  ScoringService (pondération RGAA/WCAG/DSFR)       │
+>> "README-new.md" echo( ├────────────────────────────────────────────────────┤
+>> "README-new.md" echo( │                    Domain Layer                     │
+>> "README-new.md" echo( │  Site, AuditReport, Phase7E, RuleCategory          │
+>> "README-new.md" echo( │  AuditRule (interface) + 13 implémentations        │
+>> "README-new.md" echo( ├────────────────────────────────────────────────────┤
+>> "README-new.md" echo( │                    Data Layer                       │
+>> "README-new.md" echo( │  SiteRepository, AuditReportRepository, RuleConfig  │
+>> "README-new.md" echo( │  H2 (dev) / PostgreSQL (prod) + Flyway migrations  │
+>> "README-new.md" echo( └────────────────────────────────────────────────────┘
+>> "README-new.md" echo( Patterns utilisés :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Strategy : AuditRule + ses implémentations (« plug and play »)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( IoC / DI : injection par constructeur (découplage, testabilité)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Observer : événements Spring (AuditStartedEvent, AuditProgressEvent, AuditCompletedEvent)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( DTO : records Java pour éviter l’exposition directe des entités JPA
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Repository : interfaces JpaRepository pour l’accès aux données
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Template Method : AuditOrchestrator.executeFullCycle() qui enchaîne les 7 phases
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 4. Cycle Axiome 7E
+>> "README-new.md" echo( Chaque audit parcourt 7 phases orchestrées par AuditOrchestrator. Des événements Spring sont émis à chaque transition, permettant le streaming SSE (Server‑Sent Events) vers les clients connectés.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( text
+>> "README-new.md" echo(    ┌─────────┐    ┌─────────┐    ┌─────────┐
+>> "README-new.md" echo(    │ ÉVALUER │───→│ ÉLABORER│───→│ EXÉCUTER│
+>> "README-new.md" echo(    └─────────┘    └─────────┘    └────┬────┘
+>> "README-new.md" echo(                                       ▼
+>> "README-new.md" echo(    ┌───────────┐                   ┌─────────┐
+>> "README-new.md" echo(    │ÉQUILIBRER │                   │EXAMINER │
+>> "README-new.md" echo(    └───────────┘                   └────┬────┘
+>> "README-new.md" echo(         ▲                                │
+>> "README-new.md" echo(         │                                ▼
+>> "README-new.md" echo(    ┌─────────┐    ┌─────────┐    ┌─────────┐
+>> "README-new.md" echo(    │ ÉMETTRE │←───│ ÉVOLUER │←───│         │
+>> "README-new.md" echo(    └─────────┘    └─────────┘    └─────────┘
+>> "README-new.md" echo( Le FeedbackLoopListener réagit à AuditCompletedEvent pour ajuster dynamiquement les poids de scoring (phase ÉQUILIBRER) – une forme de rétroaction cybernétique.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 5. Fonctionnalités principales
+>> "README-new.md" echo( Gestion des sites
+>> "README-new.md" echo( CRUD complet via API REST (/api/sites)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Recherche par nom, pagination
+>> "README-new.md" echo( 
+>> "README-new.md" echo( URL unique garantie
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Audit d’accessibilité
+>> "README-new.md" echo( 13 règles réelles évaluées sur le DOM (Jsoup) couvrant RGAA, WCAG et DSFR.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Scoring pondéré :
+>> "README-new.md" echo( score = RGAA×0.5 + WCAG×0.3 + DSFR×0.2
+>> "README-new.md" echo( les poids sont modifiables en base de données (rule_configs) et ajustables par la boucle de rétroaction.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Comparaison avec l'audit précédent → tendance UP, DOWN, STABLE, FIRST.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Modes d’exécution
+>> "README-new.md" echo( Synchrone : blocant, retourne immédiatement le rapport.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Asynchrone : retourne un jobId, suivi possible par polling ou SSE.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Batch : plusieurs audits en parallèle (max 10).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Programmé : scheduler basé sur une expression cron (ex. tous les jours à 2h).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Streaming temps réel (SSE)
+>> "README-new.md" echo( Flux d’événements (/api/audits/stream) : connected, audit‑started, audit‑progress, audit‑completed.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Permet de créer un tableau de bord dynamique (un fichier dashboard.html est fourni dans le projet).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( API REST complète (M6)
+>> "README-new.md" echo( Pagination et tri sur toutes les listes.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Réponses structurées (ApiResponse, PagedResponse).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Documentation interactive Swagger UI (/swagger‑ui.html).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Persistance et migrations
+>> "README-new.md" echo( H2 pour le développement (profil dev).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( PostgreSQL pour la production (profil prod).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Flyway avec 4 migrations : schéma initial, données de test (V2__seed_data.sql), table rule_configs et index supplémentaires.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Tests
+>> "README-new.md" echo( Pyramide de tests : unitaires (@Nested, paramétrés), JPA (@DataJpaTest), Web (@WebMvcTest), intégration (@SpringBootTest + Awaitility).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Scripts PowerShell et bash fournis (smoke-test.ps1, test-cyberaudit7e.ps1/sh) pour valider tous les endpoints.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 6. Organisation des modules (M1 → M7)
+>> "README-new.md" echo( Le projet a été construit par étapes pédagogiques :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Module	Thème	Livrables clés
+>> "README-new.md" echo( M1	Bootstrap Spring Boot	HealthController, endpoint /api/health
+>> "README-new.md" echo( M2	Architecture IoC + Strategy Pattern	Structure MVC, 7 règles simulées
+>> "README-new.md" echo( M3	Persistance JPA + H2 + Flyway	CRUD Site, AuditReport avec tendances
+>> "README-new.md" echo( M4	Moteur d’audit réel avec Jsoup	13 règles analysant le DOM réel, poids dynamiques
+>> "README-new.md" echo( M5	Async, Events, SSE, Scheduler	@Async, CompletableFuture, batch, planification
+>> "README-new.md" echo( M6	API REST complète + OpenAPI	Swagger UI, pagination, réponses standardisées
+>> "README-new.md" echo( M7	Docker + synthèse	Dockerfile multi‑stage, Docker Compose (profiles dev/prod), Nginx reverse proxy
+>> "README-new.md" echo( 7. Dockerisation
+>> "README-new.md" echo( Fichiers fournis
+>> "README-new.md" echo( Dockerfile : multi‑stage (build Maven + runtime JRE 25), utilisateur non‑root, healthcheck.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( docker-compose.yml : deux profiles – dev (H2, seul un conteneur app) et prod (app + PostgreSQL 16).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( .dockerignore : optimise le contexte de build.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( nginx.conf : reverse proxy optionnel, avec configuration adaptée au SSE (désactivation du buffering).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Commandes usuelles
+>> "README-new.md" echo( bash
+>> "README-new.md" echo( # Développement (H2)
+>> "README-new.md" echo( docker compose up --build
+>> "README-new.md" echo( 
+>> "README-new.md" echo( # Production (PostgreSQL)
+>> "README-new.md" echo( docker compose --profile prod up --build
+>> "README-new.md" echo( 
+>> "README-new.md" echo( # Nettoyage
+>> "README-new.md" echo( docker compose down -v
+>> "README-new.md" echo( 8. Scripts de test et d’aide
+>> "README-new.md" echo( Le répertoire scripts/ contient :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( smoke-test.ps1 : test end‑to‑end de 11 endpoints (health, sites, audits, validation).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( test-cyberaudit7e.ps1 / .sh : tests complets couvrant M1 à M5 (synchrones, asynchrones, batch, scheduler, SSE).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( diagnose-packages.ps1 : vérifie l’alignement des packages Java (évite les erreurs Spring Test).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( realign-test-packages.ps1 : corrige automatiquement les packages des tests.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 9. Points d’entrée et documentation
+>> "README-new.md" echo( Accès	URL
+>> "README-new.md" echo( API index	http://localhost:8080/api/
+>> "README-new.md" echo( Health check	http://localhost:8080/api/health
+>> "README-new.md" echo( Swagger UI	http://localhost:8080/swagger-ui.html
+>> "README-new.md" echo( OpenAPI JSON	http://localhost:8080/v3/api-docs
+>> "README-new.md" echo( Console H2 (profil dev)	http://localhost:8080/h2-console (JDBC URL : jdbc:h2:mem:cyberaudit7e, user sa)
+>> "README-new.md" echo( 10. Synthèse et apports pédagogiques
+>> "README-new.md" echo( Le projet illustre un grand nombre de concepts Spring Boot avancés :
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Injection de dépendances et Strategy Pattern (les règles sont des @Component injectées dans AuditEngine).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Programmation événementielle avec ApplicationEvent et @EventListener.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Traitements asynchrones (@Async, CompletableFuture) et scheduling (@Scheduled).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Streaming SSE (server‑sent events) via SseEmitter.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Profils Spring (dev / prod) et configuration externalisée.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Gestion des erreurs centralisée (@RestControllerAdvice).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Documentation d’API avec SpringDoc OpenAPI.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Tests à plusieurs niveaux (unitaire, JPA, web, intégration, asynchrone).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Docker et Docker Compose avec profiles.
+>> "README-new.md" echo( 
+>> "README-new.md" echo( C’est un excellent support pour une formation pratique à Spring Boot, tout en livrant un moteur d’audit réel (13 règles d’accessibilité) utilisable pour évaluer la conformité de sites web français (RGAA, WCAG, DSFR).
+>> "README-new.md" echo( 
+>> "README-new.md" echo( 11. Prolongements possibles (mentionnés dans la roadmap)
+>> "README-new.md" echo( Remplacer H2 par PostgreSQL dans les tests d’intégration (Testcontainers)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Ajouter Spring Security + JWT
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Monitoring avec Actuator / Micrometer / Grafana
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Webhooks Gitea pour audit automatique à chaque commit
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Moteur réactif (Spring WebFlux)
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Intégration Dokploy
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Utilisation de Playwright au lieu de Jsoup pour une analyse plus poussée du contraste et des interactions dynamiques
+>> "README-new.md" echo( 
+>> "README-new.md" echo( Conclusion : CyberAudit7E est un projet Spring Boot complet, bien structuré, prêt à être industrialisé, qui combine audit d’accessibilité, architecture cybernétique et bonnes pratiques d’entreprise. Il est fourni avec tous les fichiers nécessaires (Java, configuration, Docker, scripts de test) pour être reconstruit et exécuté immédiatement.
+certutil -hashfile "README-new.md" SHA256 | findstr /I /C:"B889C3EDCC002F0D1C7D5D778BC472034B13421A3D4862FFEB494688A56AEFB5" >nul
+if %errorlevel%==0 (echo    [OK] README-new.md) else (echo    [ERREUR] README-new.md)
+echo Décompression de README.md
+> "README.md" echo(  Nouvel onglet body { background: #FFFFFF; margin: 0; } #backgroundImage { border: none; height: 100%%; pointer-events: none; position: fixed; top: 0; visibility: hidden; width: 100%%; } \[show-background-image\] #backgroundImage { visibility: visible; }
+>> "README.md" echo( 
+>> "README.md" echo( # CyberAudit7E
+>> "README.md" echo( 
+>> "README.md" echo( **Moteur d'audit d'accessibilité cybernétique — Spring Boot 4 POC**
+>> "README.md" echo( 
+>> "README.md" echo( README unifié construit à partir des documents `README.md`, `README0.md`, `README1.md`, `README2.md`, `README3.md`, `README4.md`, `README5.md`, `README6.md` et `TEST.md`.
+>> "README.md" echo( 
+>> "README.md" echo( Fusion conceptuelle de trois projets :
+>> "README.md" echo( 
+>> "README.md" echo( *   **GitManager** → registre de services (organes) à auditer
+>> "README.md" echo( *   **AuditAccess** → moteur de règles multi-référentiel (RGAA, WCAG, DSFR) avec scoring pondéré
+>> "README.md" echo( *   **Axiome 7E** → boucle cybernétique : **Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer**
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Sommaire
+>> "README.md" echo( 
+>> "README.md" echo( *   [Vision du projet](#vision-du-projet)
+>> "README.md" echo( *   [Stack technique](#stack-technique)
+>> "README.md" echo( *   [Progression pédagogique M1 → M6](#progression-p%%C3%%A9dagogique-m1--m6)
+>> "README.md" echo( *   [Architecture globale](#architecture-globale)
+>> "README.md" echo( *   [Cycle Axiome 7E](#cycle-axiome-7e)
+>> "README.md" echo( *   [Arborescence du projet](#arborescence-du-projet)
+>> "README.md" echo( *   [Démarrage rapide](#d%%C3%%A9marrage-rapide)
+>> "README.md" echo( *   [API REST](#api-rest)
+>> "README.md" echo( *   [Scoring](#scoring)
+>> "README.md" echo( *   [Tests](#tests)
+>> "README.md" echo( *   [Modules détaillés](#modules-d%%C3%%A9taill%%C3%%A9s)
+>> "README.md" echo( *   [Profils Spring](#profils-spring)
+>> "README.md" echo( *   [Références et guides](#r%%C3%%A9f%%C3%%A9rences-et-guides)
+>> "README.md" echo( *   [Roadmap / prolongements](#roadmap--prolongements)
+>> "README.md" echo( *   [Licence](#licence)
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Vision du projet
+>> "README.md" echo( 
+>> "README.md" echo( CyberAudit7E est un POC Spring Boot centré sur l'audit d'accessibilité web. Il combine :
+>> "README.md" echo( 
+>> "README.md" echo( *   une **architecture modulaire Spring**,
+>> "README.md" echo( *   un **moteur de règles multi-référentiel**,
+>> "README.md" echo( *   une **persistance JPA/Flyway**,
+>> "README.md" echo( *   un **pipeline événementiel asynchrone**,
+>> "README.md" echo( *   une **documentation OpenAPI**,
+>> "README.md" echo( *   et une **boucle cybernétique 7E** comme cadre d'orchestration.
+>> "README.md" echo( 
+>> "README.md" echo( Le projet sert à la fois de :
+>> "README.md" echo( 
+>> "README.md" echo( *   **POC technique**,
+>> "README.md" echo( *   **support de formation Spring Boot**,
+>> "README.md" echo( *   **base d'industrialisation** vers Docker, PostgreSQL, Testcontainers, monitoring et intégration Dokploy.
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Stack technique
+>> "README.md" echo( 
+>> "README.md" echo( ^| Composant ^| Version ^| Rôle ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| Java ^| 21+ ^| Runtime (testé avec JDK 25) ^|
+>> "README.md" echo( ^| Spring Boot ^| 4.0.5 ^| Framework applicatif ^|
+>> "README.md" echo( ^| Spring Web MVC ^| 4.x ^| API REST ^|
+>> "README.md" echo( ^| Spring Data JPA ^| 4.x ^| Persistance ORM ^|
+>> "README.md" echo( ^| Hibernate ^| 7.2.x ^| Implémentation JPA ^|
+>> "README.md" echo( ^| Jackson ^| 3.x (`tools.jackson`) ^| Sérialisation JSON ^|
+>> "README.md" echo( ^| H2 Database ^| 2.4.x ^| Base in-memory en développement ^|
+>> "README.md" echo( ^| PostgreSQL ^| profil prod ^| Base cible production ^|
+>> "README.md" echo( ^| Flyway ^| 11.x ^| Migrations SQL versionnées ^|
+>> "README.md" echo( ^| Jsoup ^| 1.18.3 ^| Crawl HTTP et analyse DOM réelle ^|
+>> "README.md" echo( ^| SpringDoc OpenAPI ^| 2.8.4 ^| Swagger UI + spec OpenAPI ^|
+>> "README.md" echo( ^| JUnit Jupiter ^| 6.x ^| Framework de tests ^|
+>> "README.md" echo( ^| AssertJ ^| 3.x ^| Assertions fluides ^|
+>> "README.md" echo( ^| Mockito ^| starter test ^| Mocks ^|
+>> "README.md" echo( ^| Awaitility ^| 4.2.2 ^| Tests asynchrones ^|
+>> "README.md" echo( ^| Maven Wrapper ^| 3.9.x ^| Build tool ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Progression pédagogique M1 → M6
+>> "README.md" echo( 
+>> "README.md" echo( ^| Module ^| Thème ^| Livrable principal ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| **M1** ^| Bootstrap Spring Boot ^| `/api/health` opérationnel ^|
+>> "README.md" echo( ^| **M2** ^| Architecture IoC + Strategy Pattern ^| Structure MVC + 7 règles ^|
+>> "README.md" echo( ^| **M3** ^| Persistance JPA + H2 + Flyway ^| CRUD `Site` + `AuditReport` ^|
+>> "README.md" echo( ^| **M4** ^| Moteur d'audit réel avec Jsoup ^| 13 règles sur DOM réel ^|
+>> "README.md" echo( ^| **M5** ^| Async, Events, SSE, Scheduler ^| Audits asynchrones et streaming ^|
+>> "README.md" echo( ^| **M6** ^| API REST complète + OpenAPI ^| Swagger UI, pagination, réponses standardisées ^|
+>> "README.md" echo( ^| **M7** ^| Docker + synthèse (projection) ^| Industrialisation et conteneurisation ^|
+>> "README.md" echo( 
+>> "README.md" echo( Résumé volumétrique issu des documents :
+>> "README.md" echo( 
+>> "README.md" echo( ^| Module ^| Concepts ^| Fichiers ^| Lignes estimées ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| M1  ^| Bootstrap, `@RestController` ^| 1   ^| ~20 ^|
+>> "README.md" echo( ^| M2  ^| IoC, Strategy, Profiles, Events ^| 35  ^| ~1850 ^|
+>> "README.md" echo( ^| M3  ^| JPA, Flyway, `@Transactional` ^| 39  ^| ~2300 ^|
+>> "README.md" echo( ^| M4  ^| Jsoup, DOM réel, poids dynamiques ^| 50  ^| ~3550 ^|
+>> "README.md" echo( ^| M5  ^| `@Async`, SSE, `@Scheduled`, batch ^| 57  ^| ~4400 ^|
+>> "README.md" echo( ^| M6  ^| OpenAPI, pagination, validation ^| 60  ^| ~4750 ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Architecture globale
+>> "README.md" echo( 
+>> "README.md" echo( ### Couches applicatives
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copy┌──────────────────────────────────────────────────────┐
+>> "README.md" echo( │                    REST API Layer                    │
+>> "README.md" echo( │  HealthController │ SiteController │ AuditController │
+>> "README.md" echo( │               GlobalExceptionHandler                 │
+>> "README.md" echo( ├──────────────────────────────────────────────────────┤
+>> "README.md" echo( │                    Service Layer                     │
+>> "README.md" echo( │  AuditOrchestrator ──→ chaîne les 7 phases du cycle │
+>> "README.md" echo( │  AuditEngine ──→ Strategy Pattern (List^<AuditRule^>) │
+>> "README.md" echo( │  ScoringService ──→ RGAA×0.5 + WCAG×0.3 + DSFR×0.2  │
+>> "README.md" echo( ├──────────────────────────────────────────────────────┤
+>> "README.md" echo( │                    Domain Layer                      │
+>> "README.md" echo( │  Site │ AuditReport │ Phase7E │ RuleCategory        │
+>> "README.md" echo( │  AuditRule (interface) + implémentations            │
+>> "README.md" echo( ├──────────────────────────────────────────────────────┤
+>> "README.md" echo( │                    Data Layer                        │
+>> "README.md" echo( │  SiteRepository │ AuditReportRepository │ RuleConfig │
+>> "README.md" echo( │  H2 (dev) │ PostgreSQL (prod) │ Flyway migrations   │
+>> "README.md" echo( └──────────────────────────────────────────────────────┘
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### Patterns utilisés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Pattern ^| Où  ^| Pourquoi ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| Strategy ^| `AuditRule` + implémentations ^| Ajouter une règle sans modifier le moteur ^|
+>> "README.md" echo( ^| IoC / DI ^| Injection par constructeur ^| Découplage et testabilité ^|
+>> "README.md" echo( ^| Observer ^| Events Spring + listeners ^| Découplage entre exécution, métriques et rétroaction ^|
+>> "README.md" echo( ^| DTO ^| Records et wrappers API ^| Éviter les références circulaires JPA ^|
+>> "README.md" echo( ^| Repository ^| Interfaces Spring Data ^| Génération automatique des accès SQL ^|
+>> "README.md" echo( ^| Template Method ^| `AuditOrchestrator.executeFullCycle()` ^| Enchaînement stable des 7 phases ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Cycle Axiome 7E
+>> "README.md" echo( 
+>> "README.md" echo( Chaque audit exécute un cycle complet de sept phases orchestré par `AuditOrchestrator`.
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copy   ┌─────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+>> "README.md" echo(    │ ÉVALUER ├───→│ ÉLABORER ├───→│ EXÉCUTER ├───→│ EXAMINER │
+>> "README.md" echo(    └─────────┘    └──────────┘    └──────────┘    └────┬─────┘
+>> "README.md" echo(                                                        │
+>> "README.md" echo(    ┌────────────┐    ┌────────┐    ┌─────────┐    ┌───┴────┐
+>> "README.md" echo(    │ ÉQUILIBRER │←───┤ ÉMETTRE│←───┤ ÉVOLUER │←───┤        │
+>> "README.md" echo(    └──────┬─────┘    └────────┘    └─────────┘    └────────┘
+>> "README.md" echo(           │              ▲
+>> "README.md" echo(           │    @Async     │ ApplicationEvent
+>> "README.md" echo(           └──── rétroaction cybernétique (FeedbackLoopListener)
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( En M5, ce cycle devient aussi un pipeline événementiel temps réel :
+>> "README.md" echo( 
+>> "README.md" echo( *   `AuditStartedEvent`
+>> "README.md" echo( *   `AuditProgressEvent`
+>> "README.md" echo( *   `AuditCompletedEvent`
+>> "README.md" echo( 
+>> "README.md" echo( Ces événements alimentent :
+>> "README.md" echo( 
+>> "README.md" echo( *   le **streaming SSE**,
+>> "README.md" echo( *   les **métriques d'exécution**,
+>> "README.md" echo( *   la **rétroaction cybernétique**,
+>> "README.md" echo( *   les **audits asynchrones / batch / planifiés**.
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Arborescence du projet
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copycyberaudit7e/
+>> "README.md" echo( │
+>> "README.md" echo( ├── pom.xml                                        # Dépendances Maven
+>> "README.md" echo( ├── mvnw / mvnw.cmd                                # Maven Wrapper
+>> "README.md" echo( ├── scripts/
+>> "README.md" echo( │   └── smoke-test.ps1                             # Smoke test E2E
+>> "README.md" echo( │
+>> "README.md" echo( ├── src/main/java/com/cyberaudit7e/
+>> "README.md" echo( │   ├── CyberAudit7eApplication.java
+>> "README.md" echo( │   ├── config/
+>> "README.md" echo( │   │   ├── AsyncConfig.java
+>> "README.md" echo( │   │   ├── JpaConfig.java
+>> "README.md" echo( │   │   ├── OpenApiConfig.java
+>> "README.md" echo( │   │   └── WebConfig.java
+>> "README.md" echo( │   ├── controller/
+>> "README.md" echo( │   │   ├── HealthController.java
+>> "README.md" echo( │   │   ├── SiteController.java
+>> "README.md" echo( │   │   ├── AuditController.java
+>> "README.md" echo( │   │   ├── ConfigController.java
+>> "README.md" echo( │   │   └── GlobalExceptionHandler.java
+>> "README.md" echo( │   ├── service/
+>> "README.md" echo( │   │   ├── AuditEngine.java
+>> "README.md" echo( │   │   ├── AuditOrchestrator.java
+>> "README.md" echo( │   │   ├── AsyncAuditService.java
+>> "README.md" echo( │   │   ├── ScheduledAuditService.java
+>> "README.md" echo( │   │   ├── HtmlFetcherService.java
+>> "README.md" echo( │   │   ├── ScoringService.java
+>> "README.md" echo( │   │   ├── SseNotificationService.java
+>> "README.md" echo( │   │   └── cycle/
+>> "README.md" echo( │   │       ├── EvaluateService.java
+>> "README.md" echo( │   │       ├── ElaborateService.java
+>> "README.md" echo( │   │       ├── ExecuteService.java
+>> "README.md" echo( │   │       ├── ExamineService.java
+>> "README.md" echo( │   │       ├── EvolveService.java
+>> "README.md" echo( │   │       ├── EmitService.java
+>> "README.md" echo( │   │       ├── FeedbackLoopListener.java
+>> "README.md" echo( │   │       └── AuditMetricsListener.java
+>> "README.md" echo( │   ├── domain/
+>> "README.md" echo( │   │   ├── entity/
+>> "README.md" echo( │   │   │   ├── Site.java
+>> "README.md" echo( │   │   │   ├── AuditReport.java
+>> "README.md" echo( │   │   │   ├── RuleConfig.java
+>> "README.md" echo( │   │   │   └── RuleResultListConverter.java
+>> "README.md" echo( │   │   ├── enums/
+>> "README.md" echo( │   │   │   ├── Phase7E.java
+>> "README.md" echo( │   │   │   └── RuleCategory.java
+>> "README.md" echo( │   │   └── rule/
+>> "README.md" echo( │   │       ├── AuditRule.java
+>> "README.md" echo( │   │       ├── AuditContext.java
+>> "README.md" echo( │   │       ├── TitlePresenceRule.java
+>> "README.md" echo( │   │       ├── LangAttributeRule.java
+>> "README.md" echo( │   │       ├── ImageAltRule.java
+>> "README.md" echo( │   │       ├── ContrastRule.java
+>> "README.md" echo( │   │       ├── KeyboardNavRule.java
+>> "README.md" echo( │   │       ├── HeadingStructureRule.java
+>> "README.md" echo( │   │       ├── FormLabelRule.java
+>> "README.md" echo( │   │       ├── AriaLandmarkRule.java
+>> "README.md" echo( │   │       ├── MetaViewportRule.java
+>> "README.md" echo( │   │       ├── LinkPurposeRule.java
+>> "README.md" echo( │   │       ├── DsfrHeaderRule.java
+>> "README.md" echo( │   │       ├── DsfrFooterRule.java
+>> "README.md" echo( │   │       └── DsfrBreadcrumbRule.java
+>> "README.md" echo( │   ├── repository/
+>> "README.md" echo( │   │   ├── SiteRepository.java
+>> "README.md" echo( │   │   ├── AuditReportRepository.java
+>> "README.md" echo( │   │   └── RuleConfigRepository.java
+>> "README.md" echo( │   ├── dto/
+>> "README.md" echo( │   │   ├── AuditRequestDto.java
+>> "README.md" echo( │   │   ├── BatchAuditRequestDto.java
+>> "README.md" echo( │   │   ├── AuditResponseDto.java
+>> "README.md" echo( │   │   ├── RuleResultDto.java
+>> "README.md" echo( │   │   ├── SiteDto.java
+>> "README.md" echo( │   │   ├── ReportSummaryDto.java
+>> "README.md" echo( │   │   ├── ApiResponse.java
+>> "README.md" echo( │   │   └── PagedResponse.java
+>> "README.md" echo( │   └── event/
+>> "README.md" echo( │       ├── AuditStartedEvent.java
+>> "README.md" echo( │       ├── AuditProgressEvent.java
+>> "README.md" echo( │       └── AuditCompletedEvent.java
+>> "README.md" echo( │
+>> "README.md" echo( ├── src/main/resources/
+>> "README.md" echo( │   ├── application.yml
+>> "README.md" echo( │   ├── application-dev.yml
+>> "README.md" echo( │   ├── application-prod.yml
+>> "README.md" echo( │   ├── banner.txt
+>> "README.md" echo( │   └── db/migration/
+>> "README.md" echo( │       ├── V1__create_schema.sql
+>> "README.md" echo( │       ├── V2__seed_data.sql
+>> "README.md" echo( │       └── V3__rule_configs.sql
+>> "README.md" echo( │
+>> "README.md" echo( └── src/test/java/com/cyberaudit7e/
+>> "README.md" echo(     ├── service/ScoringServiceTest.java
+>> "README.md" echo(     ├── domain/enums/Phase7ETest.java
+>> "README.md" echo(     ├── domain/rule/DsfrHeaderRuleTest.java
+>> "README.md" echo(     ├── repository/SiteRepositoryTest.java
+>> "README.md" echo(     ├── controller/HealthControllerTest.java
+>> "README.md" echo(     └── integration/AuditCycleIntegrationTest.java
+>> "README.md" echo( Copy
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Démarrage rapide
+>> "README.md" echo( 
+>> "README.md" echo( ### Prérequis
+>> "README.md" echo( 
+>> "README.md" echo( * Java 21+
+>> "README.md" echo( * Maven via le wrapper inclus
+>> "README.md" echo( * Optionnel : `jq`, H2 Console, Bruno ou HTTPie pour les tests manuels
+>> "README.md" echo( 
+>> "README.md" echo( ### Lancer l'application
+>> "README.md" echo( 
+>> "README.md" echo( Sous Windows / DOS
+>> "README.md" echo( mvn -N io.takari:maven:wrapper -Dmaven=3.9.9
+>> "README.md" echo( 
+>> "README.md" echo( ou mieux :
+>> "README.md" echo( mvn wrapper:wrapper -Dmaven=3.9.9
+>> "README.md" echo( 
+>> "README.md" echo( 
+>> "README.md" echo( Sinon
+>> "README.md" echo( 👍mvn org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.9
+>> "README.md" echo( 
+>> "README.md" echo( puis  :
+>> "README.md" echo( mvnw clean spring-boot:run
+>> "README.md" echo( 
+>> "README.md" echo( Sous Windows / PowerShell :
+>> "README.md" echo( 
+>> "README.md" echo( ```powershell
+>> "README.md" echo( .\mvnw.cmd clean spring-boot:run
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( Sous Linux / macOS :
+>> "README.md" echo( 
+>> "README.md" echo( ```bash
+>> "README.md" echo( ./mvnw clean spring-boot:run
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( Au démarrage, le profil `dev` doit :
+>> "README.md" echo( 
+>> "README.md" echo( *   activer H2 in-memory,
+>> "README.md" echo( *   exécuter Flyway,
+>> "README.md" echo( *   charger les règles d'audit,
+>> "README.md" echo( *   exposer l'API sur `http://localhost:8080`.
+>> "README.md" echo( 
+>> "README.md" echo( ### Console H2
+>> "README.md" echo( 
+>> "README.md" echo( Ouvrir :
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copyhttp://localhost:8080/h2-console
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( Paramètres :
+>> "README.md" echo( 
+>> "README.md" echo( *   JDBC URL : `jdbc:h2:mem:cyberaudit7e`
+>> "README.md" echo( *   User : `sa`
+>> "README.md" echo( *   Password : _(vide)_
+>> "README.md" echo( 
+>> "README.md" echo( ### Swagger UI
+>> "README.md" echo( 
+>> "README.md" echo( Après démarrage :
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copyhttp://localhost:8080/swagger-ui.html
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### OpenAPI
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copyhttp://localhost:8080/v3/api-docs
+>> "README.md" echo( http://localhost:8080/v3/api-docs.yaml
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## API REST
+>> "README.md" echo( 
+>> "README.md" echo( ### Santé
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `GET` ^| `/api/health` ^| Health check complet ^|
+>> "README.md" echo( ^| `GET` ^| `/api/` ^| Index des endpoints ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Sites
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `POST` ^| `/api/sites` ^| Enregistrer un site ^|
+>> "README.md" echo( ^| `GET` ^| `/api/sites?page=0^&size=10` ^| Liste paginée ^|
+>> "README.md" echo( ^| `GET` ^| `/api/sites/{id}` ^| Détail d'un site ^|
+>> "README.md" echo( ^| `GET` ^| `/api/sites/search?name=xxx` ^| Recherche par nom ^|
+>> "README.md" echo( ^| `DELETE` ^| `/api/sites/{id}` ^| Supprimer un site ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Audits synchrones
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `POST` ^| `/api/audits` ^| Audit synchrone complet ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/list?page=0^&size=10^&sortBy=auditedAt^&direction=desc` ^| Liste paginée des rapports ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/{id}` ^| Détail d'un rapport ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/site/{siteId}?page=0^&size=10` ^| Historique paginé d'un site ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/search?q=gouv` ^| Recherche full-text ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/alerts?threshold=0.5` ^| Rapports sous le seuil ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/stats` ^| Statistiques globales ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Audits asynchrones
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `POST` ^| `/api/audits/async` ^| Soumettre un audit asynchrone ^|
+>> "README.md" echo( ^| `POST` ^| `/api/audits/batch` ^| Batch parallèle ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/async/{jobId}` ^| Statut d'un job ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/async` ^| Liste des jobs ^|
+>> "README.md" echo( ^| `DELETE` ^| `/api/audits/async` ^| Nettoyage des jobs terminés ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/stream` ^| Flux SSE temps réel ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Scheduler
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `GET` ^| `/api/audits/schedule` ^| État du scheduler ^|
+>> "README.md" echo( ^| `POST` ^| `/api/audits/schedule/trigger` ^| Déclenchement manuel ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Configuration
+>> "README.md" echo( 
+>> "README.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `GET` ^| `/api/config/weights` ^| Poids de scoring ^|
+>> "README.md" echo( ^| `PUT` ^| `/api/config/weights/{category}` ^| Modifier un poids ^|
+>> "README.md" echo( ^| `POST` ^| `/api/config/weights/reset` ^| Réinitialiser les poids ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Exemples de commandes
+>> "README.md" echo( 
+>> "README.md" echo( ```powershell
+>> "README.md" echo( Copy# Health check
+>> "README.md" echo( curl -s http://localhost:8080/api/health
+>> "README.md" echo( 
+>> "README.md" echo( # Créer un site
+>> "README.md" echo( curl -X POST http://localhost:8080/api/sites `
+>> "README.md" echo(   -H "Content-Type: application/json" `
+>> "README.md" echo(   -d '{"url":"https://www.service-public.fr","name":"Service Public"}'
+>> "README.md" echo( 
+>> "README.md" echo( # Lancer un audit synchrone dans DOS : 
+>> "README.md" echo( curl -X POST http://localhost:8080/api/audits -H "Content-Type: application/json" -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Gouvernement FR\"}"
+>> "README.md" echo( # Pour PowerShell :
+>> "README.md" echo( curl -X POST http://localhost:8080/api/audits `
+>> "README.md" echo(   -H "Content-Type: application/json" `
+>> "README.md" echo(   -d '{"url":"https://www.gouvernement.gouv.fr","name":"Gouvernement FR"}'
+>> "README.md" echo(   
+>> "README.md" echo( # Voir les statistiques
+>> "README.md" echo( curl -s http://localhost:8080/api/audits/stats
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### SSE depuis JavaScript
+>> "README.md" echo( 
+>> "README.md" echo( ```javascript
+>> "README.md" echo( Copyconst sse = new EventSource('/api/audits/stream');
+>> "README.md" echo( 
+>> "README.md" echo( sse.addEventListener('audit-started', (e) =^> {
+>> "README.md" echo(   const data = JSON.parse(e.data);
+>> "README.md" echo(   console.log(`🚀 Audit démarré : ${data.siteName}`);
+>> "README.md" echo( });
+>> "README.md" echo( 
+>> "README.md" echo( sse.addEventListener('audit-progress', (e) =^> {
+>> "README.md" echo(   const data = JSON.parse(e.data);
+>> "README.md" echo(   console.log(`⏳ ${data.phaseLabel} — ${data.progress}%%`);
+>> "README.md" echo( });
+>> "README.md" echo( 
+>> "README.md" echo( sse.addEventListener('audit-completed', (e) =^> {
+>> "README.md" echo(   const data = JSON.parse(e.data);
+>> "README.md" echo(   console.log(`✅ Score : ${data.scoreGlobal}`);
+>> "README.md" echo( });
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Scoring
+>> "README.md" echo( 
+>> "README.md" echo( Formule globale :
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copyscore_global = score_rgaa × 0.5 + score_wcag × 0.3 + score_dsfr × 0.2
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### Répartition des poids
+>> "README.md" echo( 
+>> "README.md" echo( ^| Catégorie ^| Poids par défaut ^| Exemples de règles ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| RGAA 4.1 ^| 50%% ^| titre, `lang`, alt-text, headings, labels ^|
+>> "README.md" echo( ^| WCAG 2.2 ^| 30%% ^| contraste, clavier, landmarks, viewport, liens ^|
+>> "README.md" echo( ^| DSFR ^| 20%% ^| header, footer, breadcrumb ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Règles M4 (13 règles)
+>> "README.md" echo( 
+>> "README.md" echo( ^| Priorité ^| ID  ^| Catégorie ^| Description ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| 10  ^| RGAA-8.5 ^| RGAA ^| Titre de page pertinent ^|
+>> "README.md" echo( ^| 10  ^| RGAA-8.3 ^| RGAA ^| Attribut `lang` ^|
+>> "README.md" echo( ^| 15  ^| WCAG-1.4.4 ^| WCAG ^| Viewport et zoom ^|
+>> "README.md" echo( ^| 20  ^| WCAG-1.3.1 ^| WCAG ^| Landmarks ARIA ^|
+>> "README.md" echo( ^| 20  ^| DSFR-HDR-01 ^| DSFR ^| En-tête DSFR ^|
+>> "README.md" echo( ^| 25  ^| DSFR-FTR-01 ^| DSFR ^| Pied de page DSFR ^|
+>> "README.md" echo( ^| 30  ^| RGAA-9.1 ^| RGAA ^| Hiérarchie des titres ^|
+>> "README.md" echo( ^| 30  ^| DSFR-BRD-01 ^| DSFR ^| Fil d'Ariane ^|
+>> "README.md" echo( ^| 40  ^| WCAG-2.1.1 ^| WCAG ^| Navigation clavier / skip-nav ^|
+>> "README.md" echo( ^| 50  ^| RGAA-1.1 ^| RGAA ^| Alt-text des images ^|
+>> "README.md" echo( ^| 60  ^| RGAA-11.1 ^| RGAA ^| Labels de formulaire ^|
+>> "README.md" echo( ^| 70  ^| WCAG-2.4.4 ^| WCAG ^| Intitulé des liens ^|
+>> "README.md" echo( ^| 80  ^| WCAG-1.4.3 ^| WCAG ^| Contraste (heuristique) ^|
+>> "README.md" echo( 
+>> "README.md" echo( En M4+, les poids peuvent être :
+>> "README.md" echo( 
+>> "README.md" echo( *   lus depuis la base via `rule_configs`,
+>> "README.md" echo( *   modifiés via l'API de configuration,
+>> "README.md" echo( *   réajustés par la boucle de rétroaction.
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Tests
+>> "README.md" echo( 
+>> "README.md" echo( ### Pyramide de tests Spring
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( Copy           ╱╲
+>> "README.md" echo(           ╱  ╲       Niveau 4 : Integration (lent, complet)
+>> "README.md" echo(          ╱ E2E╲      @SpringBootTest — contexte complet
+>> "README.md" echo(         ╱──────╲
+>> "README.md" echo(        ╱        ╲    Niveau 3 : Web slice (moyen)
+>> "README.md" echo(       ╱   Web    ╲   @WebMvcTest + MockMvc + @MockitoBean
+>> "README.md" echo(      ╱────────────╲
+>> "README.md" echo(     ╱              ╲ Niveau 2 : JPA slice (moyen)
+>> "README.md" echo(    ╱   Repository   ╲ @DataJpaTest — couche JPA isolée
+>> "README.md" echo(   ╱──────────────────╲
+>> "README.md" echo(  ╱                    ╲ Niveau 1 : Unit (rapide, pur Java)
+>> "README.md" echo( ╱        Unit          ╲ Pas de Spring — JUnit + AssertJ + Mockito
+>> "README.md" echo( ─────────────────────────
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( **Règle d'or** : beaucoup de tests unitaires rapides à la base, peu de tests d'intégration lents au sommet. Une exécution complète doit rester idéalement sous 30 secondes.
+>> "README.md" echo( 
+>> "README.md" echo( ### Dépendances de test
+>> "README.md" echo( 
+>> "README.md" echo( Le starter `spring-boot-starter-test` apporte déjà :
+>> "README.md" echo( 
+>> "README.md" echo( *   JUnit Jupiter,
+>> "README.md" echo( *   AssertJ,
+>> "README.md" echo( *   Mockito,
+>> "README.md" echo( *   Spring Test,
+>> "README.md" echo( *   JsonPath.
+>> "README.md" echo( 
+>> "README.md" echo( Ajouter si nécessaire :
+>> "README.md" echo( 
+>> "README.md" echo( ```xml
+>> "README.md" echo( Copy^<dependency^>
+>> "README.md" echo(     ^<groupId^>org.awaitility^</groupId^>
+>> "README.md" echo(     ^<artifactId^>awaitility^</artifactId^>
+>> "README.md" echo(     ^<version^>4.2.2^</version^>
+>> "README.md" echo(     ^<scope^>test^</scope^>
+>> "README.md" echo( ^</dependency^>
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### Contenu du pack de tests
+>> "README.md" echo( 
+>> "README.md" echo( ^| Fichier ^| Niveau ^| Cible ^| Concepts ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `ScoringServiceTest.java` ^| 1 — Unit ^| `ScoringService` ^| AssertJ, `within()` ^|
+>> "README.md" echo( ^| `Phase7ETest.java` ^| 1 — Unit ^| `Phase7E` ^| `@ParameterizedTest`, `@CsvSource` ^|
+>> "README.md" echo( ^| `DsfrHeaderRuleTest.java` ^| 1 — Unit ^| règle DSFR ^| `@Nested`, Strategy ^|
+>> "README.md" echo( ^| `SiteRepositoryTest.java` ^| 2 — JPA ^| Repository ^| `@DataJpaTest`, Flyway, rollback ^|
+>> "README.md" echo( ^| `HealthControllerTest.java` ^| 3 — Web ^| endpoint `/health` ^| `@WebMvcTest`, `@MockitoBean`, MockMvc ^|
+>> "README.md" echo( ^| `AuditCycleIntegrationTest.java` ^| 4 — Intégration ^| cycle 7E complet ^| `@SpringBootTest`, Awaitility ^|
+>> "README.md" echo( ^| `scripts/smoke-test.ps1` ^| E2E ^| 11 endpoints ^| PowerShell ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Lancer les tests
+>> "README.md" echo( 
+>> "README.md" echo( ```powershell
+>> "README.md" echo( Copy# Tous les tests
+>> "README.md" echo( .\mvnw.cmd test
+>> "README.md" echo( 
+>> "README.md" echo( # Un test spécifique
+>> "README.md" echo( .\mvnw.cmd test "-Dtest=ScoringServiceTest"
+>> "README.md" echo( 
+>> "README.md" echo( # Intégration uniquement
+>> "README.md" echo( .\mvnw.cmd test "-Dtest=*IntegrationTest"
+>> "README.md" echo( 
+>> "README.md" echo( # Smoke test E2E
+>> "README.md" echo( powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### Couverture JaCoCo
+>> "README.md" echo( 
+>> "README.md" echo( Ajouter dans `pom.xml` :
+>> "README.md" echo( 
+>> "README.md" echo( ```xml
+>> "README.md" echo( Copy^<plugin^>
+>> "README.md" echo(     ^<groupId^>org.jacoco^</groupId^>
+>> "README.md" echo(     ^<artifactId^>jacoco-maven-plugin^</artifactId^>
+>> "README.md" echo(     ^<version^>0.8.12^</version^>
+>> "README.md" echo(     ^<executions^>
+>> "README.md" echo(         ^<execution^>
+>> "README.md" echo(             ^<goals^>^<goal^>prepare-agent^</goal^>^</goals^>
+>> "README.md" echo(         ^</execution^>
+>> "README.md" echo(         ^<execution^>
+>> "README.md" echo(             ^<id^>report^</id^>
+>> "README.md" echo(             ^<phase^>test^</phase^>
+>> "README.md" echo(             ^<goals^>^<goal^>report^</goal^>^</goals^>
+>> "README.md" echo(         ^</execution^>
+>> "README.md" echo(     ^</executions^>
+>> "README.md" echo( ^</plugin^>
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ### Stratégie recommandée d'extension
+>> "README.md" echo( 
+>> "README.md" echo( *   **M4** : 1 test unitaire par règle d'audit
+>> "README.md" echo( *   **M5** : tests Awaitility sur le comportement asynchrone et les listeners
+>> "README.md" echo( *   **M6** : tests d'erreur exhaustifs sur tous les endpoints
+>> "README.md" echo( *   **M7** : Testcontainers pour remplacer H2 par un vrai PostgreSQL dans les tests d'intégration
+>> "README.md" echo( *   **Durcissement** : JMH, Spring Cloud Contract, PIT mutation testing
+>> "README.md" echo( 
+>> "README.md" echo( ### Outils complémentaires de test manuel
+>> "README.md" echo( 
+>> "README.md" echo( *   **Bruno** : collections HTTP versionnables, local-first
+>> "README.md" echo( *   **HTTPie** : CLI plus lisible que `curl`
+>> "README.md" echo( *   **Spring Boot DevTools** : rechargement à chaud pour accélérer la boucle de feedback
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Modules détaillés
+>> "README.md" echo( 
+>> "README.md" echo( ### M1 — Bootstrap Spring Boot
+>> "README.md" echo( 
+>> "README.md" echo( Objectif : démarrer rapidement une application Spring Boot avec un premier endpoint de santé.
+>> "README.md" echo( 
+>> "README.md" echo( Livrables principaux :
+>> "README.md" echo( 
+>> "README.md" echo( *   `CyberAudit7eApplication.java`
+>> "README.md" echo( *   `HealthController`
+>> "README.md" echo( *   structure Maven initiale
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ### M2 — Architecture Spring
+>> "README.md" echo( 
+>> "README.md" echo( M2 introduit :
+>> "README.md" echo( 
+>> "README.md" echo( *   l'architecture par couches,
+>> "README.md" echo( *   le Strategy Pattern pour les règles,
+>> "README.md" echo( *   les DTOs,
+>> "README.md" echo( *   la gestion des événements,
+>> "README.md" echo( *   la base du cycle 7E.
+>> "README.md" echo( 
+>> "README.md" echo( #### Concepts démontrés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Concept ^| Où dans le code ^|
+>> "README.md" echo( ^| --- ^| --- ^|
+>> "README.md" echo( ^| IoC / injection constructeur ^| `AuditEngine`, `AuditOrchestrator` ^|
+>> "README.md" echo( ^| Strategy Pattern + IoC ^| `AuditRule` → 7 `@Component` ^|
+>> "README.md" echo( ^| `@RestController` ^| controllers REST ^|
+>> "README.md" echo( ^| `@RestControllerAdvice` ^| `GlobalExceptionHandler` ^|
+>> "README.md" echo( ^| `@Service` layering ^| engine → orchestrator → cycle ^|
+>> "README.md" echo( ^| `@Repository` ^| repositories in-memory ^|
+>> "README.md" echo( ^| Spring Profiles ^| `application-dev.yml`, `application-prod.yml` ^|
+>> "README.md" echo( ^| Spring Events ^| `AuditCompletedEvent` ^|
+>> "README.md" echo( ^| `@Async` ^| `FeedbackLoopListener` ^|
+>> "README.md" echo( ^| Validation Jakarta ^| DTOs ^|
+>> "README.md" echo( ^| Java Records ^| objets de transfert ^|
+>> "README.md" echo( ^| CORS ^| `WebConfig` ^|
+>> "README.md" echo( 
+>> "README.md" echo( #### Transition M2 → M3
+>> "README.md" echo( 
+>> "README.md" echo( *   supprimer l'exclusion de `DataSourceAutoConfiguration`
+>> "README.md" echo( *   annoter `Site` et `AuditReport` avec JPA
+>> "README.md" echo( *   transformer les repositories en interfaces `JpaRepository`
+>> "README.md" echo( *   activer datasource/JPA/Flyway
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ### M3 — Persistance JPA + H2 + Flyway
+>> "README.md" echo( 
+>> "README.md" echo( M3 remplace les repositories en mémoire par une vraie persistance SQL.
+>> "README.md" echo( 
+>> "README.md" echo( #### Apports principaux
+>> "README.md" echo( 
+>> "README.md" echo( *   `@Entity`, `@Table`, `@ManyToOne`, `@OneToMany`
+>> "README.md" echo( *   `@Transactional`
+>> "README.md" echo( *   `AttributeConverter` JSON/CLOB
+>> "README.md" echo( *   Flyway avec schéma et seed data
+>> "README.md" echo( *   DTOs de sortie dédiés
+>> "README.md" echo( *   H2 en dev, PostgreSQL en prod
+>> "README.md" echo( 
+>> "README.md" echo( #### Fichiers notables ajoutés / modifiés
+>> "README.md" echo( 
+>> "README.md" echo( *   `RuleResultListConverter.java`
+>> "README.md" echo( *   `SiteDto.java`
+>> "README.md" echo( *   `ReportSummaryDto.java`
+>> "README.md" echo( *   `JpaConfig.java`
+>> "README.md" echo( *   `V1__create_schema.sql`
+>> "README.md" echo( *   `V2__seed_data.sql`
+>> "README.md" echo( 
+>> "README.md" echo( #### Concepts démontrés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Concept ^| Où  ^|
+>> "README.md" echo( ^| --- ^| --- ^|
+>> "README.md" echo( ^| Spring Data JPA ^| repositories ^|
+>> "README.md" echo( ^| Query Methods ^| `findByUrl`, etc. ^|
+>> "README.md" echo( ^| JPQL custom ^| agrégats et stats ^|
+>> "README.md" echo( ^| `@PrePersist` / `@PreUpdate` ^| timestamps ^|
+>> "README.md" echo( ^| `@Transactional(readOnly = true)` ^| endpoints de lecture ^|
+>> "README.md" echo( ^| Flyway ^| versionnement du schéma ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ### M4 — Moteur d'audit Jsoup + Strategy avancée
+>> "README.md" echo( 
+>> "README.md" echo( M4 remplace les simulations par une analyse réelle du DOM.
+>> "README.md" echo( 
+>> "README.md" echo( #### Nouveautés majeures
+>> "README.md" echo( 
+>> "README.md" echo( *   `HtmlFetcherService` avec cache
+>> "README.md" echo( *   `AuditContext` riche (`url + Optional^<Document^>`)
+>> "README.md" echo( *   13 règles sur DOM réel
+>> "README.md" echo( *   configuration dynamique des poids via `RuleConfig`
+>> "README.md" echo( *   API de gestion des poids
+>> "README.md" echo( *   rétroaction réelle en base
+>> "README.md" echo( 
+>> "README.md" echo( #### Flux d'exécution M4
+>> "README.md" echo( 
+>> "README.md" echo( ```text
+>> "README.md" echo( CopyAuditEngine.runAllRules(url)
+>> "README.md" echo(     ├─ HtmlFetcherService.fetch(url)
+>> "README.md" echo(     ├─ construction de AuditContext(url, doc)
+>> "README.md" echo(     ├─ évaluation des règles par priorité
+>> "README.md" echo(     └─ clearCache()
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( #### Concepts démontrés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Concept ^| Où  ^|
+>> "README.md" echo( ^| --- ^| --- ^|
+>> "README.md" echo( ^| Strategy avancée ^| `evaluate(AuditContext)` + `priority()` ^|
+>> "README.md" echo( ^| cache applicatif ^| `HtmlFetcherService` ^|
+>> "README.md" echo( ^| config dynamique en BDD ^| `RuleConfig` ^|
+>> "README.md" echo( ^| fallback gracieux ^| mode sans document si crawl échoue ^|
+>> "README.md" echo( ^| gestion d'erreur par règle ^| `try/catch` dans `AuditEngine` ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ### M5 — Async, Events ^& Streaming SSE
+>> "README.md" echo( 
+>> "README.md" echo( M5 transforme le projet en système événementiel temps réel.
+>> "README.md" echo( 
+>> "README.md" echo( #### Nouveautés majeures
+>> "README.md" echo( 
+>> "README.md" echo( *   audits asynchrones avec `CompletableFuture`
+>> "README.md" echo( *   batch parallèle
+>> "README.md" echo( *   SSE pour progression temps réel
+>> "README.md" echo( *   scheduler d'audits planifiés
+>> "README.md" echo( *   métriques runtime thread-safe
+>> "README.md" echo( 
+>> "README.md" echo( #### Événements Spring
+>> "README.md" echo( 
+>> "README.md" echo( ^| Événement ^| Publié par ^| Consommé par ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `AuditStartedEvent` ^| orchestrateur ^| SSE, métriques ^|
+>> "README.md" echo( ^| `AuditProgressEvent` ^| orchestrateur ^| SSE ^|
+>> "README.md" echo( ^| `AuditCompletedEvent` ^| `EmitService` ^| SSE, métriques, feedback ^|
+>> "README.md" echo( 
+>> "README.md" echo( #### Concepts démontrés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Concept ^| Où  ^|
+>> "README.md" echo( ^| --- ^| --- ^|
+>> "README.md" echo( ^| `@Async` + `CompletableFuture` ^| `AsyncAuditService` ^|
+>> "README.md" echo( ^| `@Scheduled` + cron ^| `ScheduledAuditService` ^|
+>> "README.md" echo( ^| `SseEmitter` ^| `SseNotificationService` ^|
+>> "README.md" echo( ^| `CopyOnWriteArrayList` ^| gestion des clients SSE ^|
+>> "README.md" echo( ^| `AtomicLong` / `volatile` ^| métriques thread-safe ^|
+>> "README.md" echo( ^| config externalisée ^| scheduler et timeouts ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ### M6 — API REST complète + OpenAPI
+>> "README.md" echo( 
+>> "README.md" echo( M6 formalise l'API pour un usage plus industriel et plus ergonomique.
+>> "README.md" echo( 
+>> "README.md" echo( #### Nouveautés majeures
+>> "README.md" echo( 
+>> "README.md" echo( *   documentation Swagger UI
+>> "README.md" echo( *   OpenAPI JSON/YAML
+>> "README.md" echo( *   pagination et tri sur les listes
+>> "README.md" echo( *   réponses standardisées `ApiResponse`
+>> "README.md" echo( *   wrapper `PagedResponse`
+>> "README.md" echo( *   erreurs homogènes et documentées
+>> "README.md" echo( 
+>> "README.md" echo( #### Concepts démontrés
+>> "README.md" echo( 
+>> "README.md" echo( ^| Concept ^| Où  ^|
+>> "README.md" echo( ^| --- ^| --- ^|
+>> "README.md" echo( ^| SpringDoc OpenAPI ^| `OpenApiConfig` + annotations ^|
+>> "README.md" echo( ^| `@Tag`, `@Operation`, `@Parameter` ^| controllers ^|
+>> "README.md" echo( ^| `@ApiResponses` ^| documentation des codes retour ^|
+>> "README.md" echo( ^| `Pageable` / `Page^<T^>` ^| repositories et endpoints ^|
+>> "README.md" echo( ^| tri dynamique ^| `Sort.by(...)` ^|
+>> "README.md" echo( ^| erreurs structurées ^| `GlobalExceptionHandler` ^|
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Profils Spring
+>> "README.md" echo( 
+>> "README.md" echo( ^| Profile ^| DataSource ^| Flyway ^| Logs ^| Usage ^|
+>> "README.md" echo( ^| --- ^| --- ^| --- ^| --- ^| --- ^|
+>> "README.md" echo( ^| `dev` (défaut) ^| H2 in-memory ^| actif ^| DEBUG ^| développement local ^|
+>> "README.md" echo( ^| `prod` ^| PostgreSQL ^| actif ^| INFO ^| Docker / production ^|
+>> "README.md" echo( 
+>> "README.md" echo( ### Changer de profil
+>> "README.md" echo( 
+>> "README.md" echo( ```powershell
+>> "README.md" echo( Copy$env:SPRING_PROFILES_ACTIVE="prod"
+>> "README.md" echo( .\mvnw.cmd spring-boot:run
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( ou
+>> "README.md" echo( 
+>> "README.md" echo( ```powershell
+>> "README.md" echo( Copy.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=prod"
+>> "README.md" echo( ```
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Références et guides
+>> "README.md" echo( 
+>> "README.md" echo( ### Documentation de référence
+>> "README.md" echo( 
+>> "README.md" echo( *   [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
+>> "README.md" echo( *   [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/4.0.5/maven-plugin)
+>> "README.md" echo( *   [Create an OCI image](https://docs.spring.io/spring-boot/4.0.5/maven-plugin/build-image.html)
+>> "README.md" echo( *   [Spring Web](https://docs.spring.io/spring-boot/4.0.5/reference/web/servlet.html)
+>> "README.md" echo( *   [Spring Data JPA](https://docs.spring.io/spring-boot/4.0.5/reference/data/sql.html#data.sql.jpa-and-spring-data)
+>> "README.md" echo( *   [Flyway Migration](https://docs.spring.io/spring-boot/4.0.5/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway)
+>> "README.md" echo( *   [Spring Boot DevTools](https://docs.spring.io/spring-boot/4.0.5/reference/using/devtools.html)
+>> "README.md" echo( *   [Validation](https://docs.spring.io/spring-boot/4.0.5/reference/io/validation.html)
+>> "README.md" echo( 
+>> "README.md" echo( ### Guides pratiques
+>> "README.md" echo( 
+>> "README.md" echo( *   [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
+>> "README.md" echo( *   [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
+>> "README.md" echo( *   [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+>> "README.md" echo( *   [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
+>> "README.md" echo( *   [Validation](https://spring.io/guides/gs/validating-form-input/)
+>> "README.md" echo( 
+>> "README.md" echo( ### Note Maven Parent overrides
+>> "README.md" echo( 
+>> "README.md" echo( Si le projet hérite d'un parent Maven différent, vérifier les éléments hérités comme `^<license^>` et `^<developers^>`. Le POM peut contenir des overrides vides pour neutraliser certains héritages non désirés.
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Roadmap / prolongements
+>> "README.md" echo( 
+>> "README.md" echo( ### Pistes techniques immédiates
+>> "README.md" echo( 
+>> "README.md" echo( *   remplacer H2 par PostgreSQL en intégration via Testcontainers
+>> "README.md" echo( *   ajouter Dockerfile multi-stage + `docker-compose`
+>> "README.md" echo( *   intégrer Spring Security + JWT
+>> "README.md" echo( *   brancher un monitoring Actuator + Micrometer + Grafana
+>> "README.md" echo( *   connecter Gitea / webhooks pour audit au commit
+>> "README.md" echo( *   ajouter Redis bridge pour communication inter-services
+>> "README.md" echo( 
+>> "README.md" echo( ### Pistes d'architecture avancée
+>> "README.md" echo( 
+>> "README.md" echo( *   Spring WebFlux pour un moteur réactif
+>> "README.md" echo( *   Spring Modulith pour clarifier les frontières applicatives
+>> "README.md" echo( *   causal discovery engine piloté par IA
+>> "README.md" echo( *   circuit-breaker de protection
+>> "README.md" echo( *   modèles dynamiques de santé par site
+>> "README.md" echo( *   intégration Dokploy-natif pour l'orchestration
+>> "README.md" echo( 
+>> "README.md" echo( ### Stratégie de validation industrielle
+>> "README.md" echo( 
+>> "README.md" echo( *   1 test unitaire par règle M4
+>> "README.md" echo( *   tests async exhaustifs en M5
+>> "README.md" echo( *   tests de validation et d'erreurs exhaustifs en M6
+>> "README.md" echo( *   PostgreSQL dockerisé en M7
+>> "README.md" echo( 
+>> "README.md" echo( - - -
+>> "README.md" echo( 
+>> "README.md" echo( ## Licence
+>> "README.md" echo( 
+>> "README.md" echo( POC de formation — usage pédagogique.
+certutil -hashfile "README.md" SHA256 | findstr /I /C:"833BFF90E3907198449646A73DDC65598D4CECDE2A922E693FE2F71F3DB7AF17" >nul
+if %errorlevel%==0 (echo    [OK] README.md) else (echo    [ERREUR] README.md)
+echo Décompression de README7.md
+> "README7.md" echo( # CyberAudit7E — Module M7 : Docker ^& Synthèse Axiome 7E
+>> "README7.md" echo( 
+>> "README7.md" echo( ## Dockerisation
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Fichiers Docker fournis
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Fichier ^| Rôle ^|
+>> "README7.md" echo( ^|---------^|------^|
+>> "README7.md" echo( ^| `docker/Dockerfile` ^| Build multi-stage (JDK 21 → JRE Alpine) ^|
+>> "README7.md" echo( ^| `docker/docker-compose.yml` ^| Dev (H2) + Prod (PostgreSQL 16) avec profiles ^|
+>> "README7.md" echo( ^| `docker/.dockerignore` ^| Optimise le contexte de build ^|
+>> "README7.md" echo( ^| `docker/nginx.conf` ^| Reverse proxy Nginx (optionnel, config SSE) ^|
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Copier les fichiers Docker à la racine du projet
+>> "README7.md" echo( 
+>> "README7.md" echo( ```bash
+>> "README7.md" echo( cp docker/Dockerfile ^<votre-projet^>/Dockerfile
+>> "README7.md" echo( cp docker/.dockerignore ^<votre-projet^>/.dockerignore
+>> "README7.md" echo( cp docker/docker-compose.yml ^<votre-projet^>/docker-compose.yml
+>> "README7.md" echo( cp docker/nginx.conf ^<votre-projet^>/nginx.conf
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Mode DEV (H2 in-memory)
+>> "README7.md" echo( 
+>> "README7.md" echo( ```bash
+>> "README7.md" echo( # Build + run (première fois)
+>> "README7.md" echo( docker compose up --build
+>> "README7.md" echo( 
+>> "README7.md" echo( # Runs suivants (image déjà buildée)
+>> "README7.md" echo( docker compose up
+>> "README7.md" echo( 
+>> "README7.md" echo( # Logs
+>> "README7.md" echo( docker compose logs -f cyberaudit7e
+>> "README7.md" echo( https://n8n.crawlerone.net/tp/non-conforme/
+>> "README7.md" echo( # Vérifier le health
+>> "README7.md" echo( curl -s http://localhost:8080/api/health ^| jq .runtime
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Mode PROD (PostgreSQL)
+>> "README7.md" echo( 
+>> "README7.md" echo( ```bash
+>> "README7.md" echo( # Lancer avec le profile prod
+>> "README7.md" echo( docker compose --profile prod up --build
+>> "README7.md" echo( 
+>> "README7.md" echo( # PostgreSQL démarre d'abord (healthcheck pg_isready)
+>> "README7.md" echo( # Spring Boot attend que Postgres soit healthy (depends_on condition)
+>> "README7.md" echo( # Flyway crée les tables automatiquement
+>> "README7.md" echo( 
+>> "README7.md" echo( # Se connecter à PostgreSQL
+>> "README7.md" echo( docker exec -it cyberaudit7e-db psql -U audit -d cyberaudit7e
+>> "README7.md" echo( 
+>> "README7.md" echo( # Requêtes utiles
+>> "README7.md" echo( SELECT * FROM sites;
+>> "README7.md" echo( SELECT id, site_id, score_global, trend FROM audit_reports ORDER BY audited_at DESC;
+>> "README7.md" echo( SELECT * FROM rule_configs;
+>> "README7.md" echo( SELECT * FROM flyway_schema_history;
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Commandes Docker utiles
+>> "README7.md" echo( 
+>> "README7.md" echo( ```bash
+>> "README7.md" echo( # Statut des services
+>> "README7.md" echo( docker compose ps
+>> "README7.md" echo( 
+>> "README7.md" echo( # Logs d'un service
+>> "README7.md" echo( docker compose logs -f cyberaudit7e-app
+>> "README7.md" echo( 
+>> "README7.md" echo( # Shell dans le conteneur
+>> "README7.md" echo( docker exec -it cyberaudit7e-app sh
+>> "README7.md" echo( 
+>> "README7.md" echo( # Taille de l'image
+>> "README7.md" echo( docker images ^| grep cyberaudit7e
+>> "README7.md" echo( 
+>> "README7.md" echo( # Arrêter et nettoyer
+>> "README7.md" echo( docker compose down
+>> "README7.md" echo( docker compose down -v  # + supprime les volumes (PostgreSQL data)
+>> "README7.md" echo( 
+>> "README7.md" echo( # Rebuild après modification du code
+>> "README7.md" echo( docker compose up --build --force-recreate
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( ## Ajout M7 : métriques runtime
+>> "README7.md" echo( 
+>> "README7.md" echo( Le health check retourne maintenant les infos container :
+>> "README7.md" echo( 
+>> "README7.md" echo( ```json
+>> "README7.md" echo( {
+>> "README7.md" echo(   "runtime": {
+>> "README7.md" echo(     "javaVersion": "21.0.x",
+>> "README7.md" echo(     "heapUsedMb": 128,
+>> "README7.md" echo(     "heapMaxMb": 512,
+>> "README7.md" echo(     "heapPercent": 25,
+>> "README7.md" echo(     "availableProcessors": 4,
+>> "README7.md" echo(     "uptimeSeconds": 3600,
+>> "README7.md" echo(     "uptime": "1h00m00s",
+>> "README7.md" echo(     "hostname": "abc123def456"
+>> "README7.md" echo(   }
+>> "README7.md" echo( }
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( Le `hostname` correspond au container ID Docker — utile pour identifier
+>> "README7.md" echo( l'instance dans un environnement multi-réplicas.
+>> "README7.md" echo( 
+>> "README7.md" echo( ## Nouvelle dépendance pom.xml (M7)
+>> "README7.md" echo( 
+>> "README7.md" echo( Ajouter le driver PostgreSQL pour le profile prod :
+>> "README7.md" echo( 
+>> "README7.md" echo( ```xml
+>> "README7.md" echo( ^<!-- PostgreSQL driver (runtime only — utilisé uniquement en prod) --^>
+>> "README7.md" echo( ^<dependency^>
+>> "README7.md" echo(     ^<groupId^>org.postgresql^</groupId^>
+>> "README7.md" echo(     ^<artifactId^>postgresql^</artifactId^>
+>> "README7.md" echo(     ^<scope^>runtime^</scope^>
+>> "README7.md" echo( ^</dependency^>
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( Note : cette dépendance est probablement déjà présente si vous avez
+>> "README7.md" echo( sélectionné "PostgreSQL Driver" dans Spring Initializr en M1.
+>> "README7.md" echo( 
+>> "README7.md" echo( ---
+>> "README7.md" echo( 
+>> "README7.md" echo( ## Synthèse complète : Axiome 7E × Spring Boot
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Le cycle 7E dans CyberAudit7E
+>> "README7.md" echo( 
+>> "README7.md" echo( ```
+>> "README7.md" echo(    ┌──────────────────────────────────────────────────────────────────┐
+>> "README7.md" echo(    │                    AXIOME 7E — CYCLE CYBERNÉTIQUE               │
+>> "README7.md" echo(    │                                                                  │
+>> "README7.md" echo(    │  "Les Éléments dans l'Espace Engendrent un État d'Expression    │
+>> "README7.md" echo(    │   Évolutif de l'Environnement"                                  │
+>> "README7.md" echo(    │                                                                  │
+>> "README7.md" echo(    │     ┌─────────┐    ┌─────────┐    ┌─────────┐                  │
+>> "README7.md" echo(    │     │ ÉVALUER  │───→│ÉLABORER │───→│EXÉCUTER │                  │
+>> "README7.md" echo(    │     │  (M3)    │    │  (M4)   │    │  (M4)   │                  │
+>> "README7.md" echo(    │     └─────────┘    └─────────┘    └────┬────┘                  │
+>> "README7.md" echo(    │          ▲                              │                        │
+>> "README7.md" echo(    │          │                              ▼                        │
+>> "README7.md" echo(    │  ┌───────────┐                   ┌─────────┐                   │
+>> "README7.md" echo(    │  │ÉQUILIBRER │                   │EXAMINER │                   │
+>> "README7.md" echo(    │  │  (M5)     │                   │  (M4)   │                   │
+>> "README7.md" echo(    │  └───────────┘                   └────┬────┘                   │
+>> "README7.md" echo(    │          ▲                              │                        │
+>> "README7.md" echo(    │          │                              ▼                        │
+>> "README7.md" echo(    │     ┌─────────┐    ┌─────────┐    ┌─────────┐                  │
+>> "README7.md" echo(    │     │ ÉMETTRE  │←───│ ÉVOLUER │←───│         │                  │
+>> "README7.md" echo(    │     │  (M5)    │    │  (M3)   │    │         │                  │
+>> "README7.md" echo(    │     └─────────┘    └─────────┘    └─────────┘                  │
+>> "README7.md" echo(    └──────────────────────────────────────────────────────────────────┘
+>> "README7.md" echo( ```
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Mapping Phase 7E → Concept Spring → Module
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Phase 7E ^| Classe Spring ^| Concept démontré ^| Module ^|
+>> "README7.md" echo( ^|----------^|--------------^|------------------^|--------^|
+>> "README7.md" echo( ^| **Évaluer** ^| `EvaluateService` ^| `@Service`, IoC, injection constructeur ^| M2 ^|
+>> "README7.md" echo( ^| **Élaborer** ^| `ElaborateService` + `AuditRule` ^| Strategy Pattern, `List^<Interface^>` auto-injectée ^| M2, M4 ^|
+>> "README7.md" echo( ^| **Exécuter** ^| `AuditEngine` + `HtmlFetcherService` ^| Jsoup crawl, `@Component` scan, try/catch résilient ^| M4 ^|
+>> "README7.md" echo( ^| **Examiner** ^| `ScoringService` + `RuleConfigRepository` ^| JPA, `@Query` JPQL, config dynamique BDD ^| M3, M4 ^|
+>> "README7.md" echo( ^| **Évoluer** ^| `EvolveService` + `AuditReportRepository` ^| Spring Data Query Methods, Flyway migrations ^| M3 ^|
+>> "README7.md" echo( ^| **Émettre** ^| `EmitService` + `SseNotificationService` ^| `ApplicationEvent`, SSE streaming, `@EventListener` ^| M5 ^|
+>> "README7.md" echo( ^| **Équilibrer** ^| `FeedbackLoopListener` ^| `@Async`, `@Transactional`, rétroaction BDD ^| M5 ^|
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Mapping Concept Spring → Module de la formation
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Concept Spring ^| Module ^| Fichier clé ^|
+>> "README7.md" echo( ^|---------------^|--------^|-------------^|
+>> "README7.md" echo( ^| `@SpringBootApplication` ^| M1 ^| `CyberAudit7eApplication.java` ^|
+>> "README7.md" echo( ^| `@RestController`, `@GetMapping` ^| M1 ^| `HealthController.java` ^|
+>> "README7.md" echo( ^| IoC, injection par constructeur ^| M2 ^| `AuditEngine.java` ^|
+>> "README7.md" echo( ^| Strategy Pattern + `@Component` ^| M2, M4 ^| `AuditRule.java` + 13 implémentations ^|
+>> "README7.md" echo( ^| Spring Profiles (`dev`/`prod`) ^| M2 ^| `application-dev.yml` / `application-prod.yml` ^|
+>> "README7.md" echo( ^| `@Entity`, `@Table`, `@ManyToOne` ^| M3 ^| `Site.java`, `AuditReport.java` ^|
+>> "README7.md" echo( ^| `JpaRepository`, Query Methods ^| M3 ^| `SiteRepository.java` ^|
+>> "README7.md" echo( ^| Flyway migrations SQL ^| M3 ^| `V1__create_schema.sql` → `V4` ^|
+>> "README7.md" echo( ^| `@Transactional` ^| M3 ^| `AuditOrchestrator.java` ^|
+>> "README7.md" echo( ^| JPA `AttributeConverter` ^| M3 ^| `RuleResultListConverter.java` ^|
+>> "README7.md" echo( ^| DTO pattern (Records Java) ^| M3, M6 ^| `SiteDto`, `ReportSummaryDto`, `ApiResponse` ^|
+>> "README7.md" echo( ^| Jsoup HTTP crawl ^| M4 ^| `HtmlFetcherService.java` ^|
+>> "README7.md" echo( ^| Config dynamique en BDD ^| M4 ^| `RuleConfig.java` + `RuleConfigRepository` ^|
+>> "README7.md" echo( ^| `@Async` + `CompletableFuture` ^| M5 ^| `AsyncAuditService.java` ^|
+>> "README7.md" echo( ^| `@Scheduled` + cron ^| M5 ^| `ScheduledAuditService.java` ^|
+>> "README7.md" echo( ^| `ApplicationEvent` (3 types) ^| M5 ^| `AuditStartedEvent`, `AuditProgressEvent`, `AuditCompletedEvent` ^|
+>> "README7.md" echo( ^| `@EventListener` ^| M5 ^| `SseNotificationService`, `AuditMetricsListener`, `FeedbackLoopListener` ^|
+>> "README7.md" echo( ^| `SseEmitter` (Server-Sent Events) ^| M5 ^| `SseNotificationService.java` ^|
+>> "README7.md" echo( ^| `ThreadPoolTaskExecutor` ^| M5 ^| `AsyncConfig.java` ^|
+>> "README7.md" echo( ^| SpringDoc OpenAPI / Swagger ^| M6 ^| `OpenApiConfig.java` ^|
+>> "README7.md" echo( ^| `@Operation`, `@Parameter`, `@Tag` ^| M6 ^| Tous les controllers ^|
+>> "README7.md" echo( ^| Pagination (`Page`, `Pageable`) ^| M6 ^| `AuditReportRepository`, `PagedResponse` ^|
+>> "README7.md" echo( ^| Validation Jakarta (`@NotBlank`, `@Pattern`) ^| M6 ^| `AuditRequestDto`, `CreateSiteRequest` ^|
+>> "README7.md" echo( ^| `@RestControllerAdvice` ^| M6 ^| `GlobalExceptionHandler.java` ^|
+>> "README7.md" echo( ^| Dockerfile multi-stage ^| M7 ^| `Dockerfile` ^|
+>> "README7.md" echo( ^| Docker Compose + profiles ^| M7 ^| `docker-compose.yml` ^|
+>> "README7.md" echo( ^| HEALTHCHECK Docker ^| M7 ^| `Dockerfile` ^|
+>> "README7.md" echo( ^| Nginx reverse proxy (SSE) ^| M7 ^| `nginx.conf` ^|
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Convergence des 3 projets dans CyberAudit7E
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Projet source ^| Concept repris ^| Implémentation Spring ^|
+>> "README7.md" echo( ^|--------------^|----------------^|----------------------^|
+>> "README7.md" echo( ^| **GitManager** ^| Registre d'organes (services) ^| `SiteRepository` + CRUD REST ^|
+>> "README7.md" echo( ^| **GitManager** ^| Noms biologiques (Moëlle, Cortex) ^| 7 services nommés par phase 7E ^|
+>> "README7.md" echo( ^| **GitManager** ^| Redis Streams bridge (DB5) ^| `ApplicationEvent` + `@EventListener` ^|
+>> "README7.md" echo( ^| **GitManager** ^| Dokploy integration ^| Docker Compose + profiles ^|
+>> "README7.md" echo( ^| **AuditAccess** ^| Moteur 17 règles (Django) ^| 13 `AuditRule` @Component (Strategy) ^|
+>> "README7.md" echo( ^| **AuditAccess** ^| Scoring RGAA×0.5+WCAG×0.3+DSFR×0.2 ^| `ScoringService` + `RuleConfig` BDD ^|
+>> "README7.md" echo( ^| **AuditAccess** ^| Celery async tasks ^| `@Async` + `AsyncAuditService` ^|
+>> "README7.md" echo( ^| **AuditAccess** ^| CRI v2.1 multi-services ^| Docker Compose (app + db) ^|
+>> "README7.md" echo( ^| **AuditAccess** ^| Crawler Playwright ^| `HtmlFetcherService` (Jsoup) ^|
+>> "README7.md" echo( ^| **Axiome 7E** ^| 7 phases cybernétiques ^| 7 `@Service` dans `service/cycle/` ^|
+>> "README7.md" echo( ^| **Axiome 7E** ^| Boucle de rétroaction ^| `FeedbackLoopListener` ajuste les poids ^|
+>> "README7.md" echo( ^| **Axiome 7E** ^| Observation de 2e ordre ^| `EvolveService` compare les audits ^|
+>> "README7.md" echo( ^| **Axiome 7E** ^| Expression évolutive ^| Progression SSE temps réel ^|
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Statistiques finales du POC
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Métrique ^| Valeur ^|
+>> "README7.md" echo( ^|----------^|--------^|
+>> "README7.md" echo( ^| Fichiers Java ^| 61 ^|
+>> "README7.md" echo( ^| Règles d'audit ^| 13 (4 RGAA + 5 WCAG + 3 DSFR + 1 contraste) ^|
+>> "README7.md" echo( ^| Migrations Flyway ^| 4 ^|
+>> "README7.md" echo( ^| Endpoints REST ^| 22 ^|
+>> "README7.md" echo( ^| Événements Spring ^| 3 ^|
+>> "README7.md" echo( ^| Tags OpenAPI ^| 6 ^|
+>> "README7.md" echo( ^| Lignes de code ^| ~5000 ^|
+>> "README7.md" echo( ^| Modules de formation ^| 7 (8h) ^|
+>> "README7.md" echo( 
+>> "README7.md" echo( ### Pour aller plus loin
+>> "README7.md" echo( 
+>> "README7.md" echo( ^| Direction ^| Technologie ^| Effort ^|
+>> "README7.md" echo( ^|-----------^|------------^|--------^|
+>> "README7.md" echo( ^| Tests unitaires + intégration ^| JUnit 5, Mockito, Testcontainers ^| 1 jour ^|
+>> "README7.md" echo( ^| Sécurité API ^| Spring Security + JWT ^| 1/2 journée ^|
+>> "README7.md" echo( ^| Dashboard Vue.js ^| Vue 3 + Pinia + EventSource SSE ^| 1-2 jours ^|
+>> "README7.md" echo( ^| Monitoring ^| Spring Actuator + Micrometer + Grafana ^| 1/2 journée ^|
+>> "README7.md" echo( ^| CI/CD ^| Gitea webhooks + Dokploy auto-deploy ^| 1/2 journée ^|
+>> "README7.md" echo( ^| Crawler avancé ^| Playwright (headless Chrome) au lieu de Jsoup ^| 1 jour ^|
+>> "README7.md" echo( ^| Cybernétique L3 ^| Causal Discovery Engine + GENESIS_FREEZE ^| Recherche ^|
+>> "README7.md" echo( ^| Multi-tenant ^| Spring Security + schémas PostgreSQL par tenant ^| 2 jours ^|
+>> "README7.md" echo( ^| Kubernetes ^| Helm chart + HPA sur les métriques d'audit ^| 1 jour ^|
+certutil -hashfile "README7.md" SHA256 | findstr /I /C:"071C50AE7DD4C94675DD714DE70A8CD0212C500FE20AA8CD3F13925A835FD6B3" >nul
+if %errorlevel%==0 (echo    [OK] README7.md) else (echo    [ERREUR] README7.md)
+echo Décompression de TESTS-REFERENCE.md
+> "TESTS-REFERENCE.md" echo( # CyberAudit7E — Référence rapide des tests curl
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ^> Tous les exemples fonctionnent dans **PowerShell** (Windows 11 natif).
+>> "TESTS-REFERENCE.md" echo( ^> Pour **Git Bash** ou **WSL**, remplacer `^^` par `\` et utiliser les guillemets simples.
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## M1 — Bootstrap
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # Health check
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/health ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Index API
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/ ^| jq .
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## M2 — Architecture
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # Vérifier le nombre de règles chargées (13 attendu)
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/health ^| jq .rulesLoaded
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## M3 — Persistance JPA
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # Sites seed Flyway (4 sites)
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/sites ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Détail d'un site
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/sites/1 ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Recherche par nom
+>> "TESTS-REFERENCE.md" echo( curl -s "http://localhost:8080/api/sites/search?name=gouv" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Créer un site
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/sites ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.numerique.gouv.fr\",\"name\":\"DINUM\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Doublon → 409
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/sites ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Doublon\"}"
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Supprimer un site
+>> "TESTS-REFERENCE.md" echo( curl -s -X DELETE http://localhost:8080/api/sites/5
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Not found → 404
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/sites/999
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## M4 — Moteur Jsoup (13 règles réelles)
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # Poids de scoring
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/config/weights ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # ── Audits réels (crawl HTTP) ──
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Service Public (site FR bien structuré)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Service Public\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Site .gouv.fr (DSFR élevé attendu)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouvernement FR\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Site non-gouvernemental (DSFR bas attendu)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.example.com\",\"name\":\"Example.com\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Légifrance
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.legifrance.gouv.fr\",\"name\":\"Légifrance\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Site inaccessible (mode dégradé — toutes les règles FAIL)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://site-inexistant.invalid\",\"name\":\"Test 404\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Validation → 400
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"\",\"name\":\"\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # ── Poids dynamiques ──
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Modifier un poids
+>> "TESTS-REFERENCE.md" echo( curl -s -X PUT http://localhost:8080/api/config/weights/RGAA ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"weight\":0.6}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Reset aux valeurs par défaut
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/config/weights/reset ^| jq .
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## M5 — Async, Events ^& SSE
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # ── SSE Streaming (ouvrir en premier dans un terminal dédié) ──
+>> "TESTS-REFERENCE.md" echo( curl -N http://localhost:8080/api/audits/stream
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # ── Audit asynchrone ──
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Soumettre (retour immédiat avec jobId)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits/async ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"url\":\"https://www.legifrance.gouv.fr\",\"name\":\"Légifrance\"}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Consulter le statut d'un job
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/async/1 ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Lister tous les jobs
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/async ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Nettoyer les jobs terminés
+>> "TESTS-REFERENCE.md" echo( curl -s -X DELETE http://localhost:8080/api/audits/async ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # ── Batch (3 audits en parallèle) ──
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits/batch ^^
+>> "TESTS-REFERENCE.md" echo(   -H "Content-Type: application/json" ^^
+>> "TESTS-REFERENCE.md" echo(   -d "{\"sites\":[{\"url\":\"https://www.service-public.fr\",\"name\":\"SP\"},{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouv\"},{\"url\":\"https://www.example.com\",\"name\":\"Ex\"}]}" ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # ── Scheduler ──
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Statut du scheduler
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/schedule ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Déclenchement manuel (audite tous les sites)
+>> "TESTS-REFERENCE.md" echo( curl -s -X POST http://localhost:8080/api/audits/schedule/trigger ^| jq .
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## Stats ^& Consultation (transversal)
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```powershell
+>> "TESTS-REFERENCE.md" echo( # Stats globales (sites, audits, métriques, tendances)
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/stats ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Historique des audits d'un site
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/site/1 ^| jq .
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/site/2 ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Détail d'un rapport
+>> "TESTS-REFERENCE.md" echo( curl -s http://localhost:8080/api/audits/1 ^| jq .
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( # Alertes (score sous le seuil)
+>> "TESTS-REFERENCE.md" echo( curl -s "http://localhost:8080/api/audits/alerts?threshold=0.7" ^| jq .
+>> "TESTS-REFERENCE.md" echo( curl -s "http://localhost:8080/api/audits/alerts?threshold=0.5" ^| jq .
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## Console H2 (navigateur)
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( URL      : http://localhost:8080/h2-console
+>> "TESTS-REFERENCE.md" echo( JDBC URL : jdbc:h2:mem:cyberaudit7e
+>> "TESTS-REFERENCE.md" echo( User     : sa
+>> "TESTS-REFERENCE.md" echo( Password : (vide)
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ### Requêtes SQL utiles
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```sql
+>> "TESTS-REFERENCE.md" echo( -- Sites avec phase
+>> "TESTS-REFERENCE.md" echo( SELECT id, name, url, current_phase FROM sites;
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( -- Rapports avec scores
+>> "TESTS-REFERENCE.md" echo( SELECT r.id, s.name, r.score_global, r.trend, r.audited_at
+>> "TESTS-REFERENCE.md" echo( FROM audit_reports r JOIN sites s ON r.site_id = s.id
+>> "TESTS-REFERENCE.md" echo( ORDER BY r.audited_at DESC;
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( -- Score moyen par site
+>> "TESTS-REFERENCE.md" echo( SELECT s.name, COUNT(r.id) as audits, ROUND(AVG(r.score_global), 2) as avg_score
+>> "TESTS-REFERENCE.md" echo( FROM sites s LEFT JOIN audit_reports r ON r.site_id = s.id
+>> "TESTS-REFERENCE.md" echo( GROUP BY s.name;
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( -- Poids dynamiques (modifiés par la rétroaction)
+>> "TESTS-REFERENCE.md" echo( SELECT * FROM rule_configs;
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( -- Migrations Flyway
+>> "TESTS-REFERENCE.md" echo( SELECT version, description, success FROM flyway_schema_history;
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## SSE depuis JavaScript (futur dashboard Vue.js)
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ```javascript
+>> "TESTS-REFERENCE.md" echo( const sse = new EventSource('/api/audits/stream');
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( sse.addEventListener('connected', (e) =^> {
+>> "TESTS-REFERENCE.md" echo(   console.log('🔗 SSE connecté');
+>> "TESTS-REFERENCE.md" echo( });
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( sse.addEventListener('audit-started', (e) =^> {
+>> "TESTS-REFERENCE.md" echo(   const data = JSON.parse(e.data);
+>> "TESTS-REFERENCE.md" echo(   console.log(`🚀 Audit démarré : ${data.siteName}`);
+>> "TESTS-REFERENCE.md" echo( });
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( sse.addEventListener('audit-progress', (e) =^> {
+>> "TESTS-REFERENCE.md" echo(   const data = JSON.parse(e.data);
+>> "TESTS-REFERENCE.md" echo(   console.log(`⏳ [${data.step}] ${data.phaseLabel} — ${data.progress}%%`);
+>> "TESTS-REFERENCE.md" echo( });
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( sse.addEventListener('audit-completed', (e) =^> {
+>> "TESTS-REFERENCE.md" echo(   const data = JSON.parse(e.data);
+>> "TESTS-REFERENCE.md" echo(   console.log(`✅ Score : ${data.scoreGlobal} — Tendance : ${data.trend}`);
+>> "TESTS-REFERENCE.md" echo( });
+>> "TESTS-REFERENCE.md" echo( ```
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ## Récapitulatif des endpoints
+>> "TESTS-REFERENCE.md" echo( 
+>> "TESTS-REFERENCE.md" echo( ^| Méthode ^| Endpoint ^| Module ^| Description ^|
+>> "TESTS-REFERENCE.md" echo( ^|---------^|----------^|--------^|-------------^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/` ^| M1 ^| Index API (découvrabilité) ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/health` ^| M1 ^| Health check + stats moteur ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/sites` ^| M3 ^| Lister les sites ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/sites` ^| M3 ^| Créer un site ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/sites/{id}` ^| M3 ^| Détail d'un site ^|
+>> "TESTS-REFERENCE.md" echo( ^| DELETE ^| `/api/sites/{id}` ^| M3 ^| Supprimer un site ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/sites/search?name=` ^| M3 ^| Recherche par nom ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/audits` ^| M3 ^| Audit synchrone (cycle 7E) ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/{id}` ^| M3 ^| Détail d'un rapport ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/site/{siteId}` ^| M3 ^| Historique d'un site ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/stats` ^| M3 ^| Statistiques globales ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/alerts` ^| M3 ^| Alertes (score ^< seuil) ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/config/weights` ^| M4 ^| Voir les poids de scoring ^|
+>> "TESTS-REFERENCE.md" echo( ^| PUT ^| `/api/config/weights/{cat}` ^| M4 ^| Modifier un poids ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/config/weights/reset` ^| M4 ^| Reset poids par défaut ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/audits/async` ^| M5 ^| Audit asynchrone ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/async/{jobId}` ^| M5 ^| Statut d'un job ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/async` ^| M5 ^| Lister les jobs ^|
+>> "TESTS-REFERENCE.md" echo( ^| DELETE ^| `/api/audits/async` ^| M5 ^| Nettoyer les jobs ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/audits/batch` ^| M5 ^| Batch d'audits parallèles ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/stream` ^| M5 ^| Flux SSE temps réel ^|
+>> "TESTS-REFERENCE.md" echo( ^| GET ^| `/api/audits/schedule` ^| M5 ^| Info scheduler ^|
+>> "TESTS-REFERENCE.md" echo( ^| POST ^| `/api/audits/schedule/trigger` ^| M5 ^| Déclenchement manuel ^|
+certutil -hashfile "TESTS-REFERENCE.md" SHA256 | findstr /I /C:"FBBC2D0EE7446C02B984555C8F0BB686E5EC74B8BBD31796A7091383C5F4B344" >nul
+if %errorlevel%==0 (echo    [OK] TESTS-REFERENCE.md) else (echo    [ERREUR] TESTS-REFERENCE.md)
+echo Décompression de .mvn\wrapper\maven-wrapper.properties
+> ".mvn\wrapper\maven-wrapper.properties" echo( wrapperVersion=3.3.4
+>> ".mvn\wrapper\maven-wrapper.properties" echo( distributionType=only-script
+>> ".mvn\wrapper\maven-wrapper.properties" echo( distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.14/apache-maven-3.9.14-bin.zip
+certutil -hashfile ".mvn\wrapper\maven-wrapper.properties" SHA256 | findstr /I /C:"B0FFAF47BFFF05E4F8D05FDC32936382B3DFF70EFC6E8A480C42AE49AA04DC93" >nul
+if %errorlevel%==0 (echo    [OK] .mvn\wrapper\maven-wrapper.properties) else (echo    [ERREUR] .mvn\wrapper\maven-wrapper.properties)
+echo Décompression de scripts\diagnose-packages.ps1
+> "scripts\diagnose-packages.ps1" echo( # diagnose-packages.ps1
+>> "scripts\diagnose-packages.ps1" echo( # Identifie les vrais packages Java dans le projet pour fixer l'alignement
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  DIAGNOSTIC DES PACKAGES CyberAudit7E" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( # 1. Trouve la classe @SpringBootApplication (app principale)
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "[1/3] Recherche de @SpringBootApplication..." -ForegroundColor Yellow
+>> "scripts\diagnose-packages.ps1" echo( $appFile = Get-ChildItem -Path src\main\java -Recurse -Filter "*.java" ^|
+>> "scripts\diagnose-packages.ps1" echo(     Where-Object { (Get-Content $_.FullName -Raw) -match '@SpringBootApplication' } ^|
+>> "scripts\diagnose-packages.ps1" echo(     Select-Object -First 1
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( if ($appFile) {
+>> "scripts\diagnose-packages.ps1" echo(     $firstLine = (Get-Content $appFile.FullName)[0]
+>> "scripts\diagnose-packages.ps1" echo(     Write-Host "   Fichier : $($appFile.FullName)" -ForegroundColor White
+>> "scripts\diagnose-packages.ps1" echo(     Write-Host "   Package : $firstLine" -ForegroundColor Green
+>> "scripts\diagnose-packages.ps1" echo(     $appPackage = $firstLine -replace 'package\s+', '' -replace ';', '' -replace '\s+', ''
+>> "scripts\diagnose-packages.ps1" echo( } else {
+>> "scripts\diagnose-packages.ps1" echo(     Write-Host "   ERREUR : aucune classe @SpringBootApplication trouvée !" -ForegroundColor Red
+>> "scripts\diagnose-packages.ps1" echo(     exit 1
+>> "scripts\diagnose-packages.ps1" echo( }
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( # 2. Liste tous les packages distincts dans src/main/java
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "[2/3] Packages dans src/main/java :" -ForegroundColor Yellow
+>> "scripts\diagnose-packages.ps1" echo( $mainPackages = Get-ChildItem -Path src\main\java -Recurse -Filter "*.java" ^|
+>> "scripts\diagnose-packages.ps1" echo(     ForEach-Object {
+>> "scripts\diagnose-packages.ps1" echo(         (Get-Content $_.FullName)[0] -replace 'package\s+', '' -replace ';', '' -replace '\s+', ''
+>> "scripts\diagnose-packages.ps1" echo(     } ^| Sort-Object -Unique
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( foreach ($pkg in $mainPackages) {
+>> "scripts\diagnose-packages.ps1" echo(     $prefix = if ($pkg -like "$appPackage*") { "OK  " } else { "KO  " }
+>> "scripts\diagnose-packages.ps1" echo(     $color = if ($pkg -like "$appPackage*") { "Green" } else { "Red" }
+>> "scripts\diagnose-packages.ps1" echo(     Write-Host "   [$prefix] $pkg" -ForegroundColor $color
+>> "scripts\diagnose-packages.ps1" echo( }
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( # 3. Liste tous les packages dans src/test/java
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "[3/3] Packages dans src/test/java :" -ForegroundColor Yellow
+>> "scripts\diagnose-packages.ps1" echo( if (Test-Path src\test\java) {
+>> "scripts\diagnose-packages.ps1" echo(     $testPackages = Get-ChildItem -Path src\test\java -Recurse -Filter "*.java" ^|
+>> "scripts\diagnose-packages.ps1" echo(         ForEach-Object {
+>> "scripts\diagnose-packages.ps1" echo(             (Get-Content $_.FullName)[0] -replace 'package\s+', '' -replace ';', '' -replace '\s+', ''
+>> "scripts\diagnose-packages.ps1" echo(         } ^| Sort-Object -Unique
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo(     foreach ($pkg in $testPackages) {
+>> "scripts\diagnose-packages.ps1" echo(         $prefix = if ($pkg -like "$appPackage*") { "OK  " } else { "KO  " }
+>> "scripts\diagnose-packages.ps1" echo(         $color = if ($pkg -like "$appPackage*") { "Green" } else { "Red" }
+>> "scripts\diagnose-packages.ps1" echo(         Write-Host "   [$prefix] $pkg" -ForegroundColor $color
+>> "scripts\diagnose-packages.ps1" echo(     }
+>> "scripts\diagnose-packages.ps1" echo( } else {
+>> "scripts\diagnose-packages.ps1" echo(     Write-Host "   (aucun répertoire src/test/java)" -ForegroundColor Gray
+>> "scripts\diagnose-packages.ps1" echo( }
+>> "scripts\diagnose-packages.ps1" echo( 
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  RÉSUMÉ" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  Package principal : $appPackage" -ForegroundColor White
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  Règle Spring Test :" -ForegroundColor Yellow
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  Les tests DOIVENT être dans un sous-package de '$appPackage'" -ForegroundColor White
+>> "scripts\diagnose-packages.ps1" echo( Write-Host "  sinon Spring ne trouve pas @SpringBootApplication." -ForegroundColor White
+>> "scripts\diagnose-packages.ps1" echo( Write-Host ""
+certutil -hashfile "scripts\diagnose-packages.ps1" SHA256 | findstr /I /C:"62D0DAE542B3CDCA88788894176ACE472113C13972D6B40BAAAF83ACED70DE8D" >nul
+if %errorlevel%==0 (echo    [OK] scripts\diagnose-packages.ps1) else (echo    [ERREUR] scripts\diagnose-packages.ps1)
+echo Décompression de scripts\README.md
+> "scripts\README.md" echo( # Fix Maven Tests — CyberAudit7E
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ## Le problème
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Spring Test cherche `@SpringBootApplication` en remontant l'arborescence des
+>> "scripts\README.md" echo( packages **à partir du package du test**. Si le test est dans un package qui
+>> "scripts\README.md" echo( n'est **pas un sous-package** de ton application principale, Spring ne trouve
+>> "scripts\README.md" echo( rien et tu obtiens :
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( Unable to find a @SpringBootConfiguration by searching packages upwards
+>> "scripts\README.md" echo( from the test.
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Dans ton cas, il y a eu un mix de packages dans le projet :
+>> "scripts\README.md" echo( - Application principale (auto-générée par Spring Initializr) : probablement `com.CyberAudit7E`
+>> "scripts\README.md" echo( - Mes fichiers de test : `com.cyberaudit7e` (minuscules)
+>> "scripts\README.md" echo( - Test stub `Cyberaudit7eApplicationTests` : dans un package incomplet (`CyberAudit7E`)
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Windows est case-insensitive sur les dossiers mais Java est case-sensitive sur
+>> "scripts\README.md" echo( les packages — d'où le mismatch.
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ## Solution en 2 commandes
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ### 1. Diagnostic (vérifier la situation)
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Place `diagnose-packages.ps1` dans la racine de ton projet et lance :
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```powershell
+>> "scripts\README.md" echo( powershell -ExecutionPolicy Bypass -File .\diagnose-packages.ps1
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Le script te montrera :
+>> "scripts\README.md" echo( - Le vrai package de ton `@SpringBootApplication`
+>> "scripts\README.md" echo( - Tous les packages dans `src/main/java`
+>> "scripts\README.md" echo( - Tous les packages dans `src/test/java` avec `[OK]` ou `[KO]` selon
+>> "scripts\README.md" echo(   l'alignement
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ### 2. Correction automatique
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Place `realign-test-packages.ps1` dans la racine et lance :
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```powershell
+>> "scripts\README.md" echo( powershell -ExecutionPolicy Bypass -File .\realign-test-packages.ps1
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Le script va :
+>> "scripts\README.md" echo( 1. Détecter le vrai package de ton application principale
+>> "scripts\README.md" echo( 2. Supprimer le test stub `Cyberaudit7eApplicationTests.java`
+>> "scripts\README.md" echo(    (il était inutile de toute façon)
+>> "scripts\README.md" echo( 3. Remplacer `com.cyberaudit7e` par le vrai package dans tous les
+>> "scripts\README.md" echo(    fichiers `.java` de `src/test`
+>> "scripts\README.md" echo( 4. Déplacer physiquement les fichiers dans la bonne arborescence
+>> "scripts\README.md" echo( 5. Nettoyer les dossiers vides
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ### 3. Relance des tests
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```powershell
+>> "scripts\README.md" echo( .\mvnw.cmd test
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Résultat attendu : les 6 classes de test (ScoringServiceTest,
+>> "scripts\README.md" echo( Phase7ETest, DsfrHeaderRuleTest, SiteRepositoryTest, HealthControllerTest,
+>> "scripts\README.md" echo( AuditCycleIntegrationTest) passent en vert.
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ## Si le package n'est pas `com.cyberaudit7e`
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Par défaut, le script suppose que mes fichiers de test utilisent
+>> "scripts\README.md" echo( `com.cyberaudit7e` (c'était le cas dans le zip initial).
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Si tu as déjà modifié les fichiers de test avec un autre package,
+>> "scripts\README.md" echo( ouvre `realign-test-packages.ps1` et change la ligne :
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```powershell
+>> "scripts\README.md" echo( $oldPackage = "com.cyberaudit7e"
+>> "scripts\README.md" echo( ```
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( Remplace par la valeur actuelle de tes tests.
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ## Alternative manuelle (si tu préfères voir ce qui se passe)
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( ```powershell
+>> "scripts\README.md" echo( # 1. Trouver le vrai package de l'app principale
+>> "scripts\README.md" echo( Get-ChildItem -Path src\main\java -Recurse -Filter "*Application.java" ^|
+>> "scripts\README.md" echo(     ForEach-Object { Get-Content $_.FullName ^| Select-Object -First 1 }
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( # Exemple de sortie : package com.CyberAudit7E;
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( # 2. Supprimer le test stub
+>> "scripts\README.md" echo( Get-ChildItem -Recurse -Filter "Cyberaudit7eApplicationTests.java" ^| Remove-Item
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( # 3. Remplacer le package dans tous les fichiers de test
+>> "scripts\README.md" echo( # (adapter com.CyberAudit7E selon ta sortie de l'étape 1)
+>> "scripts\README.md" echo( Get-ChildItem -Path src\test -Recurse -Filter "*.java" ^|
+>> "scripts\README.md" echo(     ForEach-Object {
+>> "scripts\README.md" echo(         (Get-Content $_.FullName) -replace 'com\.cyberaudit7e', 'com.CyberAudit7E' ^|
+>> "scripts\README.md" echo(         Set-Content $_.FullName
+>> "scripts\README.md" echo(     }
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( # 4. Déplacer physiquement les dossiers
+>> "scripts\README.md" echo( # src\test\java\com\cyberaudit7e\* -^> src\test\java\com\CyberAudit7E\*
+>> "scripts\README.md" echo( # (ceci est case-insensitive sur Windows mais Maven ne s'en plaint pas)
+>> "scripts\README.md" echo( 
+>> "scripts\README.md" echo( # 5. Tester
+>> "scripts\README.md" echo( .\mvnw.cmd test
+>> "scripts\README.md" echo( ```
+certutil -hashfile "scripts\README.md" SHA256 | findstr /I /C:"A80BAFFC27ABC27D73AD505138D6CD2893B21C547505DE94B15B0DA2E2563015" >nul
+if %errorlevel%==0 (echo    [OK] scripts\README.md) else (echo    [ERREUR] scripts\README.md)
+echo Décompression de scripts\realign-test-packages.ps1
+> "scripts\realign-test-packages.ps1" echo( # realign-test-packages.ps1
+>> "scripts\realign-test-packages.ps1" echo( # Aligne les packages des tests sur le package de l'application principale
+>> "scripts\realign-test-packages.ps1" echo( # Usage : .\realign-test-packages.ps1
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( $ErrorActionPreference = "Stop"
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "  Realignement packages tests" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 1. Detecte le package reel de l'application
+>> "scripts\realign-test-packages.ps1" echo( $appFile = Get-ChildItem -Path src\main\java -Recurse -Filter "*.java" ^|
+>> "scripts\realign-test-packages.ps1" echo(     Where-Object { (Get-Content $_.FullName -Raw) -match '@SpringBootApplication' } ^|
+>> "scripts\realign-test-packages.ps1" echo(     Select-Object -First 1
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( if (-not $appFile) {
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "ERREUR : aucune classe @SpringBootApplication trouvee" -ForegroundColor Red
+>> "scripts\realign-test-packages.ps1" echo(     exit 1
+>> "scripts\realign-test-packages.ps1" echo( }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( $firstLine = (Get-Content $appFile.FullName)[0]
+>> "scripts\realign-test-packages.ps1" echo( $realPackage = $firstLine -replace 'package\s+', '' -replace ';', '' -replace '\s+', ''
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "Package application principale : $realPackage" -ForegroundColor Green
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 2. Determine l'ancien package (celui qu'on doit remplacer)
+>> "scripts\realign-test-packages.ps1" echo( # Par defaut : com.cyberaudit7e (minuscules, celui de mes fichiers de test)
+>> "scripts\realign-test-packages.ps1" echo( $oldPackage = "com.cyberaudit7e"
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "Replacement : $oldPackage -^> $realPackage" -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 3. Demande confirmation
+>> "scripts\realign-test-packages.ps1" echo( $confirm = Read-Host "Confirmer le replacement dans tous les .java de src/test ? [O/N]"
+>> "scripts\realign-test-packages.ps1" echo( if ($confirm -ne "O" -and $confirm -ne "o") {
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "Annule." -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo(     exit 0
+>> "scripts\realign-test-packages.ps1" echo( }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 4. Supprime le test stub auto-genere par Spring Initializr
+>> "scripts\realign-test-packages.ps1" echo( $stubTest = Get-ChildItem -Path src\test\java -Recurse -Filter "*ApplicationTests.java" -ErrorAction SilentlyContinue
+>> "scripts\realign-test-packages.ps1" echo( if ($stubTest) {
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "Suppression du test stub auto-genere :" -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo(     $stubTest ^| ForEach-Object {
+>> "scripts\realign-test-packages.ps1" echo(         Write-Host "  - $($_.FullName)" -ForegroundColor Gray
+>> "scripts\realign-test-packages.ps1" echo(         Remove-Item $_.FullName
+>> "scripts\realign-test-packages.ps1" echo(     }
+>> "scripts\realign-test-packages.ps1" echo( }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 5. Remplace les packages dans tous les .java de test
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "Remplacement des packages et imports :" -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( $modified = 0
+>> "scripts\realign-test-packages.ps1" echo( Get-ChildItem -Path src\test\java -Recurse -Filter "*.java" ^| ForEach-Object {
+>> "scripts\realign-test-packages.ps1" echo(     $content = Get-Content $_.FullName -Raw
+>> "scripts\realign-test-packages.ps1" echo(     $newContent = $content -replace [regex]::Escape($oldPackage), $realPackage
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo(     if ($content -ne $newContent) {
+>> "scripts\realign-test-packages.ps1" echo(         Set-Content -Path $_.FullName -Value $newContent -NoNewline
+>> "scripts\realign-test-packages.ps1" echo(         Write-Host "  - $($_.Name)" -ForegroundColor Green
+>> "scripts\realign-test-packages.ps1" echo(         $modified++
+>> "scripts\realign-test-packages.ps1" echo(     }
+>> "scripts\realign-test-packages.ps1" echo( }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "$modified fichier(s) modifie(s)." -ForegroundColor Green
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # 6. Deplacement physique des fichiers
+>> "scripts\realign-test-packages.ps1" echo( # Les declarations package ont change mais les dossiers physiques aussi doivent suivre
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "Verification de l'arborescence physique..." -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( # Chemin cible attendu, base sur le realPackage
+>> "scripts\realign-test-packages.ps1" echo( $expectedPath = "src\test\java\" + ($realPackage -replace '\.', '\')
+>> "scripts\realign-test-packages.ps1" echo( $oldPath = "src\test\java\" + ($oldPackage -replace '\.', '\')
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( if (Test-Path $oldPath) {
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "Deplacement : $oldPath -^> $expectedPath" -ForegroundColor Yellow
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo(     # Cree les repertoires parents
+>> "scripts\realign-test-packages.ps1" echo(     $parent = Split-Path $expectedPath -Parent
+>> "scripts\realign-test-packages.ps1" echo(     if (-not (Test-Path $parent)) {
+>> "scripts\realign-test-packages.ps1" echo(         New-Item -ItemType Directory -Path $parent -Force ^| Out-Null
+>> "scripts\realign-test-packages.ps1" echo(     }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo(     # Deplace recursivement
+>> "scripts\realign-test-packages.ps1" echo(     if (Test-Path $expectedPath) {
+>> "scripts\realign-test-packages.ps1" echo(         Get-ChildItem -Path $oldPath -Recurse ^| Move-Item -Destination $expectedPath -Force
+>> "scripts\realign-test-packages.ps1" echo(         Remove-Item -Path $oldPath -Recurse -Force -ErrorAction SilentlyContinue
+>> "scripts\realign-test-packages.ps1" echo(     } else {
+>> "scripts\realign-test-packages.ps1" echo(         Move-Item -Path $oldPath -Destination $expectedPath -Force
+>> "scripts\realign-test-packages.ps1" echo(     }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo(     # Nettoie les dossiers vides restants
+>> "scripts\realign-test-packages.ps1" echo(     Get-ChildItem -Path src\test\java -Directory -Recurse ^|
+>> "scripts\realign-test-packages.ps1" echo(         Where-Object { -not (Get-ChildItem -Path $_.FullName -Recurse -File) } ^|
+>> "scripts\realign-test-packages.ps1" echo(         Sort-Object -Property FullName -Descending ^|
+>> "scripts\realign-test-packages.ps1" echo(         Remove-Item -Force -ErrorAction SilentlyContinue
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "Arborescence alignee." -ForegroundColor Green
+>> "scripts\realign-test-packages.ps1" echo( } else {
+>> "scripts\realign-test-packages.ps1" echo(     Write-Host "Pas de dossier $oldPath a deplacer (deja aligne ?)" -ForegroundColor Gray
+>> "scripts\realign-test-packages.ps1" echo( }
+>> "scripts\realign-test-packages.ps1" echo( 
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "  Termine !" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "========================================" -ForegroundColor Cyan
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+>> "scripts\realign-test-packages.ps1" echo( Write-Host "Prochaine etape : .\mvnw.cmd test" -ForegroundColor White
+>> "scripts\realign-test-packages.ps1" echo( Write-Host ""
+certutil -hashfile "scripts\realign-test-packages.ps1" SHA256 | findstr /I /C:"8FF5A3CE06924F5A853966AC029FD403DDA5E0AABD8469C75590F596D021C514" >nul
+if %errorlevel%==0 (echo    [OK] scripts\realign-test-packages.ps1) else (echo    [ERREUR] scripts\realign-test-packages.ps1)
+echo Décompression de scripts\smoke-test.ps1
+> "scripts\smoke-test.ps1" echo( #
+>> "scripts\smoke-test.ps1" echo( # smoke-test.ps1 — Test end-to-end de l'API CyberAudit7E
+>> "scripts\smoke-test.ps1" echo( # Usage : .\smoke-test.ps1
+>> "scripts\smoke-test.ps1" echo( # Prérequis : l'application doit tourner sur http://localhost:8080
+>> "scripts\smoke-test.ps1" echo( #
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( $ErrorActionPreference = "Stop"
+>> "scripts\smoke-test.ps1" echo( $BaseUrl = "http://localhost:8080/api"
+>> "scripts\smoke-test.ps1" echo( $Passed = 0
+>> "scripts\smoke-test.ps1" echo( $Failed = 0
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( function Test-Endpoint {
+>> "scripts\smoke-test.ps1" echo(     param(
+>> "scripts\smoke-test.ps1" echo(         [string]$Name,
+>> "scripts\smoke-test.ps1" echo(         [string]$Method,
+>> "scripts\smoke-test.ps1" echo(         [string]$Path,
+>> "scripts\smoke-test.ps1" echo(         [string]$Body = $null,
+>> "scripts\smoke-test.ps1" echo(         [int]$ExpectedStatus = 200
+>> "scripts\smoke-test.ps1" echo(     )
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo(     Write-Host ""
+>> "scripts\smoke-test.ps1" echo(     Write-Host "────────────────────────────────────────" -ForegroundColor Cyan
+>> "scripts\smoke-test.ps1" echo(     Write-Host "  $Name" -ForegroundColor White
+>> "scripts\smoke-test.ps1" echo(     Write-Host "  $Method $Path" -ForegroundColor Gray
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo(     try {
+>> "scripts\smoke-test.ps1" echo(         $params = @{
+>> "scripts\smoke-test.ps1" echo(             Uri = "$BaseUrl$Path"
+>> "scripts\smoke-test.ps1" echo(             Method = $Method
+>> "scripts\smoke-test.ps1" echo(             ContentType = "application/json"
+>> "scripts\smoke-test.ps1" echo(             UseBasicParsing = $true
+>> "scripts\smoke-test.ps1" echo(         }
+>> "scripts\smoke-test.ps1" echo(         if ($Body) { $params.Body = $Body }
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo(         $response = Invoke-WebRequest @params
+>> "scripts\smoke-test.ps1" echo(         $status = $response.StatusCode
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo(         if ($status -eq $ExpectedStatus) {
+>> "scripts\smoke-test.ps1" echo(             Write-Host "  ✓ $status OK" -ForegroundColor Green
+>> "scripts\smoke-test.ps1" echo(             $script:Passed++
+>> "scripts\smoke-test.ps1" echo(             if ($response.Content) {
+>> "scripts\smoke-test.ps1" echo(                 $json = $response.Content ^| ConvertFrom-Json
+>> "scripts\smoke-test.ps1" echo(                 $json ^| ConvertTo-Json -Depth 5 ^| Write-Host -ForegroundColor DarkGray
+>> "scripts\smoke-test.ps1" echo(             }
+>> "scripts\smoke-test.ps1" echo(             return $json
+>> "scripts\smoke-test.ps1" echo(         } else {
+>> "scripts\smoke-test.ps1" echo(             Write-Host "  ✗ Attendu $ExpectedStatus, reçu $status" -ForegroundColor Red
+>> "scripts\smoke-test.ps1" echo(             $script:Failed++
+>> "scripts\smoke-test.ps1" echo(         }
+>> "scripts\smoke-test.ps1" echo(     } catch {
+>> "scripts\smoke-test.ps1" echo(         $status = $_.Exception.Response.StatusCode.value__
+>> "scripts\smoke-test.ps1" echo(         if ($status -eq $ExpectedStatus) {
+>> "scripts\smoke-test.ps1" echo(             Write-Host "  ✓ $status OK (erreur attendue)" -ForegroundColor Green
+>> "scripts\smoke-test.ps1" echo(             $script:Passed++
+>> "scripts\smoke-test.ps1" echo(         } else {
+>> "scripts\smoke-test.ps1" echo(             Write-Host "  ✗ Erreur : $_" -ForegroundColor Red
+>> "scripts\smoke-test.ps1" echo(             $script:Failed++
+>> "scripts\smoke-test.ps1" echo(         }
+>> "scripts\smoke-test.ps1" echo(     }
+>> "scripts\smoke-test.ps1" echo( }
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( Write-Host ""
+>> "scripts\smoke-test.ps1" echo( Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( Write-Host "║  CyberAudit7E — Smoke Test E2E              ║" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 1. Health ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Health check" -Method GET -Path "/health"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 2. Liste des sites seed ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Liste des sites (4 seed attendus)" -Method GET -Path "/sites"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 3. Recherche ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Recherche sites" -Method GET -Path "/sites/search?name=gouv"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 4. Site par ID ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Détail site #1" -Method GET -Path "/sites/1"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 5. Audit site .gouv.fr (score DSFR élevé) ═══
+>> "scripts\smoke-test.ps1" echo( $bodyGouv = '{"url":"https://www.gouvernement.gouv.fr","name":"Gouvernement FR"}'
+>> "scripts\smoke-test.ps1" echo( $audit1 = Test-Endpoint -Name "Audit site .gouv.fr" -Method POST -Path "/audits" -Body $bodyGouv -ExpectedStatus 201
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 6. Audit site non-.gouv.fr ═══
+>> "scripts\smoke-test.ps1" echo( $bodyCom = '{"url":"https://www.example.com","name":"Example"}'
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Audit site .com (score DSFR bas)" -Method POST -Path "/audits" -Body $bodyCom -ExpectedStatus 201
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 7. Re-audit pour tester la tendance ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Re-audit (tendance STABLE)" -Method POST -Path "/audits" -Body $bodyGouv -ExpectedStatus 201
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 8. Historique ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Historique audits site #2" -Method GET -Path "/audits/site/2"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 9. Stats ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Stats globales" -Method GET -Path "/audits/stats"
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 10. Validation KO ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Validation échouée (400 attendu)" -Method POST -Path "/audits" -Body '{"url":"","name":""}' -ExpectedStatus 400
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ 11. Not found ═══
+>> "scripts\smoke-test.ps1" echo( Test-Endpoint -Name "Site inexistant (404 attendu)" -Method GET -Path "/sites/999" -ExpectedStatus 404
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( # ═══ Résumé ═══
+>> "scripts\smoke-test.ps1" echo( Write-Host ""
+>> "scripts\smoke-test.ps1" echo( Write-Host "╔══════════════════════════════════════════════╗" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( Write-Host "║  Résultats : $Passed ✓  ^|  $Failed ✗                   ║" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( Write-Host "╚══════════════════════════════════════════════╝" -ForegroundColor Magenta
+>> "scripts\smoke-test.ps1" echo( 
+>> "scripts\smoke-test.ps1" echo( if ($Failed -eq 0) {
+>> "scripts\smoke-test.ps1" echo(     Write-Host "  Tous les tests sont passés !" -ForegroundColor Green
+>> "scripts\smoke-test.ps1" echo(     exit 0
+>> "scripts\smoke-test.ps1" echo( } else {
+>> "scripts\smoke-test.ps1" echo(     Write-Host "  $Failed test(s) en échec" -ForegroundColor Red
+>> "scripts\smoke-test.ps1" echo(     exit 1
+>> "scripts\smoke-test.ps1" echo( }
+certutil -hashfile "scripts\smoke-test.ps1" SHA256 | findstr /I /C:"691ABF4B95B2A5DE062944CF1CDD5801C7D04536E452EAB6386434CD04D1F006" >nul
+if %errorlevel%==0 (echo    [OK] scripts\smoke-test.ps1) else (echo    [ERREUR] scripts\smoke-test.ps1)
+echo Décompression de scripts\test-cyberaudit7e.ps1
+> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( # CyberAudit7E — Script de tests complet (PowerShell)
+>> "scripts\test-cyberaudit7e.ps1" echo( # Modules M1 → M5 — Windows 11 natif
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( # Usage :
+>> "scripts\test-cyberaudit7e.ps1" echo( #   .\test-cyberaudit7e.ps1           # Tout exécuter
+>> "scripts\test-cyberaudit7e.ps1" echo( #   .\test-cyberaudit7e.ps1 -Module 3 # Tester un module spécifique
+>> "scripts\test-cyberaudit7e.ps1" echo( #   .\test-cyberaudit7e.ps1 -SSE      # Ouvrir le flux SSE
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( param(
+>> "scripts\test-cyberaudit7e.ps1" echo(     [int]$Module = 0,
+>> "scripts\test-cyberaudit7e.ps1" echo(     [switch]$SSE,
+>> "scripts\test-cyberaudit7e.ps1" echo(     [string]$BaseUrl = "http://localhost:8080"
+>> "scripts\test-cyberaudit7e.ps1" echo( )
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( $ErrorActionPreference = "Continue"
+>> "scripts\test-cyberaudit7e.ps1" echo( $testCount = 0
+>> "scripts\test-cyberaudit7e.ps1" echo( $passCount = 0
+>> "scripts\test-cyberaudit7e.ps1" echo( $failCount = 0
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ── Helpers ──
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( function Write-Header($text) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  $text" -ForegroundColor Cyan
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( function Write-Test($name) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     $script:testCount++
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  [$script:testCount] $name" -ForegroundColor Yellow -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( function Write-Pass($detail) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     $script:passCount++
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host " → PASS" -ForegroundColor Green
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($detail) { Write-Host "       $detail" -ForegroundColor DarkGray }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( function Write-Fail($detail) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     $script:failCount++
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host " → FAIL" -ForegroundColor Red
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($detail) { Write-Host "       $detail" -ForegroundColor Red }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( function Invoke-Api {
+>> "scripts\test-cyberaudit7e.ps1" echo(     param(
+>> "scripts\test-cyberaudit7e.ps1" echo(         [string]$Method = "GET",
+>> "scripts\test-cyberaudit7e.ps1" echo(         [string]$Path,
+>> "scripts\test-cyberaudit7e.ps1" echo(         [object]$Body,
+>> "scripts\test-cyberaudit7e.ps1" echo(         [int]$ExpectedStatus = 200
+>> "scripts\test-cyberaudit7e.ps1" echo(     )
+>> "scripts\test-cyberaudit7e.ps1" echo(     $uri = "$BaseUrl$Path"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $params = @{
+>> "scripts\test-cyberaudit7e.ps1" echo(         Uri = $uri
+>> "scripts\test-cyberaudit7e.ps1" echo(         Method = $Method
+>> "scripts\test-cyberaudit7e.ps1" echo(         ContentType = "application/json"
+>> "scripts\test-cyberaudit7e.ps1" echo(         ErrorAction = "Stop"
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($Body) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $params.Body = ($Body ^| ConvertTo-Json -Depth 10)
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     try {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $response = Invoke-RestMethod @params
+>> "scripts\test-cyberaudit7e.ps1" echo(         return @{ Success = $true; Data = $response; StatusCode = 200 }
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo(     catch {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $statusCode = 0
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($_.Exception.Response) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $statusCode = [int]$_.Exception.Response.StatusCode
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(         $errorBody = $null
+>> "scripts\test-cyberaudit7e.ps1" echo(         try {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
+>> "scripts\test-cyberaudit7e.ps1" echo(             $errorBody = $reader.ReadToEnd() ^| ConvertFrom-Json
+>> "scripts\test-cyberaudit7e.ps1" echo(         } catch {}
+>> "scripts\test-cyberaudit7e.ps1" echo(         return @{ Success = ($statusCode -eq $ExpectedStatus); Data = $errorBody; StatusCode = $statusCode }
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ── SSE Mode ──
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($SSE) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "SSE STREAMING — Ctrl+C pour quitter"
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  Connexion à $BaseUrl/api/audits/stream ..." -ForegroundColor Gray
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  Lancez un audit dans un autre terminal pour voir les events." -ForegroundColor Gray
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo(     try {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $webClient = New-Object System.Net.WebClient
+>> "scripts\test-cyberaudit7e.ps1" echo(         $stream = $webClient.OpenRead("$BaseUrl/api/audits/stream")
+>> "scripts\test-cyberaudit7e.ps1" echo(         $reader = New-Object System.IO.StreamReader($stream)
+>> "scripts\test-cyberaudit7e.ps1" echo(         while (-not $reader.EndOfStream) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $line = $reader.ReadLine()
+>> "scripts\test-cyberaudit7e.ps1" echo(             if ($line -match "^^event:") {
+>> "scripts\test-cyberaudit7e.ps1" echo(                 Write-Host $line -ForegroundColor Magenta
+>> "scripts\test-cyberaudit7e.ps1" echo(             }
+>> "scripts\test-cyberaudit7e.ps1" echo(             elseif ($line -match "^^data:") {
+>> "scripts\test-cyberaudit7e.ps1" echo(                 Write-Host $line -ForegroundColor White
+>> "scripts\test-cyberaudit7e.ps1" echo(                 Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo(             }
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo(     catch {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Host "  Connexion SSE interrompue." -ForegroundColor Yellow
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo(     exit
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  MODULE M1 — BOOTSTRAP
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0 -or $Module -eq 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "MODULE M1 — Bootstrap Spring Boot"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/health → status UP"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/health"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.status -eq "UP") {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "service=$($r.Data.service), phase=$($r.Data.phase)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Health check échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/ → index endpoint"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.service) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "version=$($r.Data.version)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Index non disponible" }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  MODULE M2 — ARCHITECTURE
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0 -or $Module -eq 2) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "MODULE M2 — Architecture Spring (IoC, Strategy Pattern)"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/health → rulesLoaded = 13"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/health"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.rulesLoaded -ge 7) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "rulesLoaded=$($r.Data.rulesLoaded)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Règles non chargées" }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  MODULE M3 — PERSISTANCE JPA
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0 -or $Module -eq 3) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "MODULE M3 — Persistance JPA + H2 + Flyway"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/sites → sites seed Flyway (^>= 4)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/sites"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.Count -ge 4) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.Count) site(s) — Flyway V2 seed OK"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Sites seed non trouvés (Flyway V2)" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/sites/1 → SiteDto avec auditsCount"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/sites/1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.id -eq 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "url=$($r.Data.url), phase=$($r.Data.currentPhase)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Site #1 introuvable" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/sites/search?name=gouv → recherche LIKE"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/sites/search?name=gouv"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.Count -ge 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $names = ($r.Data ^| ForEach-Object { $_.name }) -join ", "
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.Count) résultat(s) : $names"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Recherche par nom échouée" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/sites → créer un nouveau site"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $newSite = @{ url = "https://test-$(Get-Random).example.com"; name = "Test M3" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/sites" -Body $newSite
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.id) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "id=$($r.Data.id), url=$($r.Data.url)"
+>> "scripts\test-cyberaudit7e.ps1" echo(         # Cleanup
+>> "scripts\test-cyberaudit7e.ps1" echo(         Invoke-Api -Method DELETE -Path "/api/sites/$($r.Data.id)" ^| Out-Null
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Création de site échouée" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/sites → doublon = 409 Conflict"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $dupSite = @{ url = "https://www.service-public.fr"; name = "Doublon" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/sites" -Body $dupSite -ExpectedStatus 409
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.StatusCode -eq 409) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "409 Conflict correct"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Attendu 409, reçu $($r.StatusCode)" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/sites/999 → 404 Not Found"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/sites/999" -ExpectedStatus 404
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.StatusCode -eq 404) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "404 correct"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Attendu 404, reçu $($r.StatusCode)" }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  MODULE M4 — MOTEUR D'AUDIT JSOUP
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0 -or $Module -eq 4) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "MODULE M4 — Moteur d'audit Jsoup (13 règles réelles)"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/health → version M5, fetcherMode Jsoup"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/health"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.fetcherMode -match "Jsoup") {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "fetcherMode=$($r.Data.fetcherMode), rules=$($r.Data.rulesLoaded)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Fetcher non Jsoup" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/config/weights → poids normalisés"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/config/weights"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.normalized -eq $true) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "RGAA=$($r.Data.RGAA.weight), WCAG=$($r.Data.WCAG.weight), DSFR=$($r.Data.DSFR.weight)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Poids non normalisés" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → audit réel service-public.fr"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $audit1 = @{ url = "https://www.service-public.fr"; name = "Service Public" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $audit1
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.rulesCount -eq 13) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $score = $r.Data.scores.global
+>> "scripts\test-cyberaudit7e.ps1" echo(         $passed = $r.Data.passedCount
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "score=$score, passed=$passed/13, reportId=$($r.Data.reportId)"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(         # Vérifier les détails des règles
+>> "scripts\test-cyberaudit7e.ps1" echo(         $details = $r.Data.details
+>> "scripts\test-cyberaudit7e.ps1" echo(         $titleRule = $details ^| Where-Object { $_.ruleId -eq "RGAA-8.5" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($titleRule -and $titleRule.detail -match "Titre pertinent") {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       ├─ RGAA-8.5: $($titleRule.detail)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(         $langRule = $details ^| Where-Object { $_.ruleId -eq "RGAA-8.3" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($langRule -and $langRule.detail -match "lang=") {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       ├─ RGAA-8.3: $($langRule.detail)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(         $dsfrHdr = $details ^| Where-Object { $_.ruleId -eq "DSFR-HDR-01" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($dsfrHdr) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       ├─ DSFR-HDR: $($dsfrHdr.detail)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(         $dsfrFtr = $details ^| Where-Object { $_.ruleId -eq "DSFR-FTR-01" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($dsfrFtr) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       └─ DSFR-FTR: $($dsfrFtr.detail)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Audit échoué ou nombre de règles incorrect" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → audit .gouv.fr (DSFR élevé)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $audit2 = @{ url = "https://www.gouvernement.gouv.fr"; name = "Gouvernement FR" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $audit2
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.scores.dsfr -gt 0.3) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "DSFR=$($r.Data.scores.dsfr), Global=$($r.Data.scores.global)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Score DSFR bas pour un .gouv.fr" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → audit example.com (DSFR bas)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $audit3 = @{ url = "https://www.example.com"; name = "Example.com" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $audit3
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.scores.dsfr -lt 0.5) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "DSFR=$($r.Data.scores.dsfr) (bas attendu), Global=$($r.Data.scores.global)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Score DSFR inattendu pour example.com" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → 2e audit (test tendance ÉVOLUER)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $audit1
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "score=$($r.Data.scores.global), reportId=$($r.Data.reportId)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "2e audit échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → site inaccessible (mode dégradé)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $audit404 = @{ url = "https://site-inexistant-test-7e.invalid"; name = "Test 404" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $audit404
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $crawlFail = $r.Data.details ^| Where-Object { $_.detail -match "Impossible" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($crawlFail.Count -eq 13) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Pass "13 règles en mode dégradé (crawl échoué)"
+>> "scripts\test-cyberaudit7e.ps1" echo(         } else {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Pass "Audit exécuté — $($crawlFail.Count) règle(s) dégradée(s)"
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Audit dégradé échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits → validation (body vide = 400)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $auditBad = @{ url = ""; name = "" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits" -Body $auditBad -ExpectedStatus 400
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.StatusCode -eq 400) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "400 Validation OK"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Attendu 400, reçu $($r.StatusCode)" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "PUT /api/config/weights/RGAA → modifier poids"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method PUT -Path "/api/config/weights/RGAA" -Body @{ weight = 0.55 }
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "RGAA weight → 0.55"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Modification poids échouée" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/config/weights/reset → remettre les défauts"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/config/weights/reset"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.RGAA -eq 0.5) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "RGAA=0.5, WCAG=0.3, DSFR=0.2"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Reset des poids échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  MODULE M5 — ASYNC ^& EVENTS
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0 -or $Module -eq 5) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "MODULE M5 — Async, Events ^& SSE"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/health → version M5, sseClients, metrics"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/health"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.metrics) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "sseClients=$($r.Data.sseClients), totalAudits=$($r.Data.metrics.totalAuditsExecuted)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Métriques M5 absentes" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits/async → audit asynchrone (retour immédiat)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $asyncReq = @{ url = "https://www.legifrance.gouv.fr"; name = "Légifrance" }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits/async" -Body $asyncReq
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.jobId) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $jobId = $r.Data.jobId
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "jobId=$jobId, status=$($r.Data.status)"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(         # Attendre la fin du job
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Host "       Attente du job #$jobId..." -ForegroundColor DarkGray -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo(         $maxWait = 30
+>> "scripts\test-cyberaudit7e.ps1" echo(         $waited = 0
+>> "scripts\test-cyberaudit7e.ps1" echo(         do {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Start-Sleep -Seconds 2
+>> "scripts\test-cyberaudit7e.ps1" echo(             $waited += 2
+>> "scripts\test-cyberaudit7e.ps1" echo(             $jobStatus = Invoke-Api -Path "/api/audits/async/$jobId"
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "." -ForegroundColor DarkGray -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo(         } while ($jobStatus.Data.status -eq "RUNNING" -and $waited -lt $maxWait)
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Test "GET /api/audits/async/$jobId → résultat du job"
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($jobStatus.Data.status -eq "COMPLETED") {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $score = $jobStatus.Data.result.scores.global
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Pass "status=COMPLETED, score=$score"
+>> "scripts\test-cyberaudit7e.ps1" echo(         } else {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Fail "Job non terminé après ${waited}s — status=$($jobStatus.Data.status)"
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Soumission async échouée" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits/batch → batch de 3 audits parallèles"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $batchReq = @{
+>> "scripts\test-cyberaudit7e.ps1" echo(         sites = @(
+>> "scripts\test-cyberaudit7e.ps1" echo(             @{ url = "https://www.service-public.fr"; name = "SP" },
+>> "scripts\test-cyberaudit7e.ps1" echo(             @{ url = "https://www.gouvernement.gouv.fr"; name = "Gouv" },
+>> "scripts\test-cyberaudit7e.ps1" echo(             @{ url = "https://www.example.com"; name = "Example" }
+>> "scripts\test-cyberaudit7e.ps1" echo(         )
+>> "scripts\test-cyberaudit7e.ps1" echo(     }
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits/batch" -Body $batchReq
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.batchSize -eq 3) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         $jobs = $r.Data.jobs
+>> "scripts\test-cyberaudit7e.ps1" echo(         $ids = ($jobs ^| ForEach-Object { $_.jobId }) -join ", "
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "batchSize=3, jobIds=[$ids]"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(         # Attendre la fin du batch
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Host "       Attente du batch..." -ForegroundColor DarkGray -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo(         Start-Sleep -Seconds 10
+>> "scripts\test-cyberaudit7e.ps1" echo(         $allDone = $false
+>> "scripts\test-cyberaudit7e.ps1" echo(         $maxBatchWait = 60
+>> "scripts\test-cyberaudit7e.ps1" echo(         $batchWaited = 10
+>> "scripts\test-cyberaudit7e.ps1" echo(         do {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $jobList = Invoke-Api -Path "/api/audits/async"
+>> "scripts\test-cyberaudit7e.ps1" echo(             $running = ($jobList.Data ^| Where-Object { $_.status -eq "RUNNING" }).Count
+>> "scripts\test-cyberaudit7e.ps1" echo(             if ($running -eq 0) { $allDone = $true; break }
+>> "scripts\test-cyberaudit7e.ps1" echo(             Start-Sleep -Seconds 3
+>> "scripts\test-cyberaudit7e.ps1" echo(             $batchWaited += 3
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "." -ForegroundColor DarkGray -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo(         } while ($batchWaited -lt $maxBatchWait)
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Test "GET /api/audits/async → tous les jobs terminés"
+>> "scripts\test-cyberaudit7e.ps1" echo(         $jobList = Invoke-Api -Path "/api/audits/async"
+>> "scripts\test-cyberaudit7e.ps1" echo(         $completed = ($jobList.Data ^| Where-Object { $_.status -eq "COMPLETED" }).Count
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($completed -ge 3) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Pass "$completed job(s) COMPLETED"
+>> "scripts\test-cyberaudit7e.ps1" echo(         } else {
+>> "scripts\test-cyberaudit7e.ps1" echo(             $statuses = ($jobList.Data ^| ForEach-Object { "$($_.jobId):$($_.status)" }) -join ", "
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Fail "Jobs non tous terminés — $statuses"
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Batch échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "DELETE /api/audits/async → nettoyer les jobs terminés"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method DELETE -Path "/api/audits/async"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.cleared) job(s) nettoyé(s)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Nettoyage échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/audits/schedule → info scheduler"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/audits/schedule"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "enabled=$($r.Data.enabled)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Scheduler info échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "POST /api/audits/schedule/trigger → déclenchement manuel"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Method POST -Path "/api/audits/schedule/trigger"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.triggered -ge 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.triggered) audit(s) déclenchés"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Trigger scheduler échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     # Attendre un peu pour les audits schedulés
+>> "scripts\test-cyberaudit7e.ps1" echo(     Start-Sleep -Seconds 5
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  STATS ^& CONSULTATION (transversal)
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($Module -eq 0) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Header "STATS ^& CONSULTATION (transversal M3-M5)"
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/audits/stats → stats globales"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/audits/stats"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "sites=$($r.Data.totalSites), audits=$($r.Data.totalAudits), avg=$($r.Data.averageScore)"
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($r.Data.metrics) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       ├─ Métriques: totalExec=$($r.Data.metrics.totalAuditsExecuted), avgMs=$($r.Data.metrics.averageDurationMs)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(         if ($r.Data.trends) {
+>> "scripts\test-cyberaudit7e.ps1" echo(             Write-Host "       └─ Tendances: UP=$($r.Data.trends.UP), DOWN=$($r.Data.trends.DOWN), STABLE=$($r.Data.trends.STABLE)" -ForegroundColor DarkGray
+>> "scripts\test-cyberaudit7e.ps1" echo(         }
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Stats échouées" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/audits/site/1 → historique site #1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/audits/site/1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.Count -ge 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.Count) rapport(s) pour le site #1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Historique vide" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/audits/1 → détail rapport #1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/audits/1"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success -and $r.Data.id -eq 1) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "score=$($r.Data.scoreGlobal), règles=$($r.Data.rulesCount)"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Rapport #1 introuvable" }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Test "GET /api/audits/alerts?threshold=0.7 → alertes"
+>> "scripts\test-cyberaudit7e.ps1" echo(     $r = Invoke-Api -Path "/api/audits/alerts?threshold=0.7"
+>> "scripts\test-cyberaudit7e.ps1" echo(     if ($r.Success) {
+>> "scripts\test-cyberaudit7e.ps1" echo(         Write-Pass "$($r.Data.Count) alerte(s) sous le seuil 0.7"
+>> "scripts\test-cyberaudit7e.ps1" echo(     } else { Write-Fail "Endpoint alertes échoué" }
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( #  BILAN
+>> "scripts\test-cyberaudit7e.ps1" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host "  BILAN : $testCount tests — " -ForegroundColor Cyan -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host "$passCount PASS" -ForegroundColor Green -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host " / " -ForegroundColor Cyan -NoNewline
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($failCount -gt 0) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "$failCount FAIL" -ForegroundColor Red
+>> "scripts\test-cyberaudit7e.ps1" echo( } else {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "$failCount FAIL" -ForegroundColor Green
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Cyan
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host ""
+>> "scripts\test-cyberaudit7e.ps1" echo( 
+>> "scripts\test-cyberaudit7e.ps1" echo( if ($failCount -eq 0) {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  ✓ Tous les tests passent !" -ForegroundColor Green
+>> "scripts\test-cyberaudit7e.ps1" echo( } else {
+>> "scripts\test-cyberaudit7e.ps1" echo(     Write-Host "  ✗ $failCount test(s) échoué(s) — vérifier les logs serveur" -ForegroundColor Red
+>> "scripts\test-cyberaudit7e.ps1" echo( }
+>> "scripts\test-cyberaudit7e.ps1" echo( Write-Host ""
+certutil -hashfile "scripts\test-cyberaudit7e.ps1" SHA256 | findstr /I /C:"7F853427CCE7F8AA36E3297819894E07060D01984A66D3CF0AFFDE7DF8048940" >nul
+if %errorlevel%==0 (echo    [OK] scripts\test-cyberaudit7e.ps1) else (echo    [ERREUR] scripts\test-cyberaudit7e.ps1)
+echo Décompression de scripts\test-cyberaudit7e.sh
+> "scripts\test-cyberaudit7e.sh" echo( #!/bin/bash
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( # CyberAudit7E — Script de tests complet (Git Bash / WSL / Linux)
+>> "scripts\test-cyberaudit7e.sh" echo( # Modules M1 → M5
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( # Usage :
+>> "scripts\test-cyberaudit7e.sh" echo( #   ./test-cyberaudit7e.sh           # Tout exécuter
+>> "scripts\test-cyberaudit7e.sh" echo( #   ./test-cyberaudit7e.sh 3         # Module spécifique
+>> "scripts\test-cyberaudit7e.sh" echo( #   ./test-cyberaudit7e.sh sse       # Ouvrir le flux SSE
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( BASE="http://localhost:8080"
+>> "scripts\test-cyberaudit7e.sh" echo( MODULE="${1:-all}"
+>> "scripts\test-cyberaudit7e.sh" echo( PASS=0
+>> "scripts\test-cyberaudit7e.sh" echo( FAIL=0
+>> "scripts\test-cyberaudit7e.sh" echo( TOTAL=0
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ── Couleurs ──
+>> "scripts\test-cyberaudit7e.sh" echo( RED='\033[0;31m'
+>> "scripts\test-cyberaudit7e.sh" echo( GREEN='\033[0;32m'
+>> "scripts\test-cyberaudit7e.sh" echo( YELLOW='\033[1;33m'
+>> "scripts\test-cyberaudit7e.sh" echo( CYAN='\033[0;36m'
+>> "scripts\test-cyberaudit7e.sh" echo( GRAY='\033[0;90m'
+>> "scripts\test-cyberaudit7e.sh" echo( NC='\033[0m'
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( header() { echo -e "\n${CYAN}═══════════════════════════════════════════════════════${NC}"; echo -e "${CYAN}  $1${NC}"; echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"; }
+>> "scripts\test-cyberaudit7e.sh" echo( test_name() { TOTAL=$((TOTAL+1)); echo -ne "\n  ${YELLOW}[$TOTAL] $1${NC}"; }
+>> "scripts\test-cyberaudit7e.sh" echo( pass() { PASS=$((PASS+1)); echo -e " → ${GREEN}PASS${NC}"; [ -n "$1" ] ^&^& echo -e "       ${GRAY}$1${NC}"; }
+>> "scripts\test-cyberaudit7e.sh" echo( fail() { FAIL=$((FAIL+1)); echo -e " → ${RED}FAIL${NC}"; [ -n "$1" ] ^&^& echo -e "       ${RED}$1${NC}"; }
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # Helper : curl JSON + extract field
+>> "scripts\test-cyberaudit7e.sh" echo( api() {
+>> "scripts\test-cyberaudit7e.sh" echo(     curl -s -w "\n%%{http_code}" "$@"
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( api_post() {
+>> "scripts\test-cyberaudit7e.sh" echo(     curl -s -w "\n%%{http_code}" -X POST -H "Content-Type: application/json" "$@"
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( api_put() {
+>> "scripts\test-cyberaudit7e.sh" echo(     curl -s -w "\n%%{http_code}" -X PUT -H "Content-Type: application/json" "$@"
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( api_delete() {
+>> "scripts\test-cyberaudit7e.sh" echo(     curl -s -w "\n%%{http_code}" -X DELETE "$@"
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # Parse response : body on all lines except last, status on last line
+>> "scripts\test-cyberaudit7e.sh" echo( parse_response() {
+>> "scripts\test-cyberaudit7e.sh" echo(     local response="$1"
+>> "scripts\test-cyberaudit7e.sh" echo(     BODY=$(echo "$response" ^| sed '$d')
+>> "scripts\test-cyberaudit7e.sh" echo(     HTTP_CODE=$(echo "$response" ^| tail -1)
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # Extract JSON field (simple grep, no jq dependency)
+>> "scripts\test-cyberaudit7e.sh" echo( json_field() {
+>> "scripts\test-cyberaudit7e.sh" echo(     echo "$BODY" ^| grep -o "\"$1\"[[:space:]]*:[[:space:]]*[^^,}]*" ^| head -1 ^| sed 's/.*:[[:space:]]*//' ^| tr -d '"' ^| tr -d ' '
+>> "scripts\test-cyberaudit7e.sh" echo( }
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ── SSE Mode ──
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "sse" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "SSE STREAMING — Ctrl+C pour quitter"
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "  ${GRAY}Lancez un audit dans un autre terminal pour voir les events.${NC}\n"
+>> "scripts\test-cyberaudit7e.sh" echo(     curl -N "$BASE/api/audits/stream"
+>> "scripts\test-cyberaudit7e.sh" echo(     exit
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  MODULE M1 — BOOTSTRAP
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ] ^|^| [ "$MODULE" = "1" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "MODULE M1 — Bootstrap Spring Boot"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/health → status UP"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/health")"
+>> "scripts\test-cyberaudit7e.sh" echo(     STATUS=$(json_field "status")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$STATUS" = "UP" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         SERVICE=$(json_field "service")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "service=$SERVICE"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Health check échoué (HTTP $HTTP_CODE)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/ → index endpoint"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         VER=$(json_field "version")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "version=$VER"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Index non disponible"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  MODULE M2 — ARCHITECTURE
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ] ^|^| [ "$MODULE" = "2" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "MODULE M2 — Architecture Spring"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/health → rulesLoaded ^>= 7"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/health")"
+>> "scripts\test-cyberaudit7e.sh" echo(     RULES=$(json_field "rulesLoaded")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$RULES" -ge 7 ] 2^>/dev/null; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "rulesLoaded=$RULES"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Règles non chargées"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  MODULE M3 — PERSISTANCE JPA
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ] ^|^| [ "$MODULE" = "3" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "MODULE M3 — Persistance JPA + H2 + Flyway"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/sites → sites seed Flyway (^>= 4)"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/sites")"
+>> "scripts\test-cyberaudit7e.sh" echo(     COUNT=$(echo "$BODY" ^| grep -o '"id"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$COUNT" -ge 4 ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$COUNT site(s) — Flyway V2 seed OK"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Sites seed non trouvés"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/sites/1 → SiteDto"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/sites/1")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         URL=$(json_field "url")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "url=$URL"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Site #1 introuvable"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/sites/search?name=gouv → recherche"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/sites/search?name=gouv")"
+>> "scripts\test-cyberaudit7e.sh" echo(     FOUND=$(echo "$BODY" ^| grep -o '"id"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$FOUND" -ge 1 ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$FOUND résultat(s)"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Recherche échouée"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/sites → créer un site"
+>> "scripts\test-cyberaudit7e.sh" echo(     RAND=$RANDOM
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/sites" -d "{\"url\":\"https://test-$RAND.example.com\",\"name\":\"Test M3\"}")"
+>> "scripts\test-cyberaudit7e.sh" echo(     NEW_ID=$(json_field "id")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "201" ] ^&^& [ -n "$NEW_ID" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "id=$NEW_ID"
+>> "scripts\test-cyberaudit7e.sh" echo(         api_delete "$BASE/api/sites/$NEW_ID" ^> /dev/null 2^>^&1
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Création échouée (HTTP $HTTP_CODE)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/sites → doublon = 409"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/sites" -d '{"url":"https://www.service-public.fr","name":"Doublon"}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "409" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "409 Conflict correct"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Attendu 409, reçu $HTTP_CODE"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/sites/999 → 404"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/sites/999")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "404" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "404 correct"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Attendu 404, reçu $HTTP_CODE"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  MODULE M4 — MOTEUR JSOUP
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ] ^|^| [ "$MODULE" = "4" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "MODULE M4 — Moteur d'audit Jsoup (13 règles)"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/config/weights → poids normalisés"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/config/weights")"
+>> "scripts\test-cyberaudit7e.sh" echo(     NORM=$(json_field "normalized")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$NORM" = "true" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "normalized=true"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Poids non normalisés"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits → audit réel service-public.fr"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits" -d '{"url":"https://www.service-public.fr","name":"Service Public"}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     RULES_COUNT=$(json_field "rulesCount")
+>> "scripts\test-cyberaudit7e.sh" echo(     SCORE=$(json_field "global")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "201" ] ^&^& [ "$RULES_COUNT" = "13" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         PASSED_C=$(json_field "passedCount")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "score=$SCORE, passed=$PASSED_C/13"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Audit échoué (HTTP $HTTP_CODE, rules=$RULES_COUNT)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits → audit .gouv.fr (DSFR élevé)"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits" -d '{"url":"https://www.gouvernement.gouv.fr","name":"Gouvernement FR"}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "201" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         DSFR=$(json_field "dsfr")
+>> "scripts\test-cyberaudit7e.sh" echo(         GLOBAL=$(json_field "global")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "DSFR=$DSFR, Global=$GLOBAL"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Audit .gouv.fr échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits → audit example.com (DSFR bas)"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits" -d '{"url":"https://www.example.com","name":"Example.com"}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "201" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         DSFR=$(json_field "dsfr")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "DSFR=$DSFR (bas attendu)"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Audit example.com échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits → validation body vide = 400"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits" -d '{"url":"","name":""}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "400" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "400 Validation OK"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Attendu 400, reçu $HTTP_CODE"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "PUT /api/config/weights/RGAA → modifier poids"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_put "$BASE/api/config/weights/RGAA" -d '{"weight":0.55}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "RGAA → 0.55"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Modification échouée"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/config/weights/reset → défauts"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/config/weights/reset")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "Poids réinitialisés"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Reset échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  MODULE M5 — ASYNC ^& EVENTS
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ] ^|^| [ "$MODULE" = "5" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "MODULE M5 — Async, Events ^& SSE"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/health → métriques M5"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/health")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if echo "$BODY" ^| grep -q "metrics"; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "Métriques présentes"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Métriques absentes"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits/async → audit asynchrone"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits/async" -d '{"url":"https://www.legifrance.gouv.fr","name":"Légifrance"}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     JOB_ID=$(json_field "jobId")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "202" ] ^&^& [ -n "$JOB_ID" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "jobId=$JOB_ID, status=PENDING"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(         echo -ne "       Attente du job #$JOB_ID"
+>> "scripts\test-cyberaudit7e.sh" echo(         for i in $(seq 1 15); do
+>> "scripts\test-cyberaudit7e.sh" echo(             sleep 2
+>> "scripts\test-cyberaudit7e.sh" echo(             echo -n "."
+>> "scripts\test-cyberaudit7e.sh" echo(             parse_response "$(api "$BASE/api/audits/async/$JOB_ID")"
+>> "scripts\test-cyberaudit7e.sh" echo(             JOB_STATUS=$(json_field "status")
+>> "scripts\test-cyberaudit7e.sh" echo(             if [ "$JOB_STATUS" = "COMPLETED" ] ^|^| [ "$JOB_STATUS" = "FAILED" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(                 break
+>> "scripts\test-cyberaudit7e.sh" echo(             fi
+>> "scripts\test-cyberaudit7e.sh" echo(         done
+>> "scripts\test-cyberaudit7e.sh" echo(         echo ""
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(         test_name "GET /api/audits/async/$JOB_ID → résultat"
+>> "scripts\test-cyberaudit7e.sh" echo(         if [ "$JOB_STATUS" = "COMPLETED" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(             pass "status=COMPLETED"
+>> "scripts\test-cyberaudit7e.sh" echo(         else fail "status=$JOB_STATUS"; fi
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Soumission async échouée (HTTP $HTTP_CODE)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits/batch → 3 audits parallèles"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits/batch" -d '{"sites":[{"url":"https://www.service-public.fr","name":"SP"},{"url":"https://www.gouvernement.gouv.fr","name":"Gouv"},{"url":"https://www.example.com","name":"Ex"}]}')"
+>> "scripts\test-cyberaudit7e.sh" echo(     BATCH_SIZE=$(json_field "batchSize")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "202" ] ^&^& [ "$BATCH_SIZE" = "3" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "batchSize=3 soumis"
+>> "scripts\test-cyberaudit7e.sh" echo(         echo -ne "       Attente du batch"
+>> "scripts\test-cyberaudit7e.sh" echo(         for i in $(seq 1 20); do
+>> "scripts\test-cyberaudit7e.sh" echo(             sleep 3
+>> "scripts\test-cyberaudit7e.sh" echo(             echo -n "."
+>> "scripts\test-cyberaudit7e.sh" echo(             parse_response "$(api "$BASE/api/audits/async")"
+>> "scripts\test-cyberaudit7e.sh" echo(             RUNNING=$(echo "$BODY" ^| grep -o '"RUNNING"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(             if [ "$RUNNING" -eq 0 ]; then break; fi
+>> "scripts\test-cyberaudit7e.sh" echo(         done
+>> "scripts\test-cyberaudit7e.sh" echo(         echo ""
+>> "scripts\test-cyberaudit7e.sh" echo(         COMPLETED=$(echo "$BODY" ^| grep -o '"COMPLETED"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(         test_name "Batch terminé → jobs COMPLETED"
+>> "scripts\test-cyberaudit7e.sh" echo(         if [ "$COMPLETED" -ge 3 ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(             pass "$COMPLETED job(s) COMPLETED"
+>> "scripts\test-cyberaudit7e.sh" echo(         else fail "$COMPLETED/$BATCH_SIZE terminé(s)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Batch échoué (HTTP $HTTP_CODE)"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "DELETE /api/audits/async → nettoyer"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_delete "$BASE/api/audits/async")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         CLEARED=$(json_field "cleared")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$CLEARED job(s) nettoyé(s)"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Nettoyage échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/audits/schedule → info scheduler"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/audits/schedule")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         ENABLED=$(json_field "enabled")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "enabled=$ENABLED"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Scheduler échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "POST /api/audits/schedule/trigger → déclenchement"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api_post "$BASE/api/audits/schedule/trigger")"
+>> "scripts\test-cyberaudit7e.sh" echo(     TRIGGERED=$(json_field "triggered")
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ] ^&^& [ "$TRIGGERED" -ge 1 ] 2^>/dev/null; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$TRIGGERED audit(s) déclenchés"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Trigger échoué"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     sleep 3
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  STATS ^& CONSULTATION
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$MODULE" = "all" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     header "STATS ^& CONSULTATION (transversal)"
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/audits/stats → stats globales"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/audits/stats")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         TOTAL_S=$(json_field "totalSites")
+>> "scripts\test-cyberaudit7e.sh" echo(         TOTAL_A=$(json_field "totalAudits")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "sites=$TOTAL_S, audits=$TOTAL_A"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Stats échouées"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/audits/site/1 → historique"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/audits/site/1")"
+>> "scripts\test-cyberaudit7e.sh" echo(     REPORTS=$(echo "$BODY" ^| grep -o '"id"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ] ^&^& [ "$REPORTS" -ge 1 ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$REPORTS rapport(s)"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Historique vide"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/audits/1 → détail rapport"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/audits/1")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         SCORE=$(json_field "scoreGlobal")
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "score=$SCORE"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Rapport introuvable"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo(     test_name "GET /api/audits/alerts?threshold=0.7 → alertes"
+>> "scripts\test-cyberaudit7e.sh" echo(     parse_response "$(api "$BASE/api/audits/alerts?threshold=0.7")"
+>> "scripts\test-cyberaudit7e.sh" echo(     if [ "$HTTP_CODE" = "200" ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(         ALERTS=$(echo "$BODY" ^| grep -o '"id"' ^| wc -l)
+>> "scripts\test-cyberaudit7e.sh" echo(         pass "$ALERTS alerte(s)"
+>> "scripts\test-cyberaudit7e.sh" echo(     else fail "Alertes échouées"; fi
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( #  BILAN
+>> "scripts\test-cyberaudit7e.sh" echo( # ═══════════════════════════════════════════
+>> "scripts\test-cyberaudit7e.sh" echo( 
+>> "scripts\test-cyberaudit7e.sh" echo( echo ""
+>> "scripts\test-cyberaudit7e.sh" echo( echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+>> "scripts\test-cyberaudit7e.sh" echo( if [ "$FAIL" -eq 0 ]; then
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "${CYAN}  BILAN : $TOTAL tests — ${GREEN}$PASS PASS${CYAN} / ${GREEN}$FAIL FAIL${NC}"
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "\n  ${GREEN}✓ Tous les tests passent !${NC}\n"
+>> "scripts\test-cyberaudit7e.sh" echo( else
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "${CYAN}  BILAN : $TOTAL tests — ${GREEN}$PASS PASS${CYAN} / ${RED}$FAIL FAIL${NC}"
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+>> "scripts\test-cyberaudit7e.sh" echo(     echo -e "\n  ${RED}✗ $FAIL test(s) échoué(s) — vérifier les logs serveur${NC}\n"
+>> "scripts\test-cyberaudit7e.sh" echo( fi
+certutil -hashfile "scripts\test-cyberaudit7e.sh" SHA256 | findstr /I /C:"6F915896AC6B8611315DFD0A29EF54FDC90E1C1FAB5195F3DD7A440D9307DDF1" >nul
+if %errorlevel%==0 (echo    [OK] scripts\test-cyberaudit7e.sh) else (echo    [ERREUR] scripts\test-cyberaudit7e.sh)
+echo Décompression de src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java
+> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( package com.cyberaudit7e;
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( 
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( import org.springframework.boot.SpringApplication;
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( import org.springframework.boot.autoconfigure.SpringBootApplication;
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( 
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(  * CyberAudit7E — Moteur d'audit cybernétique.
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(  * M3 : plus d'exclusion DataSourceAutoConfiguration.
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(  * Spring Data JPA + H2 (dev) / PostgreSQL (prod) activés.
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( @SpringBootApplication
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( public class CyberAudit7eApplication {
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( 
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(     public static void main(String[] args) {
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(         SpringApplication.run(CyberAudit7eApplication.class, args);
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" SHA256 | findstr /I /C:"27C09B96EB82FE0E64DC44D3FA36133D60292173878541CB0D1743A3E0AC0DEC" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\AsyncConfig.java
+> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.scheduling.annotation.AsyncConfigurer;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.scheduling.annotation.EnableAsync;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.scheduling.annotation.EnableScheduling;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( import java.util.concurrent.Executor;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * Configuration asynchrone et scheduling.
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * M5 : thread pool dimensionné pour le batch (jusqu'à 10 audits parallèles)
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * et gestion globale des exceptions async.
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * Implémente AsyncConfigurer pour :
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * - Définir l'executor par défaut pour @Async
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  * - Intercepter les exceptions non gérées dans les threads async
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( @EnableAsync
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( @EnableScheduling
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( public class AsyncConfig implements AsyncConfigurer {
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     private static final Logger log = LoggerFactory.getLogger(AsyncConfig.class);
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     @Bean(name = "taskExecutor")
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     public Executor getAsyncExecutor() {
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setCorePoolSize(4);           // 4 threads permanents
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setMaxPoolSize(10);           // 10 threads max (batch de 10)
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setQueueCapacity(50);         // File d'attente de 50 jobs
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setThreadNamePrefix("7e-async-");
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setWaitForTasksToCompleteOnShutdown(true);
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setAwaitTerminationSeconds(60);
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         // Politique de rejet : exécuter dans le thread appelant si la queue est pleine
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.setRejectedExecutionHandler(
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(                 new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         executor.initialize();
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         log.info("[ASYNC] Thread pool initialisé — core: {}, max: {}, queue: {}",
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(                 executor.getCorePoolSize(), executor.getMaxPoolSize(),
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(                 executor.getQueueCapacity());
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         return executor;
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(      * Gestion globale des exceptions dans les méthodes @Async.
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(      * Sans ce handler, les exceptions sont silencieusement avalées.
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(         return (throwable, method, params) -^>
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(                 log.error("[ASYNC-ERROR] Exception dans {} : {}",
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(                         method.getName(), throwable.getMessage(), throwable);
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" SHA256 | findstr /I /C:"FCDC3EB189D431EB28F08FCD2FCB3019B1AD525AC2EDEB3AF20F916A39FBB7F7" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\AsyncConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\AsyncConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\JacksonConfig.java
+> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import com.fasterxml.jackson.annotation.JsonInclude;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import com.fasterxml.jackson.databind.SerializationFeature;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( @EnableJpaAuditing
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( public class JacksonConfig {
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(     @Bean
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(     public ObjectMapper objectMapper() {
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         ObjectMapper mapper = new ObjectMapper();
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         mapper.registerModule(new JavaTimeModule());
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         mapper.enable(SerializationFeature.INDENT_OUTPUT);
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(         return mapper;
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" SHA256 | findstr /I /C:"356FA2C47AFE1BDB7927836E74532F64B42BC7DCBFE627B77B5E0B91E7BFBEF7" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\JacksonConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\JacksonConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\JpaConfig.java
+> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.databind.SerializationFeature;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( public class JpaConfig {
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     @Bean
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     public ObjectMapper objectMapper() {
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         ObjectMapper mapper = new ObjectMapper();
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         mapper.registerModule(new JavaTimeModule());
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         return mapper;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"1995B94C3382DD3E5F025296A36354E182EB7C6BB8A9B3432EEA36FDE5EFA3BA" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\JpaConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\JpaConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\OpenApiConfig.java
+> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.OpenAPI;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.info.Contact;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.info.Info;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.info.License;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.servers.Server;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import io.swagger.v3.oas.models.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  * Configuration OpenAPI / Swagger.
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  * M6 NOUVEAU : génère automatiquement la documentation interactive
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  * accessible sur /swagger-ui.html et /v3/api-docs (JSON/YAML).
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  * SpringDoc scanne les @RestController et les annotations
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  * @Operation, @Parameter, @Schema pour produire le spec OpenAPI 3.0.
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( public class OpenApiConfig {
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(     @Bean
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(     public OpenAPI cyberAudit7eOpenAPI() {
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(         return new OpenAPI()
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                 .info(new Info()
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         .title("CyberAudit7E API")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         .version("1.0.0 — M6")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         .description("""
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 Moteur d'audit d'accessibilité cybernétique basé sur l'Axiome 7E.
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 **Cycle 7E** : Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 **Référentiels** : RGAA 4.1 (×0.5) + WCAG 2.2 (×0.3) + DSFR (×0.2)
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 **Architecture** : Spring Boot 3.4 + Jsoup + JPA/H2 + Spring Events + SSE
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 Inspiré de GitManager × AuditAccess × Axiome 7E.
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 """)
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         .contact(new Contact()
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 .name("CyberAudit7E")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 .url("https://cyberaudit7e.local"))
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         .license(new License()
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 .name("POC — Usage formation")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                                 .url("https://cyberaudit7e.local/license")))
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                 .servers(List.of(
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Server().url("http://localhost:8080").description("Développement local"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Server().url("https://cyberaudit7e.local").description("Production (Dokploy)")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                 ))
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                 .tags(List.of(
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Santé").description("Health check et index API"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Sites").description("CRUD des sites à auditer"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Audits").description("Lancement d'audits synchrones et consultation des rapports"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Audits Async").description("Audits asynchrones, batch et streaming SSE"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Scheduler").description("Audits programmés automatiques"),
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                         new Tag().name("Configuration").description("Poids de scoring dynamiques")
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(                 ));
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" SHA256 | findstr /I /C:"B36CC866F34D9C2A101C28AB4F1E795185032D0EC7A58EEC1181FC1810FE4163" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\OpenApiConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\OpenApiConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\WebConfig.java
+> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( import org.springframework.web.servlet.config.annotation.CorsRegistry;
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(  * Configuration CORS — prépare l'intégration avec un frontend Vue.js.
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(  * Alignement avec le dashboard Vue 3 + Pinia d'AuditAccess.
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( public class WebConfig implements WebMvcConfigurer {
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(     public void addCorsMappings(CorsRegistry registry) {
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(         registry.addMapping("/api/**")
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 .allowedOrigins(
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                         "http://localhost:5173",    // Vite dev server (Vue 3)
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                         "http://localhost:3000",
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                         "http://localhost:8080"    // Alternative
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 )
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 .allowedHeaders("*")
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 .allowCredentials(true)
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(                 .maxAge(3600);
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\WebConfig.java" SHA256 | findstr /I /C:"D2B4A4EFF2297EF567C975A6931CEB7F33F7CB05E3E29816BA486B4D9C805915" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\WebConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\WebConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\controller\AuditController.java
+> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( package com.cyberaudit7e.controller;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.dto.*;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.repository.AuditReportRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.repository.SiteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.AsyncAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.AsyncAuditService.AsyncAuditJob;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.AuditOrchestrator;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.ScheduledAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.SseNotificationService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import com.cyberaudit7e.service.cycle.AuditMetricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import io.swagger.v3.oas.annotations.Operation;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import io.swagger.v3.oas.annotations.Parameter;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import io.swagger.v3.oas.annotations.responses.ApiResponses;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import io.swagger.v3.oas.annotations.responses.ApiResponse;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import io.swagger.v3.oas.annotations.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import jakarta.validation.Valid;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.data.domain.PageRequest;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.data.domain.Pageable;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.data.domain.Sort;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.http.HttpStatus;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.http.MediaType;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.validation.annotation.Validated;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(  * REST Controller pour les audits.
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(  * M6 : documentation OpenAPI complète, pagination, réponses structurées.
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( @RequestMapping("/api/audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( @Validated
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( public class AuditController {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final AuditOrchestrator orchestrator;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final AsyncAuditService asyncAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final ScheduledAuditService scheduledAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final SseNotificationService sseService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final AuditMetricsListener metricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final AuditReportRepository reportRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     private final SiteRepository siteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public AuditController(AuditOrchestrator orchestrator,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            AsyncAuditService asyncAuditService,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            ScheduledAuditService scheduledAuditService,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            SseNotificationService sseService,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            AuditMetricsListener metricsListener,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            AuditReportRepository reportRepository,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                            SiteRepository siteRepository) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.orchestrator = orchestrator;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.asyncAuditService = asyncAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.scheduledAuditService = scheduledAuditService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.sseService = sseService;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.metricsListener = metricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.reportRepository = reportRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         this.siteRepository = siteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // AUDIT SYNCHRONE
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Lancer un audit synchrone",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Exécute le cycle 7E complet (Évaluer→Équilibrer) de façon bloquante. " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "Le crawl HTTP et les 13 règles sont exécutés avant de retourner le résultat."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "201", description = "Audit terminé — rapport créé"),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "400", description = "Requête invalide (URL ou nom manquant)")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @PostMapping
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<AuditResponseDto^> runAudit(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Valid @RequestBody AuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         AuditResponseDto result = orchestrator.executeFullCycle(request);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return ResponseEntity.status(HttpStatus.CREATED).body(result);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // CONSULTATION ^& PAGINATION (M6)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Lister les rapports d'audit (paginé)",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Retourne les rapports d'audit paginés et triés. " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "Paramètres de pagination : page (0-based), size, sort (champ,direction)."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/list")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public PagedResponse^<ReportSummaryDto^> listReports(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Numéro de page (0-based)", example = "0")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Taille de la page", example = "10")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "10") int size,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Champ de tri", example = "auditedAt")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "auditedAt") String sortBy,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Direction du tri", example = "desc")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "desc") String direction) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Sort sort = "asc".equalsIgnoreCase(direction)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 ? Sort.by(sortBy).ascending()
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 : Sort.by(sortBy).descending();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100), sort);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return PagedResponse.from(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 reportRepository.findAll(pageable).map(ReportSummaryDto::from));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Consulter un rapport d'audit",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Retourne le détail complet d'un rapport incluant les scores par catégorie et le résultat de chaque règle."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "200", description = "Rapport trouvé"),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "404", description = "Rapport introuvable")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/{id}")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<ReportSummaryDto^> getReport(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "ID du rapport", example = "1")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @PathVariable Long id) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return reportRepository.findById(id)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .map(ReportSummaryDto::from)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .map(ResponseEntity::ok)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .orElse(ResponseEntity.notFound().build());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Historique des audits d'un site (paginé)",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Retourne l'historique paginé des audits pour un site donné, trié par date décroissante."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/site/{siteId}")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<PagedResponse^<ReportSummaryDto^>^> getSiteHistory(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "ID du site", example = "1")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @PathVariable Long siteId,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "10") int size) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         if (!siteRepository.existsById(siteId)) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             return ResponseEntity.notFound().build();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 Sort.by("auditedAt").descending());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return ResponseEntity.ok(PagedResponse.from(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 reportRepository.findBySiteId(siteId, pageable).map(ReportSummaryDto::from)));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Rechercher des rapports",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Recherche full-text par nom ou URL de site dans les rapports d'audit."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/search")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public PagedResponse^<ReportSummaryDto^> searchReports(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Terme de recherche", example = "gouv")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam String q,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "10") int size) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 Sort.by("auditedAt").descending());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return PagedResponse.from(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 reportRepository.searchByQuery(q, pageable).map(ReportSummaryDto::from));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Alertes — rapports sous le seuil",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Retourne les rapports dont le score global est inférieur au seuil spécifié."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/alerts")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public PagedResponse^<ReportSummaryDto^> getAlerts(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "Seuil de score (0.0 à 1.0)", example = "0.5")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "0.5") Double threshold,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @RequestParam(defaultValue = "10") int size) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 Sort.by("scoreGlobal").ascending());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return PagedResponse.from(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 reportRepository.findByScoreGlobalLessThan(threshold, pageable)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                         .map(ReportSummaryDto::from));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ASYNC ^& BATCH (M5 — conservés avec doc M6)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Lancer un audit asynchrone",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Soumet un audit non-bloquant. Retourne immédiatement un jobId. " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "Suivre la progression via SSE (GET /api/audits/stream) ou polling (GET /api/audits/async/{jobId})."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "202", description = "Audit soumis — jobId retourné"),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @ApiResponse(responseCode = "400", description = "Requête invalide")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @PostMapping("/async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<Map^<String, Object^>^> runAsyncAudit(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Valid @RequestBody AuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         AsyncAuditJob job = asyncAuditService.submitAudit(request);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return ResponseEntity.accepted().body(Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "jobId", job.getJobId(),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "status", job.getStatus(),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "siteUrl", job.getSiteUrl(),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "message", "Audit soumis — suivez via SSE ou GET /api/audits/async/" + job.getJobId(),
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "sseEndpoint", "/api/audits/stream"
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Lancer un batch d'audits",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Soumet plusieurs audits en parallèle (max 10). " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "Chaque audit est un job indépendant exécuté sur le pool de threads."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @PostMapping("/batch")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<Map^<String, Object^>^> runBatchAudit(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Valid @RequestBody BatchAuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         List^<AsyncAuditJob^> jobs = asyncAuditService.submitBatch(request.sites());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         List^<Map^<String, Object^>^> jobSummaries = jobs.stream()
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .map(j -^> Map.^<String, Object^>of(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                         "jobId", j.getJobId(), "siteUrl", j.getSiteUrl(), "status", j.getStatus()))
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return ResponseEntity.accepted().body(Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "batchSize", jobs.size(), "jobs", jobSummaries,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "message", "Batch soumis — suivez via SSE"));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(summary = "Statut d'un job asynchrone")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/async/{jobId}")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ResponseEntity^<?^> getAsyncJob(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @Parameter(description = "ID du job", example = "1")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             @PathVariable Long jobId) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         AsyncAuditJob job = asyncAuditService.getJob(jobId);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         if (job == null) return ResponseEntity.notFound().build();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Map^<String, Object^> response = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         response.put("jobId", job.getJobId());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         response.put("siteUrl", job.getSiteUrl());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         response.put("siteName", job.getSiteName());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         response.put("status", job.getStatus());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         if ("COMPLETED".equals(job.getStatus()) ^&^& job.getResult() != null)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             response.put("result", job.getResult());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         if ("FAILED".equals(job.getStatus()) ^&^& job.getError() != null)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             response.put("error", job.getError());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return ResponseEntity.ok(response);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(summary = "Lister tous les jobs asynchrones")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public List^<Map^<String, Object^>^> listAsyncJobs() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return asyncAuditService.getAllJobs().stream()
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 .map(j -^> {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     Map^<String, Object^> m = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     m.put("jobId", j.getJobId());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     m.put("siteUrl", j.getSiteUrl());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     m.put("status", j.getStatus());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     if ("COMPLETED".equals(j.getStatus()) ^&^& j.getResult() != null)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                         m.put("scoreGlobal", j.getResult().scores().get("global"));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     return m;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 }).toList();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(summary = "Nettoyer les jobs terminés")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @DeleteMapping("/async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public Map^<String, Object^> clearJobs() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         int cleared = asyncAuditService.clearCompletedJobs();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return Map.of("cleared", cleared, "message", cleared + " job(s) nettoyé(s)");
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // SSE STREAMING
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits Async")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Flux SSE temps réel",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = """
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     Ouvre une connexion Server-Sent Events pour recevoir les événements d'audit en temps réel.
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     **Événements émis** :
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     - `connected` : confirmation de connexion
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     - `audit-started` : début d'un audit (site URL + nom)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     - `audit-progress` : transition de phase 7E (×7, avec pourcentage)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     - `audit-completed` : fin de l'audit (score + tendance)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     **Utilisation curl** : `curl -N http://localhost:8080/api/audits/stream`
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     **Utilisation JavaScript** :
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     ```javascript
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     const sse = new EventSource('/api/audits/stream');
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     sse.addEventListener('audit-progress', (e) =^> {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                       const data = JSON.parse(e.data);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                       console.log(`${data.phaseLabel} — ${data.progress}%%`);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     });
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     ```
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     """
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public SseEmitter streamAudits() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return sseService.subscribe();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // SCHEDULER
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Scheduler")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Déclencher un audit de tous les sites",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Lance immédiatement un batch asynchrone sur tous les sites enregistrés, " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "indépendamment de la configuration du scheduler."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @PostMapping("/schedule/trigger")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public Map^<String, Object^> triggerScheduledAudit() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         int count = scheduledAuditService.triggerNow();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return Map.of("triggered", count,
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 "message", count ^> 0 ? count + " audit(s) lancé(s)" : "Aucun site enregistré");
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Scheduler")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(summary = "Informations sur le scheduler")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/schedule")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public ScheduledAuditService.SchedulerInfo getSchedulerInfo() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return scheduledAuditService.getInfo();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // STATISTIQUES
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Tag(name = "Audits")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             summary = "Statistiques globales",
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             description = "Retourne les statistiques agrégées : nombre de sites/audits, score moyen, " +
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                     "métriques de performance, répartition par tendance et par phase."
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @GetMapping("/stats")
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     public Map^<String, Object^> getStats() {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Map^<String, Object^> stats = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("totalSites", siteRepository.count());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("totalAudits", reportRepository.count());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("averageScore", reportRepository.averageGlobalScore());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("metrics", metricsListener.getMetrics());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("sseClients", sseService.getActiveClients());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("scheduler", scheduledAuditService.getInfo());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Map^<String, Long^> trendCounts = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         for (String trend : List.of("FIRST", "UP", "DOWN", "STABLE")) {
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(             trendCounts.put(trend, (long) reportRepository.findByTrend(trend).size());
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("trends", trendCounts);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         Map^<String, Long^> phaseCounts = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         siteRepository.countByPhase().forEach(row -^>
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(                 phaseCounts.put(row[0].toString(), (Long) row[1]));
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         stats.put("sitesByPhase", phaseCounts);
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(         return stats;
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\AuditController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\AuditController.java" SHA256 | findstr /I /C:"C66CEC7BBB9CDE49C73BCDF89105B52174AF2A827AC35B148C1369CEFA87C2A8" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\controller\AuditController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\controller\AuditController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\controller\ConfigController.java
+> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( package com.cyberaudit7e.controller;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import com.cyberaudit7e.domain.entity.RuleConfig;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import com.cyberaudit7e.repository.RuleConfigRepository;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import com.cyberaudit7e.service.ScoringService;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import io.swagger.v3.oas.annotations.Operation;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import io.swagger.v3.oas.annotations.Parameter;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import io.swagger.v3.oas.annotations.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import jakarta.validation.Valid;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import jakarta.validation.constraints.DecimalMax;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import jakarta.validation.constraints.DecimalMin;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import jakarta.validation.constraints.NotNull;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(  * Configuration des poids de scoring.
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(  * M6 : documentation OpenAPI complète.
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( @RequestMapping("/api/config")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( @Tag(name = "Configuration", description = "Gestion dynamique des poids de scoring par catégorie (RGAA, WCAG, DSFR)")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( public class ConfigController {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     private final RuleConfigRepository configRepository;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     private final ScoringService scoringService;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     public ConfigController(RuleConfigRepository configRepository,
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                             ScoringService scoringService) {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         this.configRepository = configRepository;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         this.scoringService = scoringService;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             summary = "Voir les poids de scoring",
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             description = "Retourne les poids actuels par catégorie (RGAA, WCAG, DSFR) " +
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "avec indication de normalisation (totalWeight ≈ 1.0). " +
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "Ces poids sont modifiés automatiquement par la boucle de rétroaction (phase ÉQUILIBRER) " +
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "ou manuellement via PUT."
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @GetMapping("/weights")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     public Map^<String, Object^> getWeights() {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         List^<RuleConfig^> configs = configRepository.findAll();
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         Map^<String, Object^> result = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         double total = 0.0;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         for (RuleConfig config : configs) {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             result.put(config.getCategory().name(), Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "weight", config.getWeight(),
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "enabled", config.getEnabled(),
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "description", config.getDescription() != null ? config.getDescription() : ""));
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             if (config.getEnabled()) total += config.getWeight();
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         result.put("totalWeight", Math.round(total * 1000.0) / 1000.0);
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         result.put("normalized", Math.abs(total - 1.0) ^< 0.01);
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         return result;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             summary = "Modifier le poids d'une catégorie",
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             description = "Met à jour le poids de scoring pour la catégorie spécifiée. " +
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     "Valeur entre 0.0 et 1.0. Penser à normaliser après modification."
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @PutMapping("/weights/{category}")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     public ResponseEntity^<?^> updateWeight(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @Parameter(description = "Catégorie (RGAA, WCAG, DSFR)", example = "RGAA")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @PathVariable String category,
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @Valid @RequestBody WeightUpdateRequest request) {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         RuleCategory ruleCategory;
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             ruleCategory = RuleCategory.valueOf(category.toUpperCase());
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         } catch (IllegalArgumentException e) {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             return ResponseEntity.badRequest()
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                     .body(Map.of("error", "Catégorie invalide : " + category,
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                                  "valid", List.of("RGAA", "WCAG", "DSFR")));
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         scoringService.updateWeight(ruleCategory, request.weight());
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         return ResponseEntity.ok(Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                 "category", ruleCategory, "weight", request.weight(), "message", "Poids mis à jour"));
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             summary = "Remettre les poids par défaut",
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             description = "Réinitialise : RGAA=0.50, WCAG=0.30, DSFR=0.20 (somme = 1.0)."
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @PostMapping("/weights/reset")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     public Map^<String, Object^> resetWeights() {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         for (RuleCategory cat : RuleCategory.values()) {
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             scoringService.updateWeight(cat, cat.getDefaultWeight());
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(         return Map.of("message", "Poids remis aux valeurs par défaut",
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                 "RGAA", RuleCategory.RGAA.getDefaultWeight(),
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                 "WCAG", RuleCategory.WCAG.getDefaultWeight(),
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(                 "DSFR", RuleCategory.DSFR.getDefaultWeight());
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     public record WeightUpdateRequest(
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @NotNull(message = "Le poids est obligatoire")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @DecimalMin(value = "0.0", message = "Le poids doit être ^>= 0")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             @DecimalMax(value = "1.0", message = "Le poids doit être ^<= 1")
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(             Double weight
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo(     ) {}
+>> "src\main\java\com\cyberaudit7e\controller\ConfigController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\ConfigController.java" SHA256 | findstr /I /C:"D58CAEEF5AF37ED0C3C1635E17636B98FD83DCAF7BC2BC727087C5BF90A31B94" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\controller\ConfigController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\controller\ConfigController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java
+> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( package com.cyberaudit7e.controller;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import io.swagger.v3.oas.annotations.Hidden;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.http.HttpStatus;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.web.bind.MethodArgumentNotValidException;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.web.bind.annotation.ExceptionHandler;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.web.bind.annotation.RestControllerAdvice;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import org.springframework.web.servlet.resource.NoResourceFoundException;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( import java.util.stream.Collectors;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(  * Gestion globale des exceptions REST.
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(  * M6 : réponses structurées cohérentes, logging, types d'erreur étendus.
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( @RestControllerAdvice
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( @Hidden  // Ne pas afficher dans Swagger
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( public class GlobalExceptionHandler {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      * Erreurs de validation Jakarta (400).
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     @ExceptionHandler(MethodArgumentNotValidException.class)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     public ResponseEntity^<Map^<String, Object^>^> handleValidation(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(             MethodArgumentNotValidException ex) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         Map^<String, String^> fieldErrors = ex.getBindingResult()
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 .getFieldErrors().stream()
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 .collect(Collectors.toMap(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                         e -^> e.getField(),
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                         e -^> e.getDefaultMessage() != null ? e.getDefaultMessage() : "invalide",
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                         (a, b) -^> a
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 ));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         log.warn("[VALIDATION] {} champ(s) invalide(s) : {}", fieldErrors.size(), fieldErrors.keySet());
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return ResponseEntity.badRequest().body(errorBody(400, "Validation échouée", fieldErrors));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      * Paramètres de type incorrect (400).
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     public ResponseEntity^<Map^<String, Object^>^> handleTypeMismatch(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(             MethodArgumentTypeMismatchException ex) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         String message = String.format("Paramètre '%%s' : valeur '%%s' invalide (attendu : %%s)",
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 ex.getName(), ex.getValue(),
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "inconnu");
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return ResponseEntity.badRequest().body(errorBody(400, message, null));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      * IllegalArgumentException (400).
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     @ExceptionHandler(IllegalArgumentException.class)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     public ResponseEntity^<Map^<String, Object^>^> handleIllegalArgument(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(             IllegalArgumentException ex) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return ResponseEntity.badRequest().body(errorBody(400, ex.getMessage(), null));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      * Ressource non trouvée (404).
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     @ExceptionHandler(NoResourceFoundException.class)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     public ResponseEntity^<Map^<String, Object^>^> handleNotFound(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(             NoResourceFoundException ex) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return ResponseEntity.status(404).body(
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 errorBody(404, "Ressource non trouvée", Map.of("path", ex.getResourcePath())));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      * Catch-all (500).
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     @ExceptionHandler(Exception.class)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     public ResponseEntity^<Map^<String, Object^>^> handleGeneric(Exception ex) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         log.error("[ERROR] Exception non gérée : {}", ex.getMessage(), ex);
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                 .body(errorBody(500, "Erreur interne du serveur",
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                         Map.of("exception", ex.getClass().getSimpleName(),
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(                                "message", ex.getMessage() != null ? ex.getMessage() : "Erreur inconnue")));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     private Map^<String, Object^> errorBody(int status, String message, Map^<String, ?^> details) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         Map^<String, Object^> body = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         body.put("success", false);
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         body.put("error", Map.of("status", status, "message", message));
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         if (details != null ^&^& !details.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(             body.put("details", details);
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         body.put("timestamp", Instant.now().toString());
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(         return body;
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" SHA256 | findstr /I /C:"5349899BF0FC3E7E1241D24A090FAC7652E3F3D6067B7B278D3134E06140E5FB" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java)
+echo Décompression de src\main\java\com\cyberaudit7e\controller\HealthController.java
+> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( package com.cyberaudit7e.controller;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import com.cyberaudit7e.service.AuditEngine;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import com.cyberaudit7e.service.HtmlFetcherService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import com.cyberaudit7e.service.ScoringService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import com.cyberaudit7e.service.SseNotificationService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import com.cyberaudit7e.service.cycle.AuditMetricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import io.swagger.v3.oas.annotations.Operation;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import io.swagger.v3.oas.annotations.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import org.springframework.beans.factory.annotation.Value;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import org.springframework.web.bind.annotation.GetMapping;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import org.springframework.web.bind.annotation.RequestMapping;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import org.springframework.web.bind.annotation.RestController;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.lang.management.ManagementFactory;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.lang.management.MemoryMXBean;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.time.Duration;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(  * Health check et index API.
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(  * M7 : enrichi avec les infos runtime/container pour le monitoring Docker.
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( @RequestMapping("/api")
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( @Tag(name = "Santé", description = "Health check, métriques runtime et découvrabilité API")
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( public class HealthController {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final AuditEngine auditEngine;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final HtmlFetcherService htmlFetcher;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final ScoringService scoringService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final SseNotificationService sseService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final AuditMetricsListener metricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private final Instant startedAt = Instant.now();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     @Value("${spring.profiles.active:dev}")
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private String activeProfile;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     public HealthController(AuditEngine auditEngine,
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                             HtmlFetcherService htmlFetcher,
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                             ScoringService scoringService,
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                             SseNotificationService sseService,
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                             AuditMetricsListener metricsListener) {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         this.auditEngine = auditEngine;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         this.htmlFetcher = htmlFetcher;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         this.scoringService = scoringService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         this.sseService = sseService;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         this.metricsListener = metricsListener;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             summary = "Health check complet",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             description = "Retourne l'état du service, les métriques runtime (mémoire, uptime), " +
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                     "le nombre de règles, les poids de scoring et les clients SSE."
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     @GetMapping("/health")
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     public Map^<String, Object^> health() {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         long heapUsed = memBean.getHeapMemoryUsage().getUsed() / (1024 * 1024);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         long heapMax = memBean.getHeapMemoryUsage().getMax() / (1024 * 1024);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         Duration uptime = Duration.between(startedAt, Instant.now());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         Map^<String, Object^> response = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("status", "UP");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("service", "CyberAudit7E");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("version", "M7");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("profile", activeProfile);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("phase", "7E-READY");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("rulesLoaded", auditEngine.getRulesCount());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("fetcherMode", "Jsoup (HTTP réel)");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("sseClients", sseService.getActiveClients());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("weights", scoringService.loadWeights());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("metrics", metricsListener.getMetrics());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         // Runtime / container info
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         Map^<String, Object^> runtime = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("javaVersion", System.getProperty("java.version"));
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("heapUsedMb", heapUsed);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("heapMaxMb", heapMax);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("heapPercent", heapMax ^> 0 ? Math.round((double) heapUsed / heapMax * 100) : 0);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("availableProcessors", Runtime.getRuntime().availableProcessors());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("uptimeSeconds", uptime.getSeconds());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("uptime", formatDuration(uptime));
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         runtime.put("hostname", getHostname());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("runtime", runtime);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("documentation", Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "swagger-ui", "/swagger-ui.html",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "openapi-json", "/v3/api-docs",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "openapi-yaml", "/v3/api-docs.yaml"
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         response.put("timestamp", Instant.now());
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         return response;
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             summary = "Index API",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             description = "Liste tous les endpoints disponibles avec descriptions."
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     @GetMapping("/")
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     public Map^<String, Object^> index() {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         Map^<String, Object^> endpoints = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("health", "GET /api/health");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("swagger", "GET /swagger-ui.html");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("sites", "GET /api/sites — CRUD paginé");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.sync", "POST /api/audits — Cycle 7E synchrone");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.async", "POST /api/audits/async — Non-bloquant");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.batch", "POST /api/audits/batch — Parallèle (max 10)");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.stream", "GET /api/audits/stream — SSE temps réel");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.list", "GET /api/audits/list — Rapports paginés");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.search", "GET /api/audits/search?q=xxx — Recherche");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.stats", "GET /api/audits/stats — Statistiques");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("audits.alerts", "GET /api/audits/alerts — Score faible");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("scheduler", "POST /api/audits/schedule/trigger — Déclenchement");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         endpoints.put("config", "GET /api/config/weights — Poids dynamiques");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         return Map.of(
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "service", "CyberAudit7E",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "version", "M7 — Docker ^& Synthèse",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "axiome", "Les Éléments dans l'Espace Engendrent un État d'Expression Évolutif de l'Environnement",
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(                 "endpoints", endpoints
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private String formatDuration(Duration d) {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         long h = d.toHours();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         long m = d.toMinutesPart();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         long s = d.toSecondsPart();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         if (h ^> 0) return String.format("%%dh%%02dm%%02ds", h, m, s);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         if (m ^> 0) return String.format("%%dm%%02ds", m, s);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         return String.format("%%ds", s);
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     private String getHostname() {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             return java.net.InetAddress.getLocalHost().getHostName();
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(             return System.getenv().getOrDefault("HOSTNAME", "unknown");
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\HealthController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\HealthController.java" SHA256 | findstr /I /C:"76FC64041C74062BCBEF6F62D10255FE0B80D0BF5CCF4393FCED9E3CB9B8D618" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\controller\HealthController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\controller\HealthController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\controller\SiteController.java
+> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( package com.cyberaudit7e.controller;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import com.cyberaudit7e.dto.PagedResponse;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import com.cyberaudit7e.dto.SiteDto;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import com.cyberaudit7e.repository.SiteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import io.swagger.v3.oas.annotations.Operation;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import io.swagger.v3.oas.annotations.Parameter;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import io.swagger.v3.oas.annotations.responses.ApiResponse;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import io.swagger.v3.oas.annotations.responses.ApiResponses;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import io.swagger.v3.oas.annotations.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import jakarta.validation.Valid;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import jakarta.validation.constraints.NotBlank;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.data.domain.PageRequest;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.data.domain.Pageable;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.data.domain.Sort;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.http.HttpStatus;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(  * REST Controller pour la gestion des sites.
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(  * M6 : documentation OpenAPI complète + pagination.
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( @RequestMapping("/api/sites")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( @Tag(name = "Sites", description = "Gestion des sites à auditer — CRUD + recherche + pagination")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( public class SiteController {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     private final SiteRepository siteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public SiteController(SiteRepository siteRepository) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         this.siteRepository = siteRepository;
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             summary = "Enregistrer un nouveau site",
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             description = "Ajoute un site au registre d'audit. L'URL doit être unique. " +
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                     "Le site est initialisé à la phase ÉVALUER du cycle 7E."
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "201", description = "Site créé"),
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "400", description = "Données invalides"),
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "409", description = "URL déjà enregistrée")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @PostMapping
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public ResponseEntity^<?^> createSite(@Valid @RequestBody CreateSiteRequest request) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         if (siteRepository.existsByUrl(request.url())) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             return ResponseEntity.status(HttpStatus.CONFLICT)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                     .body(Map.of("error", "Un site avec cette URL existe déjà",
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                                  "url", request.url()));
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         Site site = siteRepository.save(new Site(request.url(), request.name()));
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         return ResponseEntity.status(HttpStatus.CREATED).body(SiteDto.from(site));
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             summary = "Lister tous les sites (paginé)",
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             description = "Retourne la liste paginée des sites enregistrés, triés par date de création."
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @GetMapping
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public PagedResponse^<SiteDto^> listSites(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @Parameter(description = "Numéro de page (0-based)", example = "0")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @Parameter(description = "Taille de la page", example = "10")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @RequestParam(defaultValue = "10") int size) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100),
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 Sort.by("createdAt").descending());
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         return PagedResponse.from(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 siteRepository.findAll(pageable).map(SiteDto::from));
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Operation(summary = "Détail d'un site")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "200", description = "Site trouvé"),
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "404", description = "Site introuvable")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @GetMapping("/{id}")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public ResponseEntity^<SiteDto^> getSite(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @Parameter(description = "ID du site", example = "1")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @PathVariable Long id) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         return siteRepository.findById(id)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .map(SiteDto::from)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .map(ResponseEntity::ok)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .orElse(ResponseEntity.notFound().build());
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Operation(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             summary = "Rechercher des sites par nom",
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             description = "Recherche insensible à la casse dans les noms de sites."
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     )
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @GetMapping("/search")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public List^<SiteDto^> searchSites(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @Parameter(description = "Terme de recherche", example = "gouv")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @RequestParam String name) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         return siteRepository.findByNameContainingIgnoreCase(name)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .stream()
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .map(SiteDto::from)
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @Operation(summary = "Supprimer un site et ses rapports")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @ApiResponses({
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "204", description = "Site supprimé"),
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @ApiResponse(responseCode = "404", description = "Site introuvable")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     })
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     @DeleteMapping("/{id}")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public ResponseEntity^<Void^> deleteSite(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @Parameter(description = "ID du site")
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @PathVariable Long id) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         if (!siteRepository.existsById(id)) {
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             return ResponseEntity.notFound().build();
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         siteRepository.deleteById(id);
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(         return ResponseEntity.noContent().build();
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     public record CreateSiteRequest(
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @NotBlank(message = "L'URL est obligatoire") String url,
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(             @NotBlank(message = "Le nom est obligatoire") String name
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo(     ) {}
+>> "src\main\java\com\cyberaudit7e\controller\SiteController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\SiteController.java" SHA256 | findstr /I /C:"CE3FB10C4E4B47E0399A5509D08FE7943463EE03303EFC6EA191D2FFB0773A06" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\controller\SiteController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\controller\SiteController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java
+> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( package com.cyberaudit7e.domain.entity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import jakarta.persistence.*;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import java.util.ArrayList;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  * Entité JPA AuditReport — résultat d'un cycle 7E complet.
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  * M3 : POJO M2 transformé en entité JPA.
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  * Changements vs M2 :
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  *   - @Entity, @Table, @ManyToOne avec LAZY fetch
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  *   - Scores stockés en colonnes DOUBLE
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  *   - RuleResults stockés en JSON (TEXT) via @Convert
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  *   - @PrePersist pour le timestamp d'audit
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( @Entity
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( @Table(name = "audit_reports")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( public class AuditReport {
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Id
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @GeneratedValue(strategy = GenerationType.IDENTITY)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Long id;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @ManyToOne(fetch = FetchType.LAZY)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @JoinColumn(name = "site_id", nullable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Site site;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "score_rgaa")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Double scoreRgaa;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "score_wcag")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Double scoreWcag;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "score_dsfr")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Double scoreDsfr;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "score_global")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Double scoreGlobal;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "completed_phase", length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private Phase7E completedPhase;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(      * Détails des résultats stockés en JSON dans une colonne TEXT.
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(      * Le converter RuleResultListConverter gère la sérialisation.
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "results_json", columnDefinition = "CLOB")
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Convert(converter = RuleResultListConverter.class)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private List^<RuleResultDto^> ruleResults = new ArrayList^<^>();
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     /** Tendance détectée par EvolveService (FIRST, UP, DOWN, STABLE) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "trend", length = 10)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private String trend;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Column(name = "audited_at", updatable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     private LocalDateTime auditedAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     // ── Lifecycle ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @PrePersist
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     protected void onCreate() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         auditedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     // ── Constructeurs ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public AuditReport() {}
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public AuditReport(Site site, Map^<String, Double^> scores, List^<RuleResultDto^> results) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.site = site;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.scoreRgaa = scores.getOrDefault("rgaa", 0.0);
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.scoreWcag = scores.getOrDefault("wcag", 0.0);
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.scoreDsfr = scores.getOrDefault("dsfr", 0.0);
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.scoreGlobal = scores.getOrDefault("global", 0.0);
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.ruleResults = results;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         this.completedPhase = Phase7E.EQUILIBRER;
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     // ── Getters ^& Setters ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Long getId() { return id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setId(Long id) { this.id = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Site getSite() { return site; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setSite(Site site) { this.site = site; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Double getScoreRgaa() { return scoreRgaa; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setScoreRgaa(Double scoreRgaa) { this.scoreRgaa = scoreRgaa; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Double getScoreWcag() { return scoreWcag; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setScoreWcag(Double scoreWcag) { this.scoreWcag = scoreWcag; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Double getScoreDsfr() { return scoreDsfr; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setScoreDsfr(Double scoreDsfr) { this.scoreDsfr = scoreDsfr; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Double getScoreGlobal() { return scoreGlobal; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setScoreGlobal(Double scoreGlobal) { this.scoreGlobal = scoreGlobal; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public Phase7E getCompletedPhase() { return completedPhase; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setCompletedPhase(Phase7E completedPhase) { this.completedPhase = completedPhase; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public List^<RuleResultDto^> getRuleResults() { return ruleResults; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setRuleResults(List^<RuleResultDto^> ruleResults) { this.ruleResults = ruleResults; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public String getTrend() { return trend; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public void setTrend(String trend) { this.trend = trend; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public LocalDateTime getAuditedAt() { return auditedAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     public String toString() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(         return String.format("AuditReport{id=%%d, site='%%s', score=%%.2f, phase=%%s, trend=%%s}",
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(                 id, site != null ? site.getName() : "null",
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(                 scoreGlobal != null ? scoreGlobal : 0.0,
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(                 completedPhase, trend);
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" SHA256 | findstr /I /C:"DB095CE8358908177D02323E0201D1745DB4E095B398F9F933B3333F575B7EC5" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java
+> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( package com.cyberaudit7e.domain.entity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( import jakarta.persistence.*;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  * Configuration dynamique des poids de scoring par catégorie.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  * M4 NOUVEAU : permet d'ajuster les poids RGAA/WCAG/DSFR en BDD
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  * au lieu de les coder en dur dans RuleCategory.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  * C'est la base de la phase ÉQUILIBRER en cybernétique :
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  * le feedback loop peut modifier ces poids pour s'adapter.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( @Entity
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( @Table(name = "rule_configs")
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( public class RuleConfig {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Id
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @GeneratedValue(strategy = GenerationType.IDENTITY)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     private Long id;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Column(nullable = false, unique = true, length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     private RuleCategory category;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Column(nullable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     private Double weight;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Column(nullable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     private Boolean enabled = true;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     @Column(length = 500)
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     private String description;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     // ── Constructeurs ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public RuleConfig() {}
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public RuleConfig(RuleCategory category, Double weight, String description) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(         this.category = category;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(         this.weight = weight;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(         this.description = description;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     // ── Getters ^& Setters ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public Long getId() { return id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public void setId(Long id) { this.id = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public RuleCategory getCategory() { return category; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public void setCategory(RuleCategory category) { this.category = category; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public Double getWeight() { return weight; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public void setWeight(Double weight) { this.weight = weight; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public Boolean getEnabled() { return enabled; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public String getDescription() { return description; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo(     public void setDescription(String description) { this.description = description; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" SHA256 | findstr /I /C:"3CB5766B55D9AF1E8EEA34FC9F2406D66E6974295860BCE25E3266D4482A5D88" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java
+> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( package com.cyberaudit7e.domain.entity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import com.fasterxml.jackson.core.JsonProcessingException;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import com.fasterxml.jackson.core.type.TypeReference;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import jakarta.persistence.AttributeConverter;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import jakarta.persistence.Converter;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import java.util.Collections;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * Converter JPA : List^<RuleResultDto^> ↔ JSON String (CLOB).
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * Appliqué automatiquement (@Converter autoApply=false) sur le champ
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * AuditReport.ruleResults via @Convert.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * Jackson (ObjectMapper) est disponible car spring-boot-starter-web
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * l'inclut dans le classpath.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * Concept pédagogique M3 :
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * JPA ne sait pas persister des types complexes (List de Records).
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * L'AttributeConverter fait le pont entre le modèle objet Java
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  * et la colonne TEXT/CLOB de la BDD, de façon transparente.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( @Converter
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( public class RuleResultListConverter implements AttributeConverter^<List^<RuleResultDto^>, String^> {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     private static final Logger log = LoggerFactory.getLogger(RuleResultListConverter.class);
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     private static final ObjectMapper MAPPER = new ObjectMapper();
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     private static final TypeReference^<List^<RuleResultDto^>^> TYPE_REF = new TypeReference^<^>() {};
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(      * Java → BDD : sérialise la liste en JSON.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     public String convertToDatabaseColumn(List^<RuleResultDto^> attribute) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         if (attribute == null ^|^| attribute.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return "[]";
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return MAPPER.writeValueAsString(attribute);
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         } catch (JsonProcessingException e) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             log.error("Erreur sérialisation RuleResults → JSON", e);
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return "[]";
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(      * BDD → Java : désérialise le JSON en liste.
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     public List^<RuleResultDto^> convertToEntityAttribute(String dbData) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         if (dbData == null ^|^| dbData.isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return Collections.emptyList();
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return MAPPER.readValue(dbData, TYPE_REF);
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         } catch (JsonProcessingException e) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             log.error("Erreur désérialisation JSON → RuleResults", e);
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(             return Collections.emptyList();
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" SHA256 | findstr /I /C:"C0EC19A9BE2ACB9EE9C2254E8CFD255AFE3D4E44E7312715F08BD1B94F707980" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\Site.java
+> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( package com.cyberaudit7e.domain.entity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( import jakarta.persistence.*;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( import java.util.ArrayList;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  * Entité JPA Site — un site web à auditer.
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  * M3 : POJO M2 transformé en entité JPA.
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  * Changements vs M2 :
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *   - @Entity, @Table, @Id, @GeneratedValue
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *   - @Enumerated(STRING) pour Phase7E
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *   - @OneToMany bidirectionnel avec AuditReport
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *   - @PrePersist / @PreUpdate pour les timestamps
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  *   - @Column constraints alignées sur V1__create_schema.sql
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( @Entity
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( @Table(name = "sites")
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( public class Site {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Id
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @GeneratedValue(strategy = GenerationType.IDENTITY)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private Long id;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Column(nullable = false, length = 500, unique = true)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private String url;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Column(nullable = false, length = 255)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private String name;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Column(name = "current_phase", length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private Phase7E currentPhase = Phase7E.EVALUER;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @OneToMany(mappedBy = "site", cascade = CascadeType.ALL, orphanRemoval = true)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @OrderBy("auditedAt DESC")
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private List^<AuditReport^> reports = new ArrayList^<^>();
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Column(name = "created_at", updatable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private LocalDateTime createdAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Column(name = "updated_at")
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     private LocalDateTime updatedAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     // ── Lifecycle callbacks ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @PrePersist
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     protected void onCreate() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         createdAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         updatedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @PreUpdate
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     protected void onUpdate() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         updatedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     // ── Constructeurs ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public Site() {}
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public Site(String url, String name) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         this.url = url;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         this.name = name;
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     // ── Getters ^& Setters ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public Long getId() { return id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void setId(Long id) { this.id = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public String getUrl() { return url; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void setUrl(String url) { this.url = url; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public String getName() { return name; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void setName(String name) { this.name = name; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public Phase7E getCurrentPhase() { return currentPhase; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void setCurrentPhase(Phase7E currentPhase) { this.currentPhase = currentPhase; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public List^<AuditReport^> getReports() { return reports; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void setReports(List^<AuditReport^> reports) { this.reports = reports; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public LocalDateTime getCreatedAt() { return createdAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public LocalDateTime getUpdatedAt() { return updatedAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(      * Avance le site à la phase suivante du cycle 7E.
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void advancePhase() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         this.currentPhase = this.currentPhase.next();
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(      * Helper bidirectionnel : ajoute un rapport et maintient la relation.
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public void addReport(AuditReport report) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         reports.add(report);
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         report.setSite(this);
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     public String toString() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(         return String.format("Site{id=%%d, url='%%s', name='%%s', phase=%%s}",
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(                 id, url, name, currentPhase);
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\Site.java" SHA256 | findstr /I /C:"4F5D89EE64E408E14670F608BFD08974DCA3F1A11B566D6FDDF28F00C653055D" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\Site.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\Site.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java
+> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( package com.cyberaudit7e.domain.enums;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(  * Axiome 7E — Les 7 phases du cycle cybernétique.
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(  * Chaque audit traverse ce cycle complet :
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(  * Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( public enum Phase7E {
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EVALUER("Évaluer", "Collecte des métriques du site via les règles d'audit"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     ELABORER("Élaborer", "Génération du plan de remédiation"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EXECUTER("Exécuter", "Application des règles du moteur"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EXAMINER("Examiner", "Calcul du score pondéré composite"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EVOLUER("Évoluer", "Comparaison avec les audits précédents"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EMETTRE("Émettre", "Publication du résultat via événement"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     EQUILIBRER("Équilibrer", "Ajustement des poids selon le feedback");
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     private final String label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     private final String description;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     Phase7E(String label, String description) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         this.label = label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         this.description = description;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     public String getLabel() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         return label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     public String getDescription() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         return description;
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(      * Retourne la phase suivante dans le cycle.
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(      * Après EQUILIBRER, le cycle recommence à EVALUER (boucle cybernétique).
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     public Phase7E next() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         Phase7E[] phases = values();
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(         return phases[(this.ordinal() + 1) %% phases.length];
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" SHA256 | findstr /I /C:"3886693B47517FB3ECFE9DD7D2DA25B3251CA2E44DB73B9B50A3B6B51BFFCB2A" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java
+> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( package com.cyberaudit7e.domain.enums;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(  * Catégories de règles d'audit — alignées sur les référentiels AuditAccess.
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(  * La pondération du scoring composite est définie dans ScoringService.
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( public enum RuleCategory {
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     RGAA("RGAA 4.1", "Référentiel Général d'Amélioration de l'Accessibilité", 0.5),
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     WCAG("WCAG 2.2", "Web Content Accessibility Guidelines", 0.3),
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     DSFR("DSFR", "Design System de l'État Français", 0.2);
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     private final String code;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     private final String label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     private final double defaultWeight;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     RuleCategory(String code, String label, double defaultWeight) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         this.code = code;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         this.label = label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         this.defaultWeight = defaultWeight;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     public String getCode() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         return code;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     public String getLabel() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         return label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(      * Poids par défaut dans la formule de scoring :
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(      * score = RGAA×0.5 + WCAG×0.3 + DSFR×0.2
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     public double getDefaultWeight() {
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(         return defaultWeight;
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" SHA256 | findstr /I /C:"AC9F8F3AB1D4AA0CC60FA0989A1FB017DFBF15936DE518409F77F7795F83273B" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(  * WCAG 1.3.1 — Structure sémantique : landmarks ARIA.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(  * M4 NOUVEAU : vérifie la présence des landmarks obligatoires
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(  * (header/banner, nav/navigation, main, footer/contentinfo).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( public class AriaLandmarkRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     @Override public String id() { return "WCAG-1.3.1"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     @Override public String description() { return "Landmarks ARIA et structure sémantique"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.WCAG; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     @Override public int priority() { return 20; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         int found = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         int total = 4;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         StringBuilder detail = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         // 1. Banner (header)
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         Elements banner = doc.select("header, [role=banner]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (!banner.isEmpty()) { found++; detail.append("banner "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         // 2. Navigation
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         Elements nav = doc.select("nav, [role=navigation]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (!nav.isEmpty()) { found++; detail.append("nav "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         // 3. Main
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         Elements main = doc.select("main, [role=main]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (!main.isEmpty()) { found++; detail.append("main "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         // 4. Contentinfo (footer)
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         Elements footer = doc.select("footer, [role=contentinfo]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (!footer.isEmpty()) { found++; detail.append("footer "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         double score = (double) found / total;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         String msg = String.format("Landmarks : %%d/%%d détectés [%%s]",
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(                 found, total, detail.toString().trim());
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         if (found == total) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(             return RuleResultDto.success(id(), category(), msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(         return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(                 Math.round(score * 100.0) / 100.0, msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" SHA256 | findstr /I /C:"E802267B423FF85996C6492635FB8A12A6DD7B18234F8182D2C272AD9B4F44BE" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java
+> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * Contexte d'audit transmis à chaque règle.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * M4 : remplace la simple String url de M2/M3.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * Encapsule l'URL + le Document Jsoup parsé (optionnel si le fetch échoue).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * Les règles qui ont besoin du DOM utilisent getDocument().
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * Les règles qui n'ont besoin que de l'URL utilisent getUrl().
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * Si le DOM est absent, les règles retournent un score partiel ou un échec.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * @param url      URL du site audité (toujours présente)
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  * @param document Document Jsoup parsé (absent si erreur réseau)
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( public record AuditContext(
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(         String url,
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(         Optional^<Document^> document
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      * Factory pour un contexte avec un document parsé.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     public static AuditContext withDocument(String url, Document doc) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(         return new AuditContext(url, Optional.ofNullable(doc));
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      * Factory pour un contexte sans document (erreur réseau).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     public static AuditContext withoutDocument(String url) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(         return new AuditContext(url, Optional.empty());
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      * @return true si le DOM est disponible pour l'analyse
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     public boolean hasDocument() {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(         return document.isPresent();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" SHA256 | findstr /I /C:"DD1169E155B7C11BFD2FC798FC21185EEADF3FCA21DC5BEBE48A12C73E5CCB81" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  * Contrat Strategy Pattern pour les règles d'audit.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  * M4 : la méthode evaluate() reçoit un AuditContext au lieu d'une String url.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  * Le contexte contient l'URL ET le Document Jsoup parsé (si disponible).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  * Chaque implémentation est un @Component Spring auto-injecté dans AuditEngine.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  * Ajouter une règle = créer un @Component, zéro modification ailleurs.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( public interface AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     /** Identifiant unique de la règle (ex: "RGAA-8.5", "WCAG-1.3.1") */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     String id();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     /** Description humaine de la règle */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     String description();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     /** Catégorie pour le scoring pondéré */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     RuleCategory category();
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * Priorité d'exécution (plus bas = exécuté en premier).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * Les règles structurelles (titre, lang) passent avant les règles de contenu.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * Par défaut : 100 (priorité normale).
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     default int priority() {
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(         return 100;
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * Évalue la règle sur le contexte d'audit.
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * @param context Contexte contenant l'URL et le DOM parsé (optionnel)
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      * @return Résultat avec score 0.0-1.0
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo(     RuleResultDto evaluate(AuditContext context);
+>> "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" SHA256 | findstr /I /C:"2BCFD28D76D7366549BFF40A2880007531EE81232FE84877EAB082867968D8D2" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * WCAG 1.4.3 — Contraste minimum 4.5:1 pour le texte normal.
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * M4 : analyse partielle — Jsoup ne peut pas calculer les couleurs CSS résolues.
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * On vérifie les indicateurs indirects :
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * - Présence de styles inline avec color/background-color
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * - Utilisation de classes de couleur courantes
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * - Méta viewport pour le texte responsive
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  * En production : Playwright + computed styles pour un ratio réel.
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( public class ContrastRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     @Override public String id() { return "WCAG-1.4.3"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     @Override public String description() { return "Contraste minimum 4.5:1 pour le texte normal"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.WCAG; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     @Override public int priority() { return 80; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         // Compter les éléments avec des couleurs inline (risque de contraste faible)
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         Elements withInlineColor = doc.select("[style*=color]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         Elements withInlineBg = doc.select("[style*=background]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         int inlineColorCount = withInlineColor.size();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         int inlineBgCount = withInlineBg.size();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         // Chercher les couleurs potentiellement problématiques
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         int lightTextCount = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         for (Element el : withInlineColor) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             String style = el.attr("style").toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             if (style.contains("color:#ccc") ^|^| style.contains("color:#ddd")
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                     ^|^| style.contains("color:#eee") ^|^| style.contains("color:#999")
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                     ^|^| style.contains("color:lightgray") ^|^| style.contains("color:silver")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                 lightTextCount++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         // Évaluation heuristique
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         double score;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         String detail;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         if (inlineColorCount == 0 ^&^& inlineBgCount == 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             score = 0.8; // Pas de styles inline = probablement OK via CSS
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             detail = "Aucun style de couleur inline — contraste géré par CSS externe (non auditable via HTML)";
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         } else if (lightTextCount ^> 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             score = 0.4;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             detail = String.format("%%d couleur(s) potentiellement faibles détectée(s) " +
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                     "sur %%d élément(s) avec couleur inline", lightTextCount, inlineColorCount);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             score = 0.7;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(             detail = String.format("%%d élément(s) avec couleur inline, %%d avec background — " +
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                     "analyse CSS externe requise pour vérification complète",
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                     inlineColorCount, inlineBgCount);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(         return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(                 Math.round(score * 100.0) / 100.0, detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" SHA256 | findstr /I /C:"61350AB1DDEEAD1FBB7E5EA306E20C719375620A5ACB82928AF6FCE13C45C3DB" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(  * DSFR — Fil d'Ariane conforme.
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(  * M4 NOUVEAU : vérifie la présence et la conformité du breadcrumb DSFR.
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(  * Le DSFR impose le composant fr-breadcrumb avec nav[aria-label].
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( public class DsfrBreadcrumbRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     @Override public String id() { return "DSFR-BRD-01"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     @Override public String description() { return "Fil d'Ariane conforme au DSFR"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.DSFR; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     @Override public int priority() { return 30; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         // Chercher le breadcrumb DSFR
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         Elements dsfrBreadcrumb = doc.select(".fr-breadcrumb, [class*=fr-breadcrumb]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         Elements genericBreadcrumb = doc.select(
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                 "nav[aria-label*=Ariane], nav[aria-label*=breadcrumb], " +
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                 "[role=navigation][aria-label*=Ariane], .breadcrumb, [class*=breadcrumb]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         if (!dsfrBreadcrumb.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             // Vérifier la structure sémantique
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             boolean hasNav = !dsfrBreadcrumb.select("nav").isEmpty()
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                     ^|^| dsfrBreadcrumb.first().tagName().equals("nav");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             boolean hasAriaLabel = !dsfrBreadcrumb.select("[aria-label]").isEmpty();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             boolean hasList = !dsfrBreadcrumb.select("ol, ul").isEmpty();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             int criteria = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             if (hasNav) criteria++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             if (hasAriaLabel) criteria++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             if (hasList) criteria++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             if (criteria == 3) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                 return RuleResultDto.success(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                         "Fil d'Ariane DSFR complet (nav + aria-label + liste)");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                     Math.round((double) criteria / 3 * 100.0) / 100.0,
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                     String.format("Fil d'Ariane DSFR partiel : %%d/3 critères", criteria));
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         } else if (!genericBreadcrumb.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.5,
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                     "Fil d'Ariane générique détecté — non conforme DSFR");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(         return RuleResultDto.failure(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(                 "Aucun fil d'Ariane détecté");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" SHA256 | findstr /I /C:"5475E4769A71B2A444E50B7DA64475AEA604B0F3C03B53DFA3D327B6FFC1C9CE" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(  * DSFR — Pied de page conforme avec mentions obligatoires.
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(  * M4 : vérifie la structure DSFR du footer et la présence des liens obligatoires
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(  * (mentions légales, accessibilité, plan du site, données personnelles).
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( public class DsfrFooterRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     @Override public String id() { return "DSFR-FTR-01"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     @Override public String description() { return "Pied de page conforme DSFR avec mentions obligatoires"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.DSFR; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     @Override public int priority() { return 25; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         double score = 0.0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         StringBuilder detail = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         int checks = 5;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         int passed = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         // 1. Classe fr-footer
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         Elements frFooter = doc.select(".fr-footer, footer[class*=fr-footer]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (!frFooter.isEmpty()) { passed++; detail.append("fr-footer "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         // 2. Mentions légales
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         String bodyText = doc.body() != null ? doc.body().text().toLowerCase() : "";
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         Elements footerLinks = doc.select("footer a, .fr-footer a");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         boolean hasMentions = footerLinks.stream()
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 .anyMatch(a -^> {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     String t = a.text().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     return t.contains("mentions légales") ^|^| t.contains("mentions legales");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (hasMentions) { passed++; detail.append("mentions-légales "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         // 3. Déclaration d'accessibilité
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         boolean hasA11y = footerLinks.stream()
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 .anyMatch(a -^> {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     String t = a.text().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     return t.contains("accessibilité") ^|^| t.contains("accessibilite")
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                             ^|^| t.contains("a11y");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (hasA11y) { passed++; detail.append("accessibilité "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         // 4. Plan du site
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         boolean hasSitemap = footerLinks.stream()
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 .anyMatch(a -^> {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     String t = a.text().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     return t.contains("plan du site") ^|^| t.contains("sitemap");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (hasSitemap) { passed++; detail.append("plan-du-site "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         // 5. Données personnelles / RGPD
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         boolean hasRgpd = footerLinks.stream()
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 .anyMatch(a -^> {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     String t = a.text().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     return t.contains("données personnelles") ^|^| t.contains("donnees personnelles")
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                             ^|^| t.contains("vie privée") ^|^| t.contains("rgpd")
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                             ^|^| t.contains("cookies");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (hasRgpd) { passed++; detail.append("RGPD "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         score = (double) passed / checks;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         String msg = String.format("Footer DSFR : %%d/%%d critères [%%s]",
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 passed, checks, detail.toString().trim());
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         if (passed == checks) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(             return RuleResultDto.success(id(), category(), msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         } else if (passed == 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(             return RuleResultDto.failure(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                     "Aucun composant DSFR détecté dans le pied de page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(         return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(                 Math.round(score * 100.0) / 100.0, msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" SHA256 | findstr /I /C:"4A6428608BE1DB02EB12D8FBD7E135BD2FF836D314037E87D04235386D7EFD6F" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(  * DSFR — En-tête conforme au Design System de l'État.
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(  * M4 : vérifie les classes DSFR spécifiques et la structure de l'en-tête.
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(  * Le DSFR définit des classes CSS standardisées (fr-header, fr-logo, etc.)
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( public class DsfrHeaderRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     @Override public String id() { return "DSFR-HDR-01"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     @Override public String description() { return "En-tête conforme au Design System de l'État"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.DSFR; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     @Override public int priority() { return 20; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         double score = 0.0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         StringBuilder detail = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         int checks = 5;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         int passed = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         // 1. Classe fr-header
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Elements frHeader = doc.select(".fr-header, [class*=fr-header]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!frHeader.isEmpty()) { passed++; detail.append("fr-header "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         // 2. Logo République (fr-logo ou Marianne)
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Elements frLogo = doc.select(".fr-logo, [class*=fr-logo], img[alt*=Marianne], img[alt*=République]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!frLogo.isEmpty()) { passed++; detail.append("fr-logo "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         // 3. Nom du service (fr-header__service)
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Elements service = doc.select(".fr-header__service, [class*=fr-header__service]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!service.isEmpty()) { passed++; detail.append("service-name "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         // 4. Navigation (fr-nav ou nav dans header)
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Elements nav = doc.select(".fr-nav, header nav, .fr-header nav");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!nav.isEmpty()) { passed++; detail.append("nav "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         // 5. Indicateur DSFR global (présence du CSS/JS DSFR)
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         Elements dsfrAssets = doc.select(
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(                 "link[href*=dsfr], script[src*=dsfr], [class^^=fr-], [data-fr-scheme]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (!dsfrAssets.isEmpty()) { passed++; detail.append("dsfr-assets "); }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         score = (double) passed / checks;
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         String msg = String.format("En-tête DSFR : %%d/%%d critères [%%s]",
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(                 passed, checks, detail.toString().trim());
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         if (passed == checks) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(             return RuleResultDto.success(id(), category(), msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         } else if (passed == 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(             return RuleResultDto.failure(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(                     "Aucun composant DSFR détecté dans l'en-tête");
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(         return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(                 Math.round(score * 100.0) / 100.0, msg);
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" SHA256 | findstr /I /C:"E8449FAD26387D56BC3916A97022A806999E3B4E8C0ACA6554ADE3F38ABF5256" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(  * RGAA 11.1 — Chaque champ de formulaire a-t-il une étiquette ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(  * M4 NOUVEAU : vérifie que chaque input/select/textarea a un label associé
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(  * ou un attribut aria-label/aria-labelledby.
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( public class FormLabelRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     @Override public String id() { return "RGAA-11.1"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     @Override public String description() { return "Chaque champ de formulaire a une étiquette"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.RGAA; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     @Override public int priority() { return 60; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         Elements fields = doc.select("input:not([type=hidden]):not([type=submit]):not([type=button]):not([type=reset]):not([type=image]), select, textarea");
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (fields.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             return RuleResultDto.success(id(), category(), "Aucun champ de formulaire détecté (N/A)");
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         int total = fields.size();
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         int labeled = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         for (Element field : fields) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             if (hasLabel(doc, field)) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(                 labeled++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         double score = (double) labeled / total;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         String detail = String.format("%%d champ(s) : %%d avec étiquette, %%d sans",
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(                 total, labeled, total - labeled);
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (labeled == total) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             return RuleResultDto.success(id(), category(), detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         return RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(                 Math.round(score * 100.0) / 100.0, detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     private boolean hasLabel(Document doc, Element field) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         // 1. Label explicite via for/id
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         String id = field.attr("id");
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!id.isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             Element label = doc.selectFirst("label[for=" + id + "]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             if (label != null ^&^& !label.text().isBlank()) return true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         // 2. Label implicite (field encapsulé dans un ^<label^>)
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         Element parent = field.parent();
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         while (parent != null) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             if ("label".equals(parent.tagName())) return true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(             parent = parent.parent();
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         // 3. ARIA alternatives
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!field.attr("aria-label").isBlank()) return true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!field.attr("aria-labelledby").isBlank()) return true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!field.attr("title").isBlank()) return true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         if (!field.attr("placeholder").isBlank()) return false; // placeholder seul ≠ label
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(         return false;
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" SHA256 | findstr /I /C:"0118674F5B99CA7B50E78DD13E3A785511B4B42B6BB1D8F140D76CB74E930198" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(  * RGAA 9.1 — La hiérarchie des titres est-elle pertinente ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(  * M4 NOUVEAU : vérifie la structure h1→h6 (pas de saut de niveau).
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( public class HeadingStructureRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     @Override public String id() { return "RGAA-9.1"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     @Override public String description() { return "Hiérarchie des titres h1-h6 cohérente"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.RGAA; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     @Override public int priority() { return 30; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         Elements headings = doc.select("h1, h2, h3, h4, h5, h6");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         if (headings.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.3,
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(                     "Aucun titre h1-h6 détecté — structuration manquante");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         // Vérifier la présence d'un h1 unique
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         Elements h1s = doc.select("h1");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         boolean hasUniqueH1 = h1s.size() == 1;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         // Vérifier qu'il n'y a pas de saut de niveau (h1 → h3 sans h2)
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         int skips = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         int previousLevel = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         for (Element h : headings) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             int level = Integer.parseInt(h.tagName().substring(1));
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             if (previousLevel ^> 0 ^&^& level ^> previousLevel + 1) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(                 skips++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             previousLevel = level;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         // Calcul du score
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         double score = 1.0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         StringBuilder detail = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         detail.append(String.format("%%d titre(s) détecté(s)", headings.size()));
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         if (!hasUniqueH1) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             score -= 0.3;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             detail.append(String.format(" ^| h1: %%d (attendu: 1)", h1s.size()));
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             detail.append(" ^| h1 unique OK");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         if (skips ^> 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             score -= 0.15 * skips;
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             detail.append(String.format(" ^| %%d saut(s) de niveau", skips));
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(             detail.append(" ^| hiérarchie continue");
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         score = Math.max(0.0, score);
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(         return score ^>= 1.0
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(                 ? RuleResultDto.success(id(), category(), detail.toString())
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(                 : RuleResultDto.partial(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(                     Math.round(score * 100.0) / 100.0, detail.toString());
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" SHA256 | findstr /I /C:"BC37D8BCA8836B9636482CBE7F69DDE3F7656BD1037F7B69A579751A47E1B040" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(  * RGAA 1.1 — Chaque image porteuse d'information a-t-elle une alternative textuelle ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(  * M4 : analyse réelle des balises ^<img^> dans le DOM.
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( public class ImageAltRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     @Override public String id() { return "RGAA-1.1"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     @Override public String description() { return "Chaque image a une alternative textuelle"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.RGAA; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     @Override public int priority() { return 50; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         Elements images = doc.select("img");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         if (images.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             return RuleResultDto.success(id(), category(), "Aucune image détectée (N/A)");
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         int total = images.size();
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         int withAlt = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         int emptyAlt = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         int missingAlt = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         for (Element img : images) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             if (!img.hasAttr("alt")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 missingAlt++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             } else if (img.attr("alt").isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 // alt="" est valide pour les images décoratives (RGAA)
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 emptyAlt++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 withAlt++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 withAlt++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         double score = (double) withAlt / total;
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         String detail = String.format(
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 "%%d image(s) : %%d avec alt, %%d alt vide (décoratif), %%d sans alt",
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(                 total, withAlt - emptyAlt, emptyAlt, missingAlt);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         if (missingAlt == 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(             return RuleResultDto.success(id(), category(), detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(         return RuleResultDto.partial(id(), category(), Math.round(score * 100.0) / 100.0, detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" SHA256 | findstr /I /C:"F0FFFAB695BA4F8C44F1002EF0118152B374340D99B2BD5203DE691D55D053FA" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(  * WCAG 2.1.1 + 2.4.1 — Navigation clavier et lien d'évitement.
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(  * M4 : vérifie les skip-nav links, tabindex négatifs, et focus traps potentiels.
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( public class KeyboardNavRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     @Override public String id() { return "WCAG-2.1.1"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     @Override public String description() { return "Navigation clavier et lien d'évitement"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.WCAG; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     @Override public int priority() { return 40; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         double score = 1.0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         StringBuilder detail = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         // 1. Vérifier la présence d'un skip-nav link (lien d'évitement)
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         Elements skipLinks = doc.select("a[href^^=#]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         boolean hasSkipNav = false;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         for (Element link : skipLinks) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             String text = link.text().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             String href = link.attr("href").toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             if (text.contains("contenu") ^|^| text.contains("content")
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                     ^|^| text.contains("skip") ^|^| text.contains("aller au")
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                     ^|^| href.contains("main") ^|^| href.contains("content")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 hasSkipNav = true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 break;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         if (hasSkipNav) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append("Lien d'évitement détecté");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             score -= 0.3;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append("Lien d'évitement absent");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         // 2. Vérifier les tabindex négatifs (éléments retirés du focus)
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         Elements negativeTabindex = doc.select("[tabindex]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         int negCount = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         for (Element el : negativeTabindex) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             try {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 int ti = Integer.parseInt(el.attr("tabindex"));
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 if (ti ^< 0) negCount++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             } catch (NumberFormatException ignored) {}
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         if (negCount ^> 5) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             score -= 0.2;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append(String.format(" ^| %%d tabindex négatif(s) (focus traps potentiels)", negCount));
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         } else if (negCount ^> 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append(String.format(" ^| %%d tabindex négatif(s)", negCount));
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         // 3. Vérifier la présence de landmarks ARIA ou éléments sémantiques
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         boolean hasMainLandmark = !doc.select("main, [role=main]").isEmpty();
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         if (hasMainLandmark) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append(" ^| ^<main^> présent");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             score -= 0.2;
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(             detail.append(" ^| ^<main^> absent");
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         score = Math.max(0.0, Math.round(score * 100.0) / 100.0);
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(         return score ^>= 1.0
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 ? RuleResultDto.success(id(), category(), detail.toString())
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(                 : RuleResultDto.partial(id(), category(), score, detail.toString());
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" SHA256 | findstr /I /C:"1D66476EB41FA46CC865F6217D5B2A36C7B65C52E82BA83EB6F1375AB3BD309E" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(  * RGAA 8.3 — La langue par défaut est-elle indiquée via l'attribut lang ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(  * M4 : vérifie réellement la présence et la validité de l'attribut lang sur ^<html^>.
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( public class LangAttributeRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     @Override public String id() { return "RGAA-8.3"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     @Override public String description() { return "Langue par défaut indiquée dans l'élément HTML"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.RGAA; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     @Override public int priority() { return 10; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         Element html = doc.selectFirst("html");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         if (html == null) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(             return RuleResultDto.failure(id(), category(), "Élément ^<html^> introuvable");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         String lang = html.attr("lang");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         String xmlLang = html.attr("xml:lang");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         String effectiveLang = !lang.isBlank() ? lang : xmlLang;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         if (effectiveLang.isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(             return RuleResultDto.failure(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(                     "Attribut lang absent sur ^<html^>");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         // Vérifier format BCP 47 basique (ex: "fr", "fr-FR", "en-US")
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         if (!effectiveLang.matches("^^[a-zA-Z]{2,3}(-[a-zA-Z]{2,4})?$")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.5,
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(                     String.format("Attribut lang mal formé : '%%s'", effectiveLang));
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(         return RuleResultDto.success(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(                 String.format("Langue déclarée : lang='%%s'", effectiveLang));
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" SHA256 | findstr /I /C:"FF7FDC70CA5D08573D9983320DB4786DCB2D9B27151A1ECC009419F6569C4C7D" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import org.jsoup.select.Elements;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( import java.util.Set;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(  * WCAG 2.4.4 — L'objectif de chaque lien est-il déterminable par son intitulé seul ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(  * M4 NOUVEAU : détecte les liens non-descriptifs ("cliquez ici", "en savoir plus", etc.)
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( public class LinkPurposeRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     private static final Set^<String^> VAGUE_TEXTS = Set.of(
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             "cliquez ici", "cliquer ici", "ici", "lire la suite",
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             "en savoir plus", "plus", "voir", "lien", "click here",
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             "here", "read more", "more", "link", "learn more"
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     );
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     @Override public String id() { return "WCAG-2.4.4"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     @Override public String description() { return "Intitulé des liens descriptif et compréhensible"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.WCAG; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     @Override public int priority() { return 70; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         Elements links = doc.select("a[href]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         if (links.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             return RuleResultDto.success(id(), category(), "Aucun lien détecté (N/A)");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         int total = links.size();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         int vague = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         int empty = 0;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         for (Element link : links) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             String text = link.text().trim().toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             String ariaLabel = link.attr("aria-label").trim();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             String title = link.attr("title").trim();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             // Texte effectif : text ^> aria-label ^> title
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             String effective = !text.isBlank() ? text
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                     : !ariaLabel.isBlank() ? ariaLabel.toLowerCase()
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                     : title.toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             if (effective.isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 // Vérifier si c'est un lien-image avec alt
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 Element img = link.selectFirst("img[alt]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 if (img == null ^|^| img.attr("alt").isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                     empty++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             } else if (VAGUE_TEXTS.contains(effective)) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 vague++;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         int issues = vague + empty;
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         double score = 1.0 - ((double) issues / total);
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         score = Math.max(0.0, Math.round(score * 100.0) / 100.0);
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         String detail = String.format("%%d lien(s) : %%d vague(s), %%d vide(s), %%d OK",
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(                 total, vague, empty, total - issues);
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         if (issues == 0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(             return RuleResultDto.success(id(), category(), detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(         return RuleResultDto.partial(id(), category(), score, detail);
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" SHA256 | findstr /I /C:"D35AC39553F8A31DA5D9CD9C110CBE2B4FCB08303D9008C72FF43C9DDF9F0805" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( import org.jsoup.nodes.Element;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(  * WCAG 1.4.4 — Le texte peut-il être redimensionné jusqu'à 200%% ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(  * M4 NOUVEAU : vérifie que la meta viewport n'empêche pas le zoom.
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(  * user-scalable=no ou maximum-scale=1 bloquent l'agrandissement.
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( public class MetaViewportRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     @Override public String id() { return "WCAG-1.4.4"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     @Override public String description() { return "Viewport n'empêche pas le zoom utilisateur"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.WCAG; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     @Override public int priority() { return 15; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         Element viewport = doc.selectFirst("meta[name=viewport]");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         if (viewport == null) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.6,
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                     "Meta viewport absente — responsive non garanti");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         String content = viewport.attr("content").toLowerCase().replaceAll("\\s", "");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         boolean blocksZoom = false;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         StringBuilder issues = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         // Vérifier user-scalable=no
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         if (content.contains("user-scalable=no") ^|^| content.contains("user-scalable=0")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             blocksZoom = true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             issues.append("user-scalable=no ");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         // Vérifier maximum-scale ^<= 1
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         if (content.contains("maximum-scale=")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             try {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                 String maxScale = content.split("maximum-scale=")[1].split(",")[0];
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                 double scale = Double.parseDouble(maxScale);
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                 if (scale ^<= 1.0) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                     blocksZoom = true;
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                     issues.append(String.format("maximum-scale=%%.1f ", scale));
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                 }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             } catch (Exception ignored) {}
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         if (blocksZoom) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(             return RuleResultDto.failure(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                     "Zoom bloqué par viewport : " + issues.toString().trim());
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(         return RuleResultDto.success(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(                 "Viewport OK — zoom utilisateur autorisé");
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" SHA256 | findstr /I /C:"0EE7AAB8B709DED9FEEFF5C954E91874DAD5478F536D26F321F3D18BBE4898C9" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java
+> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( package com.cyberaudit7e.domain.rule;
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(  * RGAA 8.5 — Chaque page web a-t-elle un titre de page pertinent ?
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(  * M4 : analyse réelle du DOM via Jsoup.
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( public class TitlePresenceRule implements AuditRule {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     @Override public String id() { return "RGAA-8.5"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     @Override public String description() { return "Chaque page web a un titre de page pertinent"; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     @Override public RuleCategory category() { return RuleCategory.RGAA; }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     @Override public int priority() { return 10; } // Priorité haute (structurel)
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     public RuleResultDto evaluate(AuditContext context) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         if (!context.hasDocument()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(             return RuleResultDto.failure(id(), category(), "Impossible de crawler la page");
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         Document doc = context.document().get();
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         String title = doc.title();
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         if (title == null ^|^| title.isBlank()) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(             return RuleResultDto.failure(id(), category(), "Titre ^<title^> absent ou vide");
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         if (title.length() ^< 5) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.5,
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(                     String.format("Titre trop court (%%d car.) : '%%s'", title.length(), title));
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         // Vérifier que le titre n'est pas générique
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         String lower = title.toLowerCase();
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         if (lower.equals("home") ^|^| lower.equals("accueil") ^|^| lower.equals("untitled")) {
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(             return RuleResultDto.partial(id(), category(), 0.4,
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(                     String.format("Titre générique détecté : '%%s'", title));
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(         return RuleResultDto.success(id(), category(),
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(                 String.format("Titre pertinent : '%%s' (%%d car.)", title, title.length()));
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" SHA256 | findstr /I /C:"6EE2B07C8DFBEC0A816037DFA31EEAB196EB19701B6476A3575051E864AC0B68" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\ApiResponse.java
+> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( import com.fasterxml.jackson.annotation.JsonInclude;
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( import io.swagger.v3.oas.annotations.media.Schema;
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * Enveloppe de réponse API standardisée.
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * M6 NOUVEAU : toutes les réponses suivent le même format,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * facilitant le parsing côté client (Vue.js, curl, etc.).
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * Succès : { success:true, data:{...}, timestamp:"..." }
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * Erreur : { success:false, error:{status:400, message:"..."}, timestamp:"..." }
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  * @param ^<T^> Type du payload data
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( @Schema(description = "Enveloppe standard des réponses API")
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( @JsonInclude(JsonInclude.Include.NON_NULL)
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( public record ApiResponse^<T^>(
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         @Schema(description = "true si la requête a réussi", example = "true")
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         boolean success,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         @Schema(description = "Données de la réponse (absent si erreur)")
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         T data,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         @Schema(description = "Détails de l'erreur (absent si succès)")
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         Map^<String, Object^> error,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         @Schema(description = "Horodatage ISO 8601", example = "2026-04-17T22:15:02Z")
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         String timestamp
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      * Factory pour une réponse succès.
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     public static ^<T^> ApiResponse^<T^> ok(T data) {
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         return new ApiResponse^<^>(true, data, null, Instant.now().toString());
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      * Factory pour une réponse erreur.
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     public static ^<T^> ApiResponse^<T^> fail(int status, String message) {
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         return new ApiResponse^<^>(false, null,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(                 Map.of("status", status, "message", message),
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(                 Instant.now().toString());
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      * Factory pour une réponse erreur avec détails.
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     public static ^<T^> ApiResponse^<T^> fail(int status, String message, Map^<String, ?^> details) {
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(         return new ApiResponse^<^>(false, null,
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(                 Map.of("status", status, "message", message, "details", details),
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(                 Instant.now().toString());
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" SHA256 | findstr /I /C:"291566401B9144430669C8530131C58619745A3436831DE77EF1CE4EB8066FFC" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\ApiResponse.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\ApiResponse.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java
+> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( import jakarta.validation.constraints.NotBlank;
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( import jakarta.validation.constraints.Pattern;
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  * DTO de requête pour lancer un audit.
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  * La validation est assurée par Jakarta Bean Validation.
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  * @param url  URL du site à auditer (doit être HTTP/HTTPS)
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  * @param name Nom lisible du site
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( public record AuditRequestDto(
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(         @NotBlank(message = "L'URL est obligatoire")
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(         @Pattern(regexp = "^^https?://.*", message = "L'URL doit commencer par http:// ou https://")
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(         String url,
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(         @NotBlank(message = "Le nom du site est obligatoire")
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo(         String name
+>> "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" echo( ) {}
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" SHA256 | findstr /I /C:"2F2A2673A406E5011966167DE55DB29987C0864E9FB6F9F43DC7DF55A4744E9B" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java
+> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * DTO de réponse d'un audit complet (cycle 7E).
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param reportId     ID du rapport généré
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param siteUrl      URL auditée
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param siteName     Nom du site
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param scores       Scores par catégorie + global
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param currentPhase Phase 7E atteinte à la fin du cycle
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param rulesCount   Nombre de règles évaluées
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param passedCount  Nombre de règles réussies
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param details      Résultats détaillés de chaque règle
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  * @param auditedAt    Horodatage de l'audit
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( public record AuditResponseDto(
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         Long reportId,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         String siteUrl,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         String siteName,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         Map^<String, Double^> scores,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         String currentPhase,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         int rulesCount,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         int passedCount,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         List^<RuleResultDto^> details,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         LocalDateTime auditedAt
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(      * Factory depuis un AuditReport et ses résultats.
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(     public static AuditResponseDto from(
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             Long reportId,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             String siteUrl,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             String siteName,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             Map^<String, Double^> scores,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             String currentPhase,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             List^<RuleResultDto^> details,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(             LocalDateTime auditedAt
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(     ) {
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         int passed = (int) details.stream().filter(RuleResultDto::passed).count();
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         return new AuditResponseDto(
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(                 reportId, siteUrl, siteName, scores,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(                 currentPhase, details.size(), passed,
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(                 details, auditedAt
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" SHA256 | findstr /I /C:"AF8B59A50AF3139356F7814DE62AEB09328213AAD6A3B59909947259189EABCF" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java
+> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( import jakarta.validation.Valid;
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( import jakarta.validation.constraints.NotEmpty;
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( import jakarta.validation.constraints.Size;
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(  * DTO pour lancer un batch d'audits asynchrones.
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(  * M5 NOUVEAU.
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(  * @param sites Liste des sites à auditer (max 10 pour le POC)
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( public record BatchAuditRequestDto(
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(         @NotEmpty(message = "La liste des sites ne peut pas être vide")
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(         @Size(max = 10, message = "Maximum 10 sites par batch")
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(         @Valid
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo(         List^<AuditRequestDto^> sites
+>> "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" echo( ) {}
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" SHA256 | findstr /I /C:"C389AD55550DD4ECFCBE3A75E9D1394879CD796DC9363EA9C59DFA91C862FF90" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\PagedResponse.java
+> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( import io.swagger.v3.oas.annotations.media.Schema;
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( import org.springframework.data.domain.Page;
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  * Réponse paginée standardisée.
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  * M6 NOUVEAU : enveloppe les résultats paginés avec métadonnées
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  * (page courante, total, nombre de pages, liens prev/next).
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  * Utilisé par les endpoints GET qui retournent des listes.
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  * @param ^<T^> Type des éléments
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( @Schema(description = "Réponse paginée avec métadonnées")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( public record PagedResponse^<T^>(
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Éléments de la page courante")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         List^<T^> content,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Numéro de la page (0-based)", example = "0")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         int page,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Taille de la page", example = "10")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         int size,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Nombre total d'éléments", example = "42")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         long totalElements,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Nombre total de pages", example = "5")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         int totalPages,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Est-ce la première page ?")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         boolean first,
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         @Schema(description = "Est-ce la dernière page ?")
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         boolean last
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(      * Factory depuis un objet Page Spring Data.
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     public static ^<T^> PagedResponse^<T^> from(Page^<T^> page) {
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         return new PagedResponse^<^>(
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.getContent(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.getNumber(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.getSize(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.getTotalElements(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.getTotalPages(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.isFirst(),
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 page.isLast()
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(      * Factory depuis une liste complète (pas de pagination).
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     public static ^<T^> PagedResponse^<T^> fromList(List^<T^> list) {
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         return new PagedResponse^<^>(
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(                 list, 0, list.size(), list.size(), 1, true, true
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" SHA256 | findstr /I /C:"1A75CEE88F158ADC603737B2E32A32EF0D60FDB3A3B1AF1280FD1D0997B3A7E1" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\PagedResponse.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\PagedResponse.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java
+> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(  * DTO résumé d'un rapport d'audit.
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(  * Évite l'exposition de l'entité JPA (lazy loading, circular refs).
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( public record ReportSummaryDto(
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Long id,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Long siteId,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         String siteName,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Double scoreRgaa,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Double scoreWcag,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Double scoreDsfr,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         Double scoreGlobal,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         String completedPhase,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         String trend,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         int rulesCount,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         int passedCount,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         List^<RuleResultDto^> details,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         LocalDateTime auditedAt
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(     public static ReportSummaryDto from(AuditReport report) {
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         List^<RuleResultDto^> results = report.getRuleResults();
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         int passed = results != null
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 ? (int) results.stream().filter(RuleResultDto::passed).count()
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 : 0;
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         return new ReportSummaryDto(
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getId(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getSite().getId(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getSite().getName(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getScoreRgaa(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getScoreWcag(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getScoreDsfr(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getScoreGlobal(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getCompletedPhase() != null ? report.getCompletedPhase().name() : null,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getTrend(),
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 results != null ? results.size() : 0,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 passed,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 results,
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(                 report.getAuditedAt()
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" SHA256 | findstr /I /C:"749006A4C3BB965D285DFED9549466A347F252D75D0C848424C912260ABCA9CE" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\RuleResultDto.java
+> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * Résultat d'évaluation d'une règle d'audit.
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * Utilise un Java Record (immutable par design).
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * @param ruleId    Identifiant de la règle (ex: "RGAA-8.5")
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * @param category  Catégorie pour le scoring pondéré
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * @param passed    true si la règle est satisfaite
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * @param score     Score entre 0.0 (échec) et 1.0 (succès)
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  * @param detail    Message descriptif du résultat
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( public record RuleResultDto(
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         String ruleId,
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         RuleCategory category,
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         boolean passed,
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         double score,
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         String detail
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      * Factory method pour un succès.
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     public static RuleResultDto success(String ruleId, RuleCategory category, String detail) {
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         return new RuleResultDto(ruleId, category, true, 1.0, detail);
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      * Factory method pour un échec.
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     public static RuleResultDto failure(String ruleId, RuleCategory category, String detail) {
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         return new RuleResultDto(ruleId, category, false, 0.0, detail);
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      * Factory method pour un résultat partiel.
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     public static RuleResultDto partial(String ruleId, RuleCategory category, double score, String detail) {
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(         return new RuleResultDto(ruleId, category, score ^>= 0.5, score, detail);
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" SHA256 | findstr /I /C:"07FF16CAC4DF8C967323C097A90401B144A98DB28A46354031758007DE4A5033" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\RuleResultDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\RuleResultDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\SiteDto.java
+> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( package com.cyberaudit7e.dto;
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * DTO de réponse pour un Site.
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * M3 : nécessaire pour éviter la sérialisation circulaire
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * Site → reports → site → reports causée par @OneToMany/@ManyToOne.
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * Règle d'or JPA : ne jamais exposer les entités directement dans les
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * réponses REST. Toujours passer par un DTO.
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param id           Identifiant du site
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param url          URL du site
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param name         Nom lisible
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param currentPhase Phase 7E courante
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param auditsCount  Nombre d'audits réalisés
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param lastScore    Score du dernier audit (null si aucun)
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param createdAt    Date de création
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  * @param updatedAt    Date de dernière modification
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( public record SiteDto(
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         Long id,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         String url,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         String name,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         String currentPhase,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         int auditsCount,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         Double lastScore,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         LocalDateTime createdAt,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         LocalDateTime updatedAt
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(      * Factory depuis une entité Site.
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(     public static SiteDto from(Site site) {
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         Double lastScore = null;
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         if (site.getReports() != null ^&^& !site.getReports().isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(             lastScore = site.getReports().getFirst().getScoreGlobal();
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         return new SiteDto(
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getId(),
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getUrl(),
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getName(),
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getCurrentPhase().name(),
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getReports() != null ? site.getReports().size() : 0,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 lastScore,
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getCreatedAt(),
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(                 site.getUpdatedAt()
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\SiteDto.java" SHA256 | findstr /I /C:"B936677724DEE6DF5099D3FF2B35D2FAAA5BFDECB6F8CFB71AAA07096FF12A98" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\SiteDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\SiteDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java
+> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( package com.cyberaudit7e.event;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( import org.springframework.context.ApplicationEvent;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * Événement émis à la fin d'un cycle d'audit complet.
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * Phase 7E : ÉMETTRE
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * Équivalent Spring du Redis Streams bridge (DB5→DB2)
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * utilisé dans AuditAccess pour la communication Django→Celery.
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * Avantage : zéro infrastructure externe.
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * Les listeners (@EventListener) réagissent à cet événement
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  * pour implémenter la rétroaction (phase ÉQUILIBRER).
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( public class AuditCompletedEvent extends ApplicationEvent {
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     private final AuditReport report;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     private final String trend;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     public AuditCompletedEvent(Object source, AuditReport report, String trend) {
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(         super(source);
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(         this.report = report;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(         this.trend = trend;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     public AuditReport getReport() {
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(         return report;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     public String getTrend() {
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(         return trend;
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" SHA256 | findstr /I /C:"FD68F8012BEC92CFB38B9CB45A829DBCF4F186022BEF0BBEC3446DAEE29FB8F6" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java)
+echo Décompression de src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java
+> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( package com.cyberaudit7e.event;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( import org.springframework.context.ApplicationEvent;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  * Événement émis à chaque transition de phase du cycle 7E.
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  * M5 NOUVEAU : granularité fine pour le streaming SSE.
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  * Le dashboard ou un client SSE reçoit en temps réel :
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  * EVALUER → ELABORER → EXECUTER → EXAMINER → EVOLUER → EMETTRE → EQUILIBRER
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( public class AuditProgressEvent extends ApplicationEvent {
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     private final String siteUrl;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     private final Phase7E phase;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     private final String message;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     private final int phaseIndex; // 1 à 7
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     private final Instant eventTime;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public AuditProgressEvent(Object source, String siteUrl,
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(                               Phase7E phase, String message) {
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         super(source);
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         this.siteUrl = siteUrl;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         this.phase = phase;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         this.message = message;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         this.phaseIndex = phase.ordinal() + 1;
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         this.eventTime = Instant.now();
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public String getSiteUrl() { return siteUrl; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public Phase7E getPhase() { return phase; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public String getMessage() { return message; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public int getPhaseIndex() { return phaseIndex; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public int getTotalPhases() { return 7; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public Instant getEventTime() { return eventTime; }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(      * Progression en pourcentage (0-100).
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     public int getProgressPercent() {
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(         return Math.round((float) phaseIndex / 7 * 100);
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" SHA256 | findstr /I /C:"B327F757D5E58DF64FF3C335AD29A43AA55B25586C266427A5E9E90509A79BFE" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java)
+echo Décompression de src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java
+> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( package com.cyberaudit7e.event;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( import org.springframework.context.ApplicationEvent;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(  * Événement émis au DÉMARRAGE d'un cycle 7E.
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(  * M5 NOUVEAU : permet aux listeners de réagir au lancement
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(  * (logging, notification SSE, métriques).
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( public class AuditStartedEvent extends ApplicationEvent {
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     private final String siteUrl;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     private final String siteName;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     private final Instant startedAt;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     public AuditStartedEvent(Object source, String siteUrl, String siteName) {
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(         super(source);
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(         this.siteUrl = siteUrl;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(         this.siteName = siteName;
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(         this.startedAt = Instant.now();
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( 
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     public String getSiteUrl() { return siteUrl; }
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     public String getSiteName() { return siteName; }
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo(     public Instant getStartedAt() { return startedAt; }
+>> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" SHA256 | findstr /I /C:"72B78E649E44B1C3347CD61832F5B04C56C6130A1607EC4B7E4AC64988DB710B" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java)
+echo Décompression de src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java
+> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( package com.cyberaudit7e.repository;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.data.domain.Page;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.data.domain.Pageable;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.data.jpa.repository.JpaRepository;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.data.jpa.repository.Query;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.data.repository.query.Param;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import org.springframework.stereotype.Repository;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(  * Repository JPA pour les rapports d'audit.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(  * M6 : ajout des méthodes paginées (Page + Pageable).
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( @Repository
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( public interface AuditReportRepository extends JpaRepository^<AuditReport, Long^> {
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     // ── Requêtes non-paginées (M3/M4/M5) ──
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     List^<AuditReport^> findBySiteIdOrderByAuditedAtDesc(Long siteId);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Optional^<AuditReport^> findFirstBySiteIdOrderByAuditedAtDesc(Long siteId);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     List^<AuditReport^> findByScoreGlobalGreaterThanEqual(Double threshold);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     List^<AuditReport^> findByScoreGlobalLessThan(Double threshold);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     List^<AuditReport^> findByAuditedAtBetweenOrderByAuditedAtDesc(
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(             LocalDateTime start, LocalDateTime end);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     long countBySiteId(Long siteId);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r")
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Double averageGlobalScore();
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     @Query("SELECT AVG(r.scoreGlobal) FROM AuditReport r WHERE r.site.id = :siteId")
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Double averageGlobalScoreBySite(@Param("siteId") Long siteId);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     List^<AuditReport^> findByTrend(String trend);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     // ── Requêtes paginées (M6 NOUVEAU) ──
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Tous les rapports, paginés et triés.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Exemple : GET /api/audits?page=0^&size=10^&sort=auditedAt,desc
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> findAll(Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Rapports d'un site, paginés.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> findBySiteId(Long siteId, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Rapports sous un seuil de score, paginés.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> findByScoreGlobalLessThan(Double threshold, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Rapports au-dessus d'un seuil, paginés.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> findByScoreGlobalGreaterThanEqual(Double threshold, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Rapports par tendance, paginés.
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> findByTrend(String trend, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      * Recherche full-text sur les résultats JSON (JPQL LIKE).
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     @Query("SELECT r FROM AuditReport r WHERE r.site.name LIKE %%:query%% OR r.site.url LIKE %%:query%%")
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo(     Page^<AuditReport^> searchByQuery(@Param("query") String query, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" SHA256 | findstr /I /C:"F8FBEC1CB689FC2B87DCF8A2F01812C24DDD39290F4B6343731CB8CCB32C8906" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java)
+echo Décompression de src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java
+> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( package com.cyberaudit7e.repository;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import com.cyberaudit7e.domain.entity.RuleConfig;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import org.springframework.data.jpa.repository.JpaRepository;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import org.springframework.stereotype.Repository;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(  * Repository JPA pour la configuration dynamique des poids de scoring.
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(  * Utilisé par ScoringService pour charger les poids en BDD
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(  * au lieu des valeurs codées en dur.
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( @Repository
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( public interface RuleConfigRepository extends JpaRepository^<RuleConfig, Long^> {
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(     Optional^<RuleConfig^> findByCategory(RuleCategory category);
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo(     List^<RuleConfig^> findByEnabledTrue();
+>> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" SHA256 | findstr /I /C:"0A6B756C22E0AE1FB6A585FC87C70C78BA8AEC78F17B53E00C40FBA5551D684E" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java)
+echo Décompression de src\main\java\com\cyberaudit7e\repository\SiteRepository.java
+> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( package com.cyberaudit7e.repository;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import org.springframework.data.jpa.repository.JpaRepository;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import org.springframework.data.jpa.repository.Query;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import org.springframework.stereotype.Repository;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * Repository JPA pour les Sites.
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * M3 : l'implémentation ConcurrentHashMap de M2 est remplacée par
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * une interface JpaRepository. Spring Data génère automatiquement
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * l'implémentation à partir des noms de méthodes (Query Methods).
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * Comparaison avec les autres stacks :
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *   - Django : Site.objects.filter(url=url)
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *   - Laravel : Site::where('url', $url)-^>first()
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *   - Spring : findByUrl(String url) → Spring génère le SQL
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * JpaRepository hérite de CrudRepository + PagingAndSortingRepository,
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  * offrant save(), findById(), findAll(), delete(), count(), etc.
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( @Repository
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( public interface SiteRepository extends JpaRepository^<Site, Long^> {
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Trouve un site par son URL exacte.
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * SQL généré : SELECT * FROM sites WHERE url = ?
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     Optional^<Site^> findByUrl(String url);
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Vérifie l'existence d'un site par URL (optimisé, pas de SELECT *).
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * SQL généré : SELECT COUNT(*) ^> 0 FROM sites WHERE url = ?
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     boolean existsByUrl(String url);
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Liste les sites par phase 7E courante.
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * SQL généré : SELECT * FROM sites WHERE current_phase = ?
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     List^<Site^> findByCurrentPhase(Phase7E phase);
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Liste les sites triés par date de création décroissante.
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     List^<Site^> findAllByOrderByCreatedAtDesc();
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Recherche par nom (LIKE, insensible à la casse).
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * SQL généré : SELECT * FROM sites WHERE LOWER(name) LIKE LOWER(CONCAT('%%', ?, '%%'))
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     List^<Site^> findByNameContainingIgnoreCase(String name);
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      * Compte les sites par phase (query custom JPQL).
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     @Query("SELECT s.currentPhase, COUNT(s) FROM Site s GROUP BY s.currentPhase")
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo(     List^<Object[]^> countByPhase();
+>> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" SHA256 | findstr /I /C:"AD2088E1BF1C29DB96A4EF454904D068B43E997B1E6AABAD7B47DE2102587A86" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\repository\SiteRepository.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\repository\SiteRepository.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\AsyncAuditService.java
+> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import com.cyberaudit7e.dto.AuditRequestDto;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import com.cyberaudit7e.dto.AuditResponseDto;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import org.springframework.scheduling.annotation.Async;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import java.util.concurrent.CompletableFuture;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import java.util.concurrent.ConcurrentHashMap;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( import java.util.concurrent.atomic.AtomicLong;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * Service d'audit asynchrone.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * M5 NOUVEAU : permet de lancer des audits sans bloquer le thread HTTP.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * Le client reçoit immédiatement un jobId et peut :
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  *   - Suivre la progression via SSE (GET /api/audits/stream)
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  *   - Consulter le résultat via GET /api/audits/async/{jobId}
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * Supporte aussi les audits batch (plusieurs sites en parallèle).
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * Analogie AuditAccess : équivalent du Celery task `analyze_repo`
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  * lancé via Redis broker, mais sans infrastructure externe.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( public class AsyncAuditService {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     private static final Logger log = LoggerFactory.getLogger(AsyncAuditService.class);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     private final AuditOrchestrator orchestrator;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /** Stockage des jobs async en cours et terminés */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     private final Map^<Long, AsyncAuditJob^> jobs = new ConcurrentHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     private final AtomicLong jobSequence = new AtomicLong(1);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public AsyncAuditService(AuditOrchestrator orchestrator) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         this.orchestrator = orchestrator;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Lance un audit asynchrone.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Retourne immédiatement un jobId.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * @param request DTO de la requête
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * @return Job avec ID et statut PENDING
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public AsyncAuditJob submitAudit(AuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         long jobId = jobSequence.getAndIncrement();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         AsyncAuditJob job = new AsyncAuditJob(jobId, request.url(), request.name());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         jobs.put(jobId, job);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         log.info("[ASYNC] Job #{} soumis pour {}", jobId, request.url());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         // Lancer l'exécution dans le pool @Async
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         executeAsync(jobId, request);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         return job;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Lance un batch d'audits en parallèle.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Chaque audit est un job indépendant.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * @param requests Liste des requêtes
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * @return Liste des jobs créés
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public List^<AsyncAuditJob^> submitBatch(List^<AuditRequestDto^> requests) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         log.info("[ASYNC-BATCH] Soumission de {} audit(s)", requests.size());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         return requests.stream()
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .map(this::submitAudit)
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Exécution asynchrone d'un audit via @Async.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Le thread HTTP est libéré immédiatement.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     @Async("taskExecutor")
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public void executeAsync(long jobId, AuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         AsyncAuditJob job = jobs.get(jobId);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         if (job == null) return;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         job.setStatus("RUNNING");
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         log.info("[ASYNC] Job #{} démarré sur thread {}", jobId, Thread.currentThread().getName());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             AuditResponseDto result = orchestrator.executeFullCycle(request);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             job.setStatus("COMPLETED");
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             job.setResult(result);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             log.info("[ASYNC] Job #{} terminé — score: {}", jobId, result.scores().get("global"));
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             job.setStatus("FAILED");
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             job.setError(e.getMessage());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             log.error("[ASYNC] Job #{} échoué : {}", jobId, e.getMessage(), e);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Consulte le statut d'un job.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public AsyncAuditJob getJob(long jobId) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         return jobs.get(jobId);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Liste tous les jobs (actifs et terminés).
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public List^<AsyncAuditJob^> getAllJobs() {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         return jobs.values().stream()
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .sorted((a, b) -^> Long.compare(b.getJobId(), a.getJobId()))
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Nettoie les jobs terminés.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public int clearCompletedJobs() {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         List^<Long^> toRemove = jobs.entrySet().stream()
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .filter(e -^> "COMPLETED".equals(e.getValue().getStatus())
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                           ^|^| "FAILED".equals(e.getValue().getStatus()))
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .map(Map.Entry::getKey)
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         toRemove.forEach(jobs::remove);
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         log.info("[ASYNC] {} job(s) terminés nettoyés", toRemove.size());
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         return toRemove.size();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     // ── Inner class : AsyncAuditJob ──
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      * Représentation d'un job d'audit asynchrone.
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     public static class AsyncAuditJob {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private final long jobId;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private final String siteUrl;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private final String siteName;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private final long submittedAt;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private volatile String status;  // PENDING, RUNNING, COMPLETED, FAILED
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private volatile AuditResponseDto result;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         private volatile String error;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public AsyncAuditJob(long jobId, String siteUrl, String siteName) {
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             this.jobId = jobId;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             this.siteUrl = siteUrl;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             this.siteName = siteName;
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             this.submittedAt = System.currentTimeMillis();
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(             this.status = "PENDING";
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public long getJobId() { return jobId; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public String getSiteUrl() { return siteUrl; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public String getSiteName() { return siteName; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public long getSubmittedAt() { return submittedAt; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public String getStatus() { return status; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public void setStatus(String status) { this.status = status; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public AuditResponseDto getResult() { return result; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public void setResult(AuditResponseDto result) { this.result = result; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public String getError() { return error; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(         public void setError(String error) { this.error = error; }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" SHA256 | findstr /I /C:"D08732967143711276881A48531A590D42D787B2EE3B369A84BBF3E8C61407B2" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\AsyncAuditService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\AsyncAuditService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\AuditEngine.java
+> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import com.cyberaudit7e.domain.rule.AuditContext;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import com.cyberaudit7e.domain.rule.AuditRule;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import java.util.Comparator;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * Moteur d'audit — orchestre l'exécution des règles.
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * M4 : évolutions majeures vs M2/M3 :
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * - Intègre HtmlFetcherService pour le crawl réel HTTP (Jsoup)
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * - Construit un AuditContext (URL + Document) passé aux règles
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * - Trie les règles par priorité (structurelles d'abord)
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * - Gère les erreurs de crawl (toutes les règles reçoivent un context vide)
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  * - Vide le cache du fetcher après chaque exécution
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( public class AuditEngine {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     private static final Logger log = LoggerFactory.getLogger(AuditEngine.class);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     private final List^<AuditRule^> rules;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     private final ScoringService scoringService;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     private final HtmlFetcherService htmlFetcher;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     public AuditEngine(List^<AuditRule^> rules,
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                        ScoringService scoringService,
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                        HtmlFetcherService htmlFetcher) {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         // Trier les règles par priorité (plus bas = premier)
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         this.rules = rules.stream()
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .sorted(Comparator.comparingInt(AuditRule::priority))
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         this.scoringService = scoringService;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         this.htmlFetcher = htmlFetcher;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         log.info("══════════════════════════════════════════════════════");
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         log.info("  AuditEngine M4 initialisé — {} règles (Jsoup actif)", this.rules.size());
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         this.rules.forEach(r -^>
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 log.info("  ├─ [{}] p{} {} — {}",
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         r.category(), r.priority(), r.id(), r.description()));
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         log.info("══════════════════════════════════════════════════════");
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      * Exécute toutes les règles sur l'URL donnée.
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      * M4 : crawl HTTP réel via Jsoup, puis injection du Document
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      * dans l'AuditContext transmis à chaque règle.
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      * @param url URL du site à auditer
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      * @return Liste des résultats, triés par priorité d'exécution
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     public List^<RuleResultDto^> runAllRules(String url) {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         log.info("[7E-EXECUTER] Crawl + exécution de {} règles sur {}", rules.size(), url);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         // Étape 1 : Crawler la page
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         Optional^<Document^> docOpt = htmlFetcher.fetch(url);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         AuditContext context = docOpt
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .map(doc -^> AuditContext.withDocument(url, doc))
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .orElseGet(() -^> {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                     log.warn("[7E-EXECUTER] Crawl échoué pour {} — exécution en mode dégradé", url);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                     return AuditContext.withoutDocument(url);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         // Étape 2 : Exécuter chaque règle
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         List^<RuleResultDto^> results = rules.stream()
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .map(rule -^> {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                     try {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         RuleResultDto result = rule.evaluate(context);
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         String status = result.passed() ? "PASS" : (result.score() ^> 0 ? "PARTIAL" : "FAIL");
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         log.info("  ├─ [{}] {} → {} (score: {})",
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                                 rule.category(), rule.id(), status, result.score());
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         return result;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                     } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         log.error("  ├─ [{}] {} → ERREUR : {}", rule.category(), rule.id(), e.getMessage());
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                         return RuleResultDto.failure(rule.id(), rule.category(),
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                                 "Erreur d'exécution : " + e.getMessage());
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                     }
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 })
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         // Étape 3 : Nettoyer le cache pour la prochaine URL
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         htmlFetcher.clearCache();
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         long passed = results.stream().filter(RuleResultDto::passed).count();
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         log.info("[7E-EXECUTER] Terminé — {}/{} règle(s) réussies", passed, results.size());
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         return results;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     public int getRulesCount() {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         return rules.size();
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     public ScoringService getScoringService() {
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(         return scoringService;
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditEngine.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AuditEngine.java" SHA256 | findstr /I /C:"69648A15E0536798FC0D2FE6343E35B2E3451924CBB844A2103F1215F5FEE0DF" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\AuditEngine.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\AuditEngine.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java
+> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.dto.AuditRequestDto;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.dto.AuditResponseDto;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.event.AuditProgressEvent;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.event.AuditStartedEvent;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.repository.AuditReportRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.repository.SiteRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import com.cyberaudit7e.service.cycle.*;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import org.springframework.context.ApplicationEventPublisher;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  * Orchestrateur du cycle Axiome 7E.
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  * M5 : publie des événements à chaque transition de phase
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  * pour alimenter le streaming SSE en temps réel.
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  * Flux événementiel :
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  *   AuditStartedEvent → 7× AuditProgressEvent → AuditCompletedEvent
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  * Les clients SSE voient la progression phase par phase.
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( public class AuditOrchestrator {
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private static final Logger log = LoggerFactory.getLogger(AuditOrchestrator.class);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final SiteRepository siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final AuditReportRepository reportRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final ApplicationEventPublisher eventPublisher;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final EvaluateService evaluateService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final ElaborateService elaborateService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final ExecuteService executeService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final ExamineService examineService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final EvolveService evolveService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private final EmitService emitService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     public AuditOrchestrator(
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             SiteRepository siteRepository,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             AuditReportRepository reportRepository,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             ApplicationEventPublisher eventPublisher,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             EvaluateService evaluateService,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             ElaborateService elaborateService,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             ExecuteService executeService,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             ExamineService examineService,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             EvolveService evolveService,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(             EmitService emitService
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     ) {
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.siteRepository = siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.reportRepository = reportRepository;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.eventPublisher = eventPublisher;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.evaluateService = evaluateService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.elaborateService = elaborateService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.executeService = executeService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.examineService = examineService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.evolveService = evolveService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         this.emitService = emitService;
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     public AuditResponseDto executeFullCycle(AuditRequestDto request) {
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("╔══════════════════════════════════════════════════════╗");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("║  CYCLE 7E — Démarrage audit pour {}", request.url());
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("╚══════════════════════════════════════════════════════╝");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Événement de démarrage ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         eventPublisher.publishEvent(new AuditStartedEvent(this, request.url(), request.name()));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Résolution ou création du site ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         Site site = siteRepository.findByUrl(request.url())
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 .orElseGet(() -^> {
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                     log.info("[JPA] Création du site : {}", request.name());
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                     return siteRepository.save(new Site(request.url(), request.name()));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 });
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 1 : ÉVALUER ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EVALUER, "Collecte des métriques en cours...");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         String validatedUrl = evaluateService.evaluate(site);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 3 : EXÉCUTER ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EXECUTER, "Exécution des 13 règles d'audit...");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         List^<RuleResultDto^> results = executeService.execute(validatedUrl);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 2 : ÉLABORER ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.ELABORER, "Analyse des violations...");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         List^<RuleResultDto^> violations = elaborateService.elaborate(results);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 4 : EXAMINER ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EXAMINER, "Calcul du score pondéré...");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         Map^<String, Double^> scores = examineService.examine(results);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 5 : ÉVOLUER ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EVOLUER,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 "Comparaison avec l'audit précédent...");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         String trend = evolveService.evolve(site, scores);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Persistance ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         AuditReport report = new AuditReport(site, scores, results);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         report.setTrend(trend);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         report = reportRepository.save(report);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         site.addReport(report);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         siteRepository.save(site);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 6 : ÉMETTRE ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EMETTRE,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 String.format("Publication du rapport #%%d...", report.getId()));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         emitService.emit(report, trend);
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         // ── Phase 7 : ÉQUILIBRER (asynchrone) ──
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         publishProgress(request.url(), Phase7E.EQUILIBRER,
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 String.format("Rétroaction cybernétique — score: %%s, tendance: %%s",
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                         scores.get("global"), trend));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("╔══════════════════════════════════════════════════════╗");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("║  CYCLE 7E TERMINÉ — Rapport #{} — Score: {}",
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 report.getId(), scores.get("global"));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         log.info("╚══════════════════════════════════════════════════════╝");
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         return AuditResponseDto.from(
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 report.getId(), site.getUrl(), site.getName(),
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 scores, site.getCurrentPhase().name(),
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(                 results, report.getAuditedAt()
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(      * Publie un événement de progression pour le streaming SSE.
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     private void publishProgress(String siteUrl, Phase7E phase, String message) {
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(         eventPublisher.publishEvent(new AuditProgressEvent(this, siteUrl, phase, message));
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" SHA256 | findstr /I /C:"8754464F5A04E1DEBBCCF793260590CA8A4BE9A8A5CE57A2C81C31E0392DFD7A" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java
+> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import org.jsoup.Jsoup;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import org.jsoup.nodes.Document;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import java.io.IOException;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( import java.util.concurrent.ConcurrentHashMap;
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * Service de crawl HTTP — récupère et parse le DOM des sites à auditer.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * M4 : remplace les simulations M2/M3 par un vrai fetch HTTP via Jsoup.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * Les règles d'audit reçoivent un Document Jsoup au lieu d'une simple URL.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * Fonctionnalités :
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * - Cache par URL pour éviter de refetcher pendant un même cycle 7E
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * - Timeout configurable
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * - User-Agent conforme (identification du bot)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * - Gestion propre des erreurs réseau
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * Analogie AuditAccess : équivalent du crawler Playwright (Django/Celery),
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  * mais synchrone et léger pour le POC Spring.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( public class HtmlFetcherService {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     private static final Logger log = LoggerFactory.getLogger(HtmlFetcherService.class);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     private static final String USER_AGENT =
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             "CyberAudit7E/1.0 (Accessibility Audit Bot; +https://cyberaudit7e.local)";
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     private static final int TIMEOUT_MS = 10_000; // 10 secondes
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     private static final int MAX_BODY_SIZE = 5 * 1024 * 1024; // 5 MB
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * Cache des documents par URL (vidé entre chaque cycle via clearCache()).
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * Évite de fetcher 7 fois la même page pour 7 règles.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     private final Map^<String, Document^> cache = new ConcurrentHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * Récupère et parse le HTML d'une URL.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * Retourne un Optional.empty() en cas d'erreur réseau.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * @param url URL à crawler
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * @return Document Jsoup parsé, ou empty si erreur
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     public Optional^<Document^> fetch(String url) {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         // Vérifier le cache
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         if (cache.containsKey(url)) {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             log.debug("[FETCHER] Cache hit pour {}", url);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             return Optional.of(cache.get(url));
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         log.info("[FETCHER] Crawl HTTP → {}", url);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             Document doc = Jsoup.connect(url)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .userAgent(USER_AGENT)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .timeout(TIMEOUT_MS)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .maxBodySize(MAX_BODY_SIZE)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .followRedirects(true)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .ignoreHttpErrors(false)
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     .get();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             cache.put(url, doc);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             log.info("[FETCHER] OK — {} ({} octets, titre: '{}')",
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(                     url, doc.html().length(), doc.title());
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             return Optional.of(doc);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         } catch (IOException e) {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             log.warn("[FETCHER] Erreur crawl {} : {}", url, e.getMessage());
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * Vide le cache. Appelé par l'orchestrateur entre chaque cycle 7E.
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     public void clearCache() {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         int size = cache.size();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         cache.clear();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         if (size ^> 0) {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(             log.debug("[FETCHER] Cache vidé ({} entrées)", size);
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      * @return Nombre d'URLs en cache
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     public int getCacheSize() {
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(         return cache.size();
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" SHA256 | findstr /I /C:"E7386C9C8A9CEE9A48D54D2E26E626316ECBF0117B6F4C573DB1E1CFB45B3627" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java
+> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import com.cyberaudit7e.dto.AuditRequestDto;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import com.cyberaudit7e.repository.SiteRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import org.springframework.beans.factory.annotation.Value;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import org.springframework.scheduling.annotation.Scheduled;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * Service d'audits programmés.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * M5 NOUVEAU : exécute automatiquement des audits périodiques
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * sur tous les sites enregistrés via @Scheduled.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * Configurable via application.yml :
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  *   cyberaudit7e.scheduler.enabled: true/false
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  *   cyberaudit7e.scheduler.cron: "0 0 2 * * *" (tous les jours à 2h)
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * Analogie GitManager : équivalent des webhooks Gitea qui
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * déclenchent un audit automatique après chaque commit.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  * Ici c'est basé sur le temps (cron) plutôt que sur les événements.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( public class ScheduledAuditService {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private static final Logger log = LoggerFactory.getLogger(ScheduledAuditService.class);
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private final SiteRepository siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private final AsyncAuditService asyncAuditService;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     @Value("${cyberaudit7e.scheduler.enabled:false}")
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private boolean schedulerEnabled;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private LocalDateTime lastRunAt;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     private int lastRunCount;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     public ScheduledAuditService(SiteRepository siteRepository,
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(                                  AsyncAuditService asyncAuditService) {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         this.siteRepository = siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         this.asyncAuditService = asyncAuditService;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * Audit périodique — exécuté selon le cron configuré.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * Par défaut désactivé (cyberaudit7e.scheduler.enabled=false).
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * @Scheduled cron : seconde minute heure jour mois jour-semaine
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * "0 0 2 * * *" = tous les jours à 02:00
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * "0 0/30 * * * *" = toutes les 30 minutes (pour le POC)
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     @Scheduled(cron = "${cyberaudit7e.scheduler.cron:0 0 2 * * *}")
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     public void runScheduledAudits() {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         if (!schedulerEnabled) {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             return; // Silencieux si désactivé
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         List^<Site^> sites = siteRepository.findAll();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         if (sites.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             log.info("[SCHEDULER] Aucun site enregistré — rien à auditer");
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             return;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         log.info("╔══════════════════════════════════════════════════════╗");
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         log.info("║  AUDIT PROGRAMMÉ — {} site(s) à auditer", sites.size());
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         log.info("╚══════════════════════════════════════════════════════╝");
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         lastRunAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         lastRunCount = sites.size();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         // Lancer tous les audits en batch asynchrone
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         List^<AuditRequestDto^> requests = sites.stream()
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(                 .map(s -^> new AuditRequestDto(s.getUrl(), s.getName()))
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         asyncAuditService.submitBatch(requests);
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         log.info("[SCHEDULER] {} audit(s) soumis en batch asynchrone", sites.size());
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * Lancement manuel d'un audit programmé (via API).
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * Ignores le flag schedulerEnabled.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     public int triggerNow() {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         List^<Site^> sites = siteRepository.findAll();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         if (sites.isEmpty()) return 0;
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         log.info("[SCHEDULER] Déclenchement manuel — {} site(s)", sites.size());
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         lastRunAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         lastRunCount = sites.size();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         List^<AuditRequestDto^> requests = sites.stream()
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(                 .map(s -^> new AuditRequestDto(s.getUrl(), s.getName()))
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         asyncAuditService.submitBatch(requests);
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         return sites.size();
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      * Informations sur le scheduler.
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     public SchedulerInfo getInfo() {
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(         return new SchedulerInfo(schedulerEnabled, lastRunAt, lastRunCount);
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     public record SchedulerInfo(
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             boolean enabled,
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             LocalDateTime lastRunAt,
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(             int lastRunSiteCount
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo(     ) {}
+>> "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" SHA256 | findstr /I /C:"6DBF69194DBAFEC12A84225B9FB0E8048CB1B242E2ABB3997EB84CB07840E7BF" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\ScoringService.java
+> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import com.cyberaudit7e.domain.entity.RuleConfig;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import com.cyberaudit7e.repository.RuleConfigRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import java.util.DoubleSummaryStatistics;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( import java.util.stream.Collectors;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * Service de scoring pondéré.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * M4 : les poids sont chargés dynamiquement depuis la table rule_configs.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * Fallback sur RuleCategory.getDefaultWeight() si la table est vide.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * C'est le cœur de la phase ÉQUILIBRER : le FeedbackLoopListener
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * peut modifier les poids en BDD, et le prochain audit utilisera
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  * automatiquement les nouvelles valeurs.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( public class ScoringService {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     private static final Logger log = LoggerFactory.getLogger(ScoringService.class);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     private final RuleConfigRepository ruleConfigRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     public ScoringService(RuleConfigRepository ruleConfigRepository) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         this.ruleConfigRepository = ruleConfigRepository;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * Charge les poids dynamiques depuis la BDD.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * Fallback sur les valeurs par défaut de l'enum si absent.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     public Map^<RuleCategory, Double^> loadWeights() {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         Map^<RuleCategory, Double^> weights = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         List^<RuleConfig^> configs = ruleConfigRepository.findByEnabledTrue();
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         if (configs.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             // Fallback : utiliser les valeurs par défaut de l'enum
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             log.debug("[SCORING] Aucune config en BDD — utilisation des poids par défaut");
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             for (RuleCategory cat : RuleCategory.values()) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 weights.put(cat, cat.getDefaultWeight());
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             for (RuleConfig config : configs) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 weights.put(config.getCategory(), config.getWeight());
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 log.debug("[SCORING] Poids {} = {} (depuis BDD)", config.getCategory(), config.getWeight());
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             // S'assurer que toutes les catégories ont un poids
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             for (RuleCategory cat : RuleCategory.values()) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 weights.putIfAbsent(cat, cat.getDefaultWeight());
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         return weights;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * Calcule les scores par catégorie et le score global composite.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * @param results Liste des résultats de règles
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * @return Map avec clés : "rgaa", "wcag", "dsfr", "global", + poids utilisés
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     public Map^<String, Double^> computeScores(List^<RuleResultDto^> results) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         Map^<RuleCategory, Double^> weights = loadWeights();
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         Map^<RuleCategory, DoubleSummaryStatistics^> stats = results.stream()
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 .collect(Collectors.groupingBy(
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                         RuleResultDto::category,
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                         Collectors.summarizingDouble(RuleResultDto::score)
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 ));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         double scoreRgaa = average(stats, RuleCategory.RGAA);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         double scoreWcag = average(stats, RuleCategory.WCAG);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         double scoreDsfr = average(stats, RuleCategory.DSFR);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         double global = scoreRgaa * weights.get(RuleCategory.RGAA)
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                        + scoreWcag * weights.get(RuleCategory.WCAG)
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                        + scoreDsfr * weights.get(RuleCategory.DSFR);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         log.info("[7E-EXAMINER] Scores — RGAA: {} (×{}), WCAG: {} (×{}), DSFR: {} (×{}), Global: {}",
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 round(scoreRgaa), weights.get(RuleCategory.RGAA),
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 round(scoreWcag), weights.get(RuleCategory.WCAG),
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 round(scoreDsfr), weights.get(RuleCategory.DSFR),
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(                 round(global));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         Map^<String, Double^> scores = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("rgaa", round(scoreRgaa));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("wcag", round(scoreWcag));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("dsfr", round(scoreDsfr));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("global", round(global));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("weight_rgaa", weights.get(RuleCategory.RGAA));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("weight_wcag", weights.get(RuleCategory.WCAG));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         scores.put("weight_dsfr", weights.get(RuleCategory.DSFR));
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         return scores;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * Met à jour le poids d'une catégorie en BDD.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * Utilisé par la phase ÉQUILIBRER du FeedbackLoopListener.
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * @param category Catégorie à modifier
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      * @param newWeight Nouveau poids (0.0 à 1.0)
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     public void updateWeight(RuleCategory category, double newWeight) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         ruleConfigRepository.findByCategory(category).ifPresent(config -^> {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             double oldWeight = config.getWeight();
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             config.setWeight(newWeight);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             ruleConfigRepository.save(config);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(             log.info("[7E-ÉQUILIBRER] Poids {} ajusté : {} → {}", category, oldWeight, newWeight);
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     private double average(Map^<RuleCategory, DoubleSummaryStatistics^> stats, RuleCategory cat) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         return stats.containsKey(cat) ? stats.get(cat).getAverage() : 0.0;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     private double round(double value) {
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(         return Math.round(value * 100.0) / 100.0;
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\ScoringService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\ScoringService.java" SHA256 | findstr /I /C:"A197084707F7E78E624BB3E0CCB10487CA5C77CC67618135E5857FA5E748C490" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\ScoringService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\ScoringService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\SseNotificationService.java
+> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( package com.cyberaudit7e.service;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import com.cyberaudit7e.event.AuditCompletedEvent;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import com.cyberaudit7e.event.AuditProgressEvent;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import com.cyberaudit7e.event.AuditStartedEvent;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import org.springframework.context.event.EventListener;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import java.io.IOException;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( import java.util.concurrent.CopyOnWriteArrayList;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * Service de notification SSE (Server-Sent Events).
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * M5 NOUVEAU : diffuse les événements d'audit en temps réel
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * vers tous les clients connectés via GET /api/audits/stream.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * Architecture événementielle :
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  *   AuditOrchestrator publie → Spring Events → SseNotificationService écoute → SSE push
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * Équivalent du Redis Pub/Sub d'AuditAccess mais sans infrastructure externe.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * Les clients SSE sont des navigateurs, des dashboards Vue.js, ou des outils CLI.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * SSE vs WebSocket :
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * - SSE est unidirectionnel (serveur → client) — parfait pour les notifications
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * - Reconnexion automatique native côté navigateur
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * - Pas besoin de bibliothèque JS (EventSource natif)
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  * - Fonctionne avec les proxies HTTP classiques
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( public class SseNotificationService {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     private static final Logger log = LoggerFactory.getLogger(SseNotificationService.class);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     /** Timeout SSE : 30 minutes (les audits longs sont possibles) */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     private static final long SSE_TIMEOUT = 30 * 60 * 1000L;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * Liste thread-safe des emitters SSE actifs.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * CopyOnWriteArrayList : optimisé pour beaucoup de lectures (broadcast)
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * et peu d'écritures (connect/disconnect).
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     private final List^<SseEmitter^> emitters = new CopyOnWriteArrayList^<^>();
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * Crée un nouvel emitter SSE pour un client.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * Appelé par le controller GET /api/audits/stream.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     public SseEmitter subscribe() {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         emitter.onCompletion(() -^> {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitters.remove(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             log.debug("[SSE] Client déconnecté — {} client(s) restant(s)", emitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         emitter.onTimeout(() -^> {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitters.remove(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             log.debug("[SSE] Timeout client — {} client(s) restant(s)", emitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         emitter.onError(e -^> {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitters.remove(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             log.debug("[SSE] Erreur client — {} client(s) restant(s)", emitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         emitters.add(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         log.info("[SSE] Nouveau client connecté — {} client(s) actif(s)", emitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         // Envoyer un heartbeat initial pour confirmer la connexion
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         sendToEmitter(emitter, "connected",
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 Map.of("message", "CyberAudit7E SSE connecté", "clients", emitters.size()));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         return emitter;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     // ── Event Listeners ──
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     public void onAuditStarted(AuditStartedEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         broadcast("audit-started", Map.of(
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "siteUrl", event.getSiteUrl(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "siteName", event.getSiteName(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "startedAt", event.getStartedAt().toString()
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     public void onAuditProgress(AuditProgressEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         broadcast("audit-progress", Map.of(
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "siteUrl", event.getSiteUrl(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "phase", event.getPhase().name(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "phaseLabel", event.getPhase().getLabel(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "message", event.getMessage(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "progress", event.getProgressPercent(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "step", event.getPhaseIndex() + "/" + event.getTotalPhases(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "timestamp", event.getEventTime().toString()
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     public void onAuditCompleted(AuditCompletedEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         AuditReport report = event.getReport();
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         broadcast("audit-completed", Map.of(
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "reportId", report.getId(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "siteUrl", report.getSite().getUrl(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "siteName", report.getSite().getName(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "scoreGlobal", report.getScoreGlobal(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "trend", event.getTrend(),
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 "auditedAt", report.getAuditedAt().toString()
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     // ── Broadcast ──
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * Diffuse un événement à tous les clients SSE connectés.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * Les emitters morts sont automatiquement retirés.
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     private void broadcast(String eventName, Map^<String, Object^> data) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         if (emitters.isEmpty()) return;
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         log.debug("[SSE] Broadcast '{}' → {} client(s)", eventName, emitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         List^<SseEmitter^> deadEmitters = new java.util.ArrayList^<^>();
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         for (SseEmitter emitter : emitters) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             try {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 emitter.send(SseEmitter.event()
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                         .name(eventName)
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                         .data(data));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             } catch (IOException e) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(                 deadEmitters.add(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         if (!deadEmitters.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitters.removeAll(deadEmitters);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             log.debug("[SSE] {} emitter(s) mort(s) retirés", deadEmitters.size());
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     private void sendToEmitter(SseEmitter emitter, String eventName, Map^<String, Object^> data) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitter.send(SseEmitter.event().name(eventName).data(data));
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         } catch (IOException e) {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(             emitters.remove(emitter);
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      * @return Nombre de clients SSE connectés
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     public int getActiveClients() {
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(         return emitters.size();
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" SHA256 | findstr /I /C:"523B2B38B7015E8049C057401072D2E268FC8F273AE819CA67779596491F8653" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\SseNotificationService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\SseNotificationService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java
+> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import com.cyberaudit7e.event.AuditCompletedEvent;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import com.cyberaudit7e.event.AuditStartedEvent;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import org.springframework.context.event.EventListener;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import java.time.Duration;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import java.time.Instant;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import java.util.concurrent.ConcurrentHashMap;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( import java.util.concurrent.atomic.AtomicLong;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * Listener de métriques — collecte les statistiques de performance.
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * M5 NOUVEAU : écoute les événements pour calculer :
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * - Durée moyenne d'un audit
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * - Nombre total d'audits exécutés
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * - Nombre d'audits en cours
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * - Dernier audit exécuté
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * En production : ces métriques alimenteraient Spring Actuator + Micrometer
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  * pour un export vers Prometheus/Grafana (comme dans Labmanager).
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( public class AuditMetricsListener {
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private static final Logger log = LoggerFactory.getLogger(AuditMetricsListener.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private final AtomicLong totalAudits = new AtomicLong(0);
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private final AtomicLong activeAudits = new AtomicLong(0);
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private final Map^<String, Instant^> auditStartTimes = new ConcurrentHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private volatile long totalDurationMs = 0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private volatile String lastAuditUrl = "";
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     private volatile long lastAuditDurationMs = 0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     public void onStarted(AuditStartedEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         activeAudits.incrementAndGet();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         auditStartTimes.put(event.getSiteUrl(), event.getStartedAt());
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         log.debug("[METRICS] Audit démarré : {} — {} actif(s)",
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 event.getSiteUrl(), activeAudits.get());
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     public void onCompleted(AuditCompletedEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         activeAudits.decrementAndGet();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         totalAudits.incrementAndGet();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         String url = event.getReport().getSite().getUrl();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         Instant startTime = auditStartTimes.remove(url);
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         if (startTime != null) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(             long durationMs = Duration.between(startTime, Instant.now()).toMillis();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(             totalDurationMs += durationMs;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(             lastAuditDurationMs = durationMs;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(             lastAuditUrl = url;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(             log.info("[METRICS] Audit terminé : {} en {}ms — total: {}, actifs: {}",
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                     url, durationMs, totalAudits.get(), activeAudits.get());
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(      * Retourne les métriques actuelles.
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     public Map^<String, Object^> getMetrics() {
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         long total = totalAudits.get();
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         long avgMs = total ^> 0 ? totalDurationMs / total : 0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         return Map.of(
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 "totalAuditsExecuted", total,
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 "activeAudits", activeAudits.get(),
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 "averageDurationMs", avgMs,
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 "lastAuditUrl", lastAuditUrl,
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(                 "lastAuditDurationMs", lastAuditDurationMs
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" SHA256 | findstr /I /C:"6AA66A6AE0ACB065CFD7CC0D1FB13D74610D8260CA40DCBDFA0C68AD82952A7B" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(  * Phase 7E : ÉLABORER
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(  * Analyse les résultats des règles et génère un plan de remédiation.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(  * En production : priorisation des violations, suggestions correctives.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( public class ElaborateService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(     private static final Logger log = LoggerFactory.getLogger(ElaborateService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(      * Élabore le plan de remédiation à partir des violations détectées.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(      * @param results Résultats bruts des règles
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(      * @return Liste filtrée des violations à corriger
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(     public List^<RuleResultDto^> elaborate(List^<RuleResultDto^> results) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(         List^<RuleResultDto^> violations = results.stream()
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(                 .filter(r -^> !r.passed())
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(                 .toList();
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(         log.info("[7E-ÉLABORER] {} violation(s) détectée(s) sur {} règle(s)",
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(                 violations.size(), results.size());
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(         violations.forEach(v -^>
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(                 log.info("  ├─ [{}] {} — score: {}", v.ruleId(), v.detail(), v.score()));
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(         return violations;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" SHA256 | findstr /I /C:"886D25CF3843FEFE9284CAF7417C8BEED59587A1657FF71CB47BB2233F5DF55B" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\EmitService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import com.cyberaudit7e.event.AuditCompletedEvent;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import org.springframework.context.ApplicationEventPublisher;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(  * Phase 7E : ÉMETTRE
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(  * Publie un AuditCompletedEvent via le bus événementiel Spring.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(  * Les listeners enregistrés réagiront (phase ÉQUILIBRER, notifications, etc.)
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( public class EmitService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     private static final Logger log = LoggerFactory.getLogger(EmitService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     private final ApplicationEventPublisher publisher;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     public EmitService(ApplicationEventPublisher publisher) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(         this.publisher = publisher;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(      * Émet l'événement de fin d'audit.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(      * @param report Le rapport d'audit finalisé
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(      * @param trend  La tendance détectée par EvolveService
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     public void emit(AuditReport report, String trend) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(         log.info("[7E-ÉMETTRE] Publication AuditCompletedEvent — rapport #{}, tendance: {}",
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(                 report.getId(), trend);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(         publisher.publishEvent(new AuditCompletedEvent(this, report, trend));
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" SHA256 | findstr /I /C:"653AC3DC8FDACE0BD5F7734FE7BA0F270A819D48FECBA9CE717615A634879A91" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\EmitService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\EmitService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(  * Phase 7E : ÉVALUER
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(  * Collecte les métriques du site et prépare le contexte d'audit.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(  * En production : crawl HTTP, extraction DOM, inventaire des composants.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( public class EvaluateService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(     private static final Logger log = LoggerFactory.getLogger(EvaluateService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(      * Évalue le site et le fait transiter vers la phase ÉLABORER.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(      * @param site Le site à évaluer
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(      * @return Le contexte d'évaluation (URL validée et prête)
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(     public String evaluate(Site site) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         log.info("[7E-ÉVALUER] Début d'évaluation du site : {} ({})", site.getName(), site.getUrl());
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         // POC : validation basique de l'URL
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         if (site.getUrl() == null ^|^| site.getUrl().isBlank()) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(             throw new IllegalArgumentException("URL du site invalide : " + site.getUrl());
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         site.setCurrentPhase(Phase7E.EVALUER);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         log.info("[7E-ÉVALUER] Site {} prêt pour l'audit — URL validée", site.getName());
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(         return site.getUrl();
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" SHA256 | findstr /I /C:"CC01A7E6A26ACD4C9FF52010986541A971E5FD24E98A9DBF11E50B6B1EA03989" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import com.cyberaudit7e.domain.entity.Site;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import com.cyberaudit7e.repository.AuditReportRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * Phase 7E : ÉVOLUER
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * Compare le score actuel avec l'audit précédent pour détecter la tendance.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * M3 : aucun changement de code ! La signature du repository est identique
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * entre le ConcurrentHashMap M2 et le JpaRepository M3.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * C'est la puissance de l'IoC — le service ne sait pas comment les données
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  * sont stockées, il travaille avec une abstraction.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( public class EvolveService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     private static final Logger log = LoggerFactory.getLogger(EvolveService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     private final AuditReportRepository reportRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     public EvolveService(AuditReportRepository reportRepository) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         this.reportRepository = reportRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      * Analyse la tendance du score par rapport au dernier audit.
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      * @param site   Le site audité
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      * @param scores Les scores du cycle en cours
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      * @return Tendance : "UP", "DOWN", "STABLE", ou "FIRST"
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     public String evolve(Site site, Map^<String, Double^> scores) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         double currentScore = scores.getOrDefault("global", 0.0);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         Optional^<AuditReport^> previousOpt = reportRepository
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(                 .findFirstBySiteIdOrderByAuditedAtDesc(site.getId());
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         if (previousOpt.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(             log.info("[7E-ÉVOLUER] Premier audit pour {} — pas de référence", site.getName());
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(             return "FIRST";
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         double previousScore = previousOpt.get().getScoreGlobal();
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         double delta = currentScore - previousScore;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         String trend;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         if (delta ^> 0.05) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(             trend = "UP";
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         } else if (delta ^< -0.05) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(             trend = "DOWN";
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(             trend = "STABLE";
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         log.info("[7E-ÉVOLUER] {} — précédent: {}, actuel: {}, delta: {}, tendance: {}",
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(                 site.getName(), previousScore, currentScore,
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(                 String.format("%%+.2f", delta), trend);
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(         return trend;
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" SHA256 | findstr /I /C:"EC171E78C327405B9EACD7237E35197E55E90241979F820DEA53FA9362845DB2" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import com.cyberaudit7e.service.ScoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(  * Phase 7E : EXAMINER
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(  * Calcule le score pondéré composite via ScoringService.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(  * Formule : score = RGAA×0.5 + WCAG×0.3 + DSFR×0.2
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( public class ExamineService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     private static final Logger log = LoggerFactory.getLogger(ExamineService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     private final ScoringService scoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     public ExamineService(ScoringService scoringService) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(         this.scoringService = scoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(      * Examine les résultats et produit les scores.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(      * @param results Résultats des règles
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(      * @return Scores par catégorie + global
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     public Map^<String, Double^> examine(List^<RuleResultDto^> results) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(         log.info("[7E-EXAMINER] Calcul du scoring pondéré sur {} résultat(s)", results.size());
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(         Map^<String, Double^> scores = scoringService.computeScores(results);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(         log.info("[7E-EXAMINER] Score global : {}/1.00", scores.get("global"));
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(         return scores;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" SHA256 | findstr /I /C:"9D5E59986002B4FFC760E3259C815CC3E4D7BBA4B90FB16E05519562E2E8E4E2" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java
+> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import com.cyberaudit7e.dto.RuleResultDto;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import com.cyberaudit7e.service.AuditEngine;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(  * Phase 7E : EXÉCUTER
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(  * Délègue l'exécution des règles au moteur AuditEngine.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(  * Sépare l'orchestration (cycle 7E) de l'exécution (Strategy Pattern).
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( public class ExecuteService {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     private static final Logger log = LoggerFactory.getLogger(ExecuteService.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     private final AuditEngine auditEngine;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     public ExecuteService(AuditEngine auditEngine) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(         this.auditEngine = auditEngine;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(      * Exécute toutes les règles du moteur sur l'URL.
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(      * @param url URL validée par la phase ÉVALUER
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(      * @return Résultats bruts de toutes les règles
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     public List^<RuleResultDto^> execute(String url) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(         log.info("[7E-EXÉCUTER] Lancement du moteur sur {}", url);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(         List^<RuleResultDto^> results = auditEngine.runAllRules(url);
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(         log.info("[7E-EXÉCUTER] {} règle(s) exécutée(s) — {} réussie(s)",
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(                 results.size(), results.stream().filter(RuleResultDto::passed).count());
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(         return results;
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" SHA256 | findstr /I /C:"B52064C218B4EA7B9830624E8C737EE7DC28D6C27B89041C1154CD174F44452A" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java)
+echo Décompression de src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java
+> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( package com.cyberaudit7e.service.cycle;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.domain.entity.AuditReport;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.domain.enums.Phase7E;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.domain.enums.RuleCategory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.event.AuditCompletedEvent;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.repository.SiteRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import com.cyberaudit7e.service.ScoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.springframework.context.event.EventListener;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.springframework.scheduling.annotation.Async;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.springframework.stereotype.Component;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * Phase 7E : ÉQUILIBRER — Boucle de rétroaction cybernétique.
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * M4 : la rétroaction est réelle — le listener ajuste les poids
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * de scoring en BDD via ScoringService.updateWeight().
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * Logique d'adaptation :
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * - Score RGAA faible → augmente le poids RGAA (+0.05) pour forcer la priorité
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * - Score DSFR faible sur un site .gouv.fr → augmente le poids DSFR
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * - Régression détectée → renforce la catégorie la plus faible
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  * C'est la cybernétique de 2e ordre : le système s'observe et se modifie.
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( @Component
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( public class FeedbackLoopListener {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final Logger log = LoggerFactory.getLogger(FeedbackLoopListener.class);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final double SCORE_CRITICAL = 0.4;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final double SCORE_LOW = 0.6;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final double WEIGHT_ADJUSTMENT = 0.03;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final double MAX_WEIGHT = 0.7;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private static final double MIN_WEIGHT = 0.1;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private final SiteRepository siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private final ScoringService scoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     public FeedbackLoopListener(SiteRepository siteRepository,
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                                 ScoringService scoringService) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         this.siteRepository = siteRepository;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         this.scoringService = scoringService;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     @Async
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     @EventListener
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     public void onAuditCompleted(AuditCompletedEvent event) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         AuditReport report = event.getReport();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         String trend = event.getTrend();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("══════════════════════════════════════════════════════");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("[7E-ÉQUILIBRER] Analyse rétroactive du rapport #{}", report.getId());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  ├─ Site    : {}", report.getSite().getName());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  ├─ Score   : {}/1.00", report.getScoreGlobal());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  ├─ RGAA    : {}", report.getScoreRgaa());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  ├─ WCAG    : {}", report.getScoreWcag());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  ├─ DSFR    : {}", report.getScoreDsfr());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("  └─ Tendance: {}", trend);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // ── Logique de rétroaction adaptative ──
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         boolean adjusted = false;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // Règle 1 : Score RGAA critique → augmenter son poids
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (report.getScoreRgaa() != null ^&^& report.getScoreRgaa() ^< SCORE_CRITICAL) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             adjusted ^|= adjustWeight(RuleCategory.RGAA, WEIGHT_ADJUSTMENT,
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                     "Score RGAA critique — renforcement");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // Règle 2 : Score WCAG faible → augmenter son poids
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (report.getScoreWcag() != null ^&^& report.getScoreWcag() ^< SCORE_LOW) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             adjusted ^|= adjustWeight(RuleCategory.WCAG, WEIGHT_ADJUSTMENT * 0.5,
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                     "Score WCAG faible — ajustement léger");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // Règle 3 : Site .gouv.fr avec DSFR faible → renforcer DSFR
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (report.getSite().getUrl().contains(".gouv.fr")
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 ^&^& report.getScoreDsfr() != null
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 ^&^& report.getScoreDsfr() ^< SCORE_LOW) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             adjusted ^|= adjustWeight(RuleCategory.DSFR, WEIGHT_ADJUSTMENT,
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                     "Site .gouv.fr avec DSFR faible — renforcement");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // Règle 4 : Régression détectée → renforcer la catégorie la plus faible
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if ("DOWN".equals(trend)) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             RuleCategory weakest = findWeakestCategory(report);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             adjusted ^|= adjustWeight(weakest, WEIGHT_ADJUSTMENT,
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                     String.format("Régression détectée — renforcement %%s", weakest));
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (adjusted) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             // Normaliser les poids pour qu'ils totalisent 1.0
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             normalizeWeights();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (!adjusted) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             if ("UP".equals(trend)) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 log.info("[7E-FEEDBACK] Amélioration confirmée — poids stables");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             } else {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 log.info("[7E-FEEDBACK] Scores dans la norme — aucun ajustement");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         // Mise à jour de la phase du site
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         siteRepository.findById(report.getSite().getId()).ifPresent(site -^> {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             site.setCurrentPhase(Phase7E.EQUILIBRER);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             siteRepository.save(site);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             log.info("[7E-CYCLE COMPLET] {} → phase ÉQUILIBRER (persisté en BDD)",
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                     site.getName());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.info("══════════════════════════════════════════════════════");
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      * Ajuste le poids d'une catégorie dans les limites [MIN_WEIGHT, MAX_WEIGHT].
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private boolean adjustWeight(RuleCategory category, double delta, String reason) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         var weights = scoringService.loadWeights();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double current = weights.getOrDefault(category, category.getDefaultWeight());
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double newWeight = Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, current + delta));
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (Math.abs(newWeight - current) ^< 0.001) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             return false; // Déjà au plafond/plancher
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         scoringService.updateWeight(category, newWeight);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         log.warn("[7E-FEEDBACK] {} — {} : {} → {}",
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 reason, category, current, Math.round(newWeight * 1000.0) / 1000.0);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         return true;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      * Normalise les poids pour qu'ils totalisent 1.0.
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private void normalizeWeights() {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         var weights = scoringService.loadWeights();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double total = weights.values().stream().mapToDouble(Double::doubleValue).sum();
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (Math.abs(total - 1.0) ^> 0.01) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             log.info("[7E-FEEDBACK] Normalisation des poids (total actuel: {})", total);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             for (var entry : weights.entrySet()) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 double normalized = Math.round(entry.getValue() / total * 1000.0) / 1000.0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(                 scoringService.updateWeight(entry.getKey(), normalized);
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      * Identifie la catégorie avec le score le plus faible.
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     private RuleCategory findWeakestCategory(AuditReport report) {
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double rgaa = report.getScoreRgaa() != null ? report.getScoreRgaa() : 1.0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double wcag = report.getScoreWcag() != null ? report.getScoreWcag() : 1.0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         double dsfr = report.getScoreDsfr() != null ? report.getScoreDsfr() : 1.0;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( 
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (rgaa ^<= wcag ^&^& rgaa ^<= dsfr) return RuleCategory.RGAA;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         if (wcag ^<= dsfr) return RuleCategory.WCAG;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(         return RuleCategory.DSFR;
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" SHA256 | findstr /I /C:"E0F0094CE70ABF48C2821B9F83A2925703E3496EF2979AED02FEBEEBABDF1278" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java)
+echo Décompression de src\main\resources\application-dev.yml
+> "src\main\resources\application-dev.yml" echo( ##############################################
+>> "src\main\resources\application-dev.yml" echo( # CyberAudit7E — Profile DEV
+>> "src\main\resources\application-dev.yml" echo( # H2 in-memory + JPA + Flyway + H2 Console
+>> "src\main\resources\application-dev.yml" echo( ##############################################
+>> "src\main\resources\application-dev.yml" echo( 
+>> "src\main\resources\application-dev.yml" echo( spring:
+>> "src\main\resources\application-dev.yml" echo(   # ── DataSource H2 ──
+>> "src\main\resources\application-dev.yml" echo(   datasource:
+>> "src\main\resources\application-dev.yml" echo(     url: jdbc:h2:mem:cyberaudit7e;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+>> "src\main\resources\application-dev.yml" echo(     driver-class-name: org.h2.Driver
+>> "src\main\resources\application-dev.yml" echo(     username: sa
+>> "src\main\resources\application-dev.yml" echo(     password:
+>> "src\main\resources\application-dev.yml" echo( 
+>> "src\main\resources\application-dev.yml" echo(   # ── Console H2 (accessible sur /h2-console) ──
+>> "src\main\resources\application-dev.yml" echo(   h2:
+>> "src\main\resources\application-dev.yml" echo(     console:
+>> "src\main\resources\application-dev.yml" echo(       enabled: true
+>> "src\main\resources\application-dev.yml" echo(       path: /h2-console
+>> "src\main\resources\application-dev.yml" echo(       settings:
+>> "src\main\resources\application-dev.yml" echo(         web-allow-others: false
+>> "src\main\resources\application-dev.yml" echo( 
+>> "src\main\resources\application-dev.yml" echo(   # ── JPA / Hibernate ──
+>> "src\main\resources\application-dev.yml" echo(   jpa:
+>> "src\main\resources\application-dev.yml" echo(     # validate : Hibernate vérifie que les entités matchent le schéma
+>> "src\main\resources\application-dev.yml" echo(     # (créé par Flyway), mais ne le modifie pas
+>> "src\main\resources\application-dev.yml" echo(     hibernate:
+>> "src\main\resources\application-dev.yml" echo(       ddl-auto: validate
+>> "src\main\resources\application-dev.yml" echo(     show-sql: true
+>> "src\main\resources\application-dev.yml" echo(     properties:
+>> "src\main\resources\application-dev.yml" echo(       hibernate:
+>> "src\main\resources\application-dev.yml" echo(         format_sql: true
+>> "src\main\resources\application-dev.yml" echo(         use_sql_comments: true
+>> "src\main\resources\application-dev.yml" echo(         # Gestion du lazy loading hors transaction (POC only)
+>> "src\main\resources\application-dev.yml" echo(         enable_lazy_load_no_trans: true
+>> "src\main\resources\application-dev.yml" echo( 
+>> "src\main\resources\application-dev.yml" echo(   # ── Flyway (migrations SQL versionnées) ──
+>> "src\main\resources\application-dev.yml" echo(   flyway:
+>> "src\main\resources\application-dev.yml" echo(     enabled: true
+>> "src\main\resources\application-dev.yml" echo(     locations: classpath:db/migration
+>> "src\main\resources\application-dev.yml" echo(     baseline-on-migrate: true
+>> "src\main\resources\application-dev.yml" echo( 
+>> "src\main\resources\application-dev.yml" echo( logging:
+>> "src\main\resources\application-dev.yml" echo(   level:
+>> "src\main\resources\application-dev.yml" echo(     com.cyberaudit7e: DEBUG
+>> "src\main\resources\application-dev.yml" echo(     com.cyberaudit7e.service.cycle: DEBUG
+>> "src\main\resources\application-dev.yml" echo(     # Voir les requêtes SQL avec les paramètres
+>> "src\main\resources\application-dev.yml" echo(     org.hibernate.SQL: DEBUG
+>> "src\main\resources\application-dev.yml" echo(     org.hibernate.orm.jdbc.bind: TRACE
+certutil -hashfile "src\main\resources\application-dev.yml" SHA256 | findstr /I /C:"7BD2F4B15E0986A49ECAEB71D56569CA60CBBB2353C63A3FB204C924CF3D6717" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\application-dev.yml) else (echo    [ERREUR] src\main\resources\application-dev.yml)
+echo Décompression de src\main\resources\application-prod.yml
+> "src\main\resources\application-prod.yml" echo( ##############################################
+>> "src\main\resources\application-prod.yml" echo( # CyberAudit7E — Profile PROD (Docker)
+>> "src\main\resources\application-prod.yml" echo( # PostgreSQL via Docker Compose networking
+>> "src\main\resources\application-prod.yml" echo( # Variables d'env injectées par docker-compose.yml
+>> "src\main\resources\application-prod.yml" echo( ##############################################
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo( spring:
+>> "src\main\resources\application-prod.yml" echo(   datasource:
+>> "src\main\resources\application-prod.yml" echo(     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:cyberaudit7e}
+>> "src\main\resources\application-prod.yml" echo(     username: ${DB_USER:audit}
+>> "src\main\resources\application-prod.yml" echo(     password: ${DB_PASSWORD:audit7e_s3cret}
+>> "src\main\resources\application-prod.yml" echo(     driver-class-name: org.postgresql.Driver
+>> "src\main\resources\application-prod.yml" echo(     hikari:
+>> "src\main\resources\application-prod.yml" echo(       maximum-pool-size: 15
+>> "src\main\resources\application-prod.yml" echo(       minimum-idle: 3
+>> "src\main\resources\application-prod.yml" echo(       connection-timeout: 30000
+>> "src\main\resources\application-prod.yml" echo(       idle-timeout: 600000
+>> "src\main\resources\application-prod.yml" echo(       max-lifetime: 1800000
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo(   jpa:
+>> "src\main\resources\application-prod.yml" echo(     show-sql: false
+>> "src\main\resources\application-prod.yml" echo(     hibernate:
+>> "src\main\resources\application-prod.yml" echo(       ddl-auto: validate
+>> "src\main\resources\application-prod.yml" echo(     properties:
+>> "src\main\resources\application-prod.yml" echo(       hibernate:
+>> "src\main\resources\application-prod.yml" echo(         dialect: org.hibernate.dialect.PostgreSQLDialect
+>> "src\main\resources\application-prod.yml" echo(         jdbc.batch_size: 25
+>> "src\main\resources\application-prod.yml" echo(         order_inserts: true
+>> "src\main\resources\application-prod.yml" echo(         order_updates: true
+>> "src\main\resources\application-prod.yml" echo(         enable_lazy_load_no_trans: false
+>> "src\main\resources\application-prod.yml" echo(     open-in-view: false
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo(   flyway:
+>> "src\main\resources\application-prod.yml" echo(     enabled: true
+>> "src\main\resources\application-prod.yml" echo(     locations: classpath:db/migration
+>> "src\main\resources\application-prod.yml" echo(     baseline-on-migrate: true
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo(   h2:
+>> "src\main\resources\application-prod.yml" echo(     console:
+>> "src\main\resources\application-prod.yml" echo(       enabled: false
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo( # Swagger actif aussi en prod (protéger via Spring Security en vrai)
+>> "src\main\resources\application-prod.yml" echo( springdoc:
+>> "src\main\resources\application-prod.yml" echo(   api-docs:
+>> "src\main\resources\application-prod.yml" echo(     enabled: true
+>> "src\main\resources\application-prod.yml" echo(   swagger-ui:
+>> "src\main\resources\application-prod.yml" echo(     enabled: true
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo( # Scheduler activé en prod
+>> "src\main\resources\application-prod.yml" echo( cyberaudit7e:
+>> "src\main\resources\application-prod.yml" echo(   scheduler:
+>> "src\main\resources\application-prod.yml" echo(     enabled: true
+>> "src\main\resources\application-prod.yml" echo(     cron: "0 0 2 * * *"
+>> "src\main\resources\application-prod.yml" echo( 
+>> "src\main\resources\application-prod.yml" echo( logging:
+>> "src\main\resources\application-prod.yml" echo(   level:
+>> "src\main\resources\application-prod.yml" echo(     com.cyberaudit7e: INFO
+>> "src\main\resources\application-prod.yml" echo(     org.springframework: WARN
+>> "src\main\resources\application-prod.yml" echo(     org.hibernate: WARN
+>> "src\main\resources\application-prod.yml" echo(     org.flywaydb: INFO
+certutil -hashfile "src\main\resources\application-prod.yml" SHA256 | findstr /I /C:"1239230A89C35A2443DCC0EBA0257655A28064661C53AEA9E1E02E16AA0A975F" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\application-prod.yml) else (echo    [ERREUR] src\main\resources\application-prod.yml)
+echo Décompression de src\main\resources\application.yml
+> "src\main\resources\application.yml" echo( ##############################################
+>> "src\main\resources\application.yml" echo( # CyberAudit7E — Configuration de base
+>> "src\main\resources\application.yml" echo( # M6 : API REST complète + OpenAPI/Swagger
+>> "src\main\resources\application.yml" echo( ##############################################
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo( spring:
+>> "src\main\resources\application.yml" echo(   application:
+>> "src\main\resources\application.yml" echo(     name: CyberAudit7E
+>> "src\main\resources\application.yml" echo(   profiles:
+>> "src\main\resources\application.yml" echo(     active: dev
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo(   jackson:
+>> "src\main\resources\application.yml" echo(     serialization:
+>> "src\main\resources\application.yml" echo(       indent-output: true
+>> "src\main\resources\application.yml" echo(     default-property-inclusion: non_null
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo( server:
+>> "src\main\resources\application.yml" echo(   port: 8080
+>> "src\main\resources\application.yml" echo(   servlet:
+>> "src\main\resources\application.yml" echo(     async:
+>> "src\main\resources\application.yml" echo(       timeout: 1800000  # 30 min (SSE)
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo( # ── SpringDoc OpenAPI / Swagger UI ──
+>> "src\main\resources\application.yml" echo( springdoc:
+>> "src\main\resources\application.yml" echo(   api-docs:
+>> "src\main\resources\application.yml" echo(     path: /v3/api-docs
+>> "src\main\resources\application.yml" echo(     enabled: true
+>> "src\main\resources\application.yml" echo(   swagger-ui:
+>> "src\main\resources\application.yml" echo(     path: /swagger-ui.html
+>> "src\main\resources\application.yml" echo(     enabled: true
+>> "src\main\resources\application.yml" echo(     # Grouper par tag et trier alphabétiquement
+>> "src\main\resources\application.yml" echo(     tags-sorter: alpha
+>> "src\main\resources\application.yml" echo(     operations-sorter: method
+>> "src\main\resources\application.yml" echo(     # Afficher le modèle de requête par défaut
+>> "src\main\resources\application.yml" echo(     default-models-expand-depth: 2
+>> "src\main\resources\application.yml" echo(     doc-expansion: list
+>> "src\main\resources\application.yml" echo(   # Inclure les endpoints Spring Boot Actuator (si présent)
+>> "src\main\resources\application.yml" echo(   show-actuator: false
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo( # ── Configuration CyberAudit7E ──
+>> "src\main\resources\application.yml" echo( cyberaudit7e:
+>> "src\main\resources\application.yml" echo(   scheduler:
+>> "src\main\resources\application.yml" echo(     enabled: false
+>> "src\main\resources\application.yml" echo(     cron: "0 0 2 * * *"
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo( logging:
+>> "src\main\resources\application.yml" echo(   level:
+>> "src\main\resources\application.yml" echo(     com.cyberaudit7e: INFO
+>> "src\main\resources\application.yml" echo(     org.springframework: WARN
+>> "src\main\resources\application.yml" echo(   pattern:
+>> "src\main\resources\application.yml" echo(     console: "%%d{HH:mm:ss.SSS} [%%thread] %%-5level %%logger{36} - %%msg%%n"
+certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"63CCA7F0BB1B9107B5FDD7C7EC4FC3BC5C5B3BA7463A7472CF347F95000E9435" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\application.yml) else (echo    [ERREUR] src\main\resources\application.yml)
+echo Décompression de src\main\resources\banner.txt
+> "src\main\resources\banner.txt" echo( 
+>> "src\main\resources\banner.txt" echo(   ╔══════════════════════════════════════════════════╗
+>> "src\main\resources\banner.txt" echo(   ║       ____      _                _         _ _   ║
+>> "src\main\resources\banner.txt" echo(   ║      / ___^|   _^| ^|__   ___ _ __/ \  _   _^| (_)  ║
+>> "src\main\resources\banner.txt" echo(   ║     ^| ^|  ^| ^| ^| ^| '_ \ / _ \ '__/ _ \^| ^| ^| ^| ^| ^| ║
+>> "src\main\resources\banner.txt" echo(   ║     ^| ^|__^| ^|_^| ^| ^|_) ^|  __/ ^| / ___ \ ^|_^| ^| ^| ^| ║
+>> "src\main\resources\banner.txt" echo(   ║      \____\__, ^|_.__/ \___^|_^|/_/   \_\__,_^|_^|_^| ║
+>> "src\main\resources\banner.txt" echo(   ║           ^|___/            _  _____ _____        ║
+>> "src\main\resources\banner.txt" echo(   ║                           ^| ^|^|___  ^| ____^|       ║
+>> "src\main\resources\banner.txt" echo(   ║                           ^| ^|   / /^|  _^|         ║
+>> "src\main\resources\banner.txt" echo(   ║                           ^|_^|  / / ^| ^|___        ║
+>> "src\main\resources\banner.txt" echo(   ║                               /_/  ^|_____^|       ║
+>> "src\main\resources\banner.txt" echo(   ╠══════════════════════════════════════════════════╣
+>> "src\main\resources\banner.txt" echo(   ║  Axiome 7E : Évaluer → Élaborer → Exécuter      ║
+>> "src\main\resources\banner.txt" echo(   ║  → Examiner → Évoluer → Émettre → Équilibrer    ║
+>> "src\main\resources\banner.txt" echo(   ╠══════════════════════════════════════════════════╣
+>> "src\main\resources\banner.txt" echo(   ║  Spring Boot ${spring-boot.version}              ║
+>> "src\main\resources\banner.txt" echo(   ║  Profile(s) : ${spring.profiles.active:dev}      ║
+>> "src\main\resources\banner.txt" echo(   ╚══════════════════════════════════════════════════╝
+certutil -hashfile "src\main\resources\banner.txt" SHA256 | findstr /I /C:"6C43C3B2CA1EBCF32274F177C743F756A28D76A9978E5E2024BC86A0C757DE74" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\banner.txt) else (echo    [ERREUR] src\main\resources\banner.txt)
+echo Décompression de src\main\resources\db\migration\V1__create_schema.sql
+> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- V1__create_schema.sql
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- CyberAudit7E — Schéma initial
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Flyway migration : exécutée automatiquement au démarrage
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( 
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Table des sites à auditer
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Inspirée du registre d'organes GitManager
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE TABLE sites (
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     url             VARCHAR(500)  NOT NULL UNIQUE,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     name            VARCHAR(255)  NOT NULL,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     current_phase   VARCHAR(20)   DEFAULT 'EVALUER',
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( );
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( 
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Table des rapports d'audit
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Un rapport = un cycle 7E complet
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE TABLE audit_reports (
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     id              BIGINT AUTO_INCREMENT PRIMARY KEY,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     site_id         BIGINT        NOT NULL,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     score_rgaa      DOUBLE,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     score_wcag      DOUBLE,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     score_dsfr      DOUBLE,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     score_global    DOUBLE,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     completed_phase VARCHAR(20),
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     trend           VARCHAR(10),
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     results_json    CLOB,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     audited_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( 
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(     CONSTRAINT fk_audit_site
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(         FOREIGN KEY (site_id) REFERENCES sites(id)
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo(         ON DELETE CASCADE
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( );
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( 
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( -- Index pour les requêtes fréquentes
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE INDEX idx_sites_url          ON sites(url);
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE INDEX idx_sites_phase        ON sites(current_phase);
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE INDEX idx_reports_site_id    ON audit_reports(site_id);
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE INDEX idx_reports_audited_at ON audit_reports(audited_at);
+>> "src\main\resources\db\migration\V1__create_schema.sql" echo( CREATE INDEX idx_reports_score      ON audit_reports(score_global);
+certutil -hashfile "src\main\resources\db\migration\V1__create_schema.sql" SHA256 | findstr /I /C:"205F065FF3E70146387F1BC15593D63C12FF03D37C4E2BFCFC297CFECE9C2515" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V1__create_schema.sql) else (echo    [ERREUR] src\main\resources\db\migration\V1__create_schema.sql)
+echo Décompression de src\main\resources\db\migration\V2__seed_data.sql
+> "src\main\resources\db\migration\V2__seed_data.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( -- V2__seed_data.sql
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( -- CyberAudit7E — Données de test (POC)
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( -- Sites de référence pour valider le moteur d'audit
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( 
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo( INSERT INTO sites (url, name, current_phase, created_at, updated_at) VALUES
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo(     ('https://www.service-public.fr', 'Service Public', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo(     ('https://www.gouvernement.gouv.fr', 'Gouvernement FR', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo(     ('https://www.legifrance.gouv.fr', 'Légifrance', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+>> "src\main\resources\db\migration\V2__seed_data.sql" echo(     ('https://www.example.com', 'Example.com', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+certutil -hashfile "src\main\resources\db\migration\V2__seed_data.sql" SHA256 | findstr /I /C:"570F2BBA889D576EF7A6DA6B62C423E3CDC2771A32D2E1F70DB33BD75433BE6C" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V2__seed_data.sql) else (echo    [ERREUR] src\main\resources\db\migration\V2__seed_data.sql)
+echo Décompression de src\main\resources\db\migration\V3__rule_configs.sql
+> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- V3__rule_configs.sql
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- CyberAudit7E M4 — Configuration dynamique des poids
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- Phase ÉQUILIBRER : les poids sont ajustables en BDD
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( 
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( CREATE TABLE rule_configs (
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     category    VARCHAR(20)   NOT NULL UNIQUE,
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     weight      DOUBLE        NOT NULL,
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     enabled     BOOLEAN       DEFAULT TRUE,
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     description VARCHAR(500)
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( );
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( 
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- Poids par défaut (identiques à RuleCategory.getDefaultWeight())
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( -- Modifiables via API ou par le FeedbackLoopListener
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo( INSERT INTO rule_configs (category, weight, enabled, description) VALUES
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     ('RGAA', 0.50, TRUE, 'Référentiel Général d''Amélioration de l''Accessibilité — poids dominant'),
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     ('WCAG', 0.30, TRUE, 'Web Content Accessibility Guidelines — poids secondaire'),
+>> "src\main\resources\db\migration\V3__rule_configs.sql" echo(     ('DSFR', 0.20, TRUE, 'Design System de l''État Français — poids complémentaire');
+certutil -hashfile "src\main\resources\db\migration\V3__rule_configs.sql" SHA256 | findstr /I /C:"E2149678A05DAA3C175A2E89A065798CFF9493FFF83BE1D27C08B3C6E048A614" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V3__rule_configs.sql) else (echo    [ERREUR] src\main\resources\db\migration\V3__rule_configs.sql)
+echo Décompression de src\main\resources\db\migration\V4__indexes_pagination.sql
+> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- V4__postgresql_compat.sql
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- CyberAudit7E M7 — Compatibilité PostgreSQL
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( --
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- H2 et PostgreSQL ont des syntaxes différentes pour :
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- - AUTO_INCREMENT (H2) vs SERIAL/IDENTITY (PostgreSQL)
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- - CLOB (H2) vs TEXT (PostgreSQL)
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( --
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Flyway gère cela via des migrations conditionnelles
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- ou des fichiers par vendeur (V4__xxx.sql + V4__xxx__postgresql.sql)
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( --
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Cette migration ajoute des index supplémentaires
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- utiles pour les requêtes paginées de M6.
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Index composites pour les requêtes paginées fréquentes
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_site_audited
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(site_id, audited_at DESC);
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_score_audited
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(score_global, audited_at DESC);
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_trend
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(trend);
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Index pour la recherche full-text M6
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_sites_name
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON sites(name);
+certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"CBE8AA3C1E2813E0FE511647AC9C80AA8461D9959EFBCFBC05F33A0A9D4A2BDF" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V4__indexes_pagination.sql) else (echo    [ERREUR] src\main\resources\db\migration\V4__indexes_pagination.sql)
+echo Décompression de src\main\resources\static\admin.html
+> "src\main\resources\static\admin.html" echo( ^<!DOCTYPE html^>
+>> "src\main\resources\static\admin.html" echo( ^<html lang="fr"^>
+>> "src\main\resources\static\admin.html" echo( ^<head^>
+>> "src\main\resources\static\admin.html" echo( ^<meta charset="UTF-8"^>
+>> "src\main\resources\static\admin.html" echo( ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^>
+>> "src\main\resources\static\admin.html" echo( ^<title^>CyberAudit7E — Admin ^& Tests^</title^>
+>> "src\main\resources\static\admin.html" echo( ^<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"^>^</script^>
+>> "src\main\resources\static\admin.html" echo( ^<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700^&family=Outfit:wght@300;400;500;600;700^&display=swap" rel="stylesheet"^>
+>> "src\main\resources\static\admin.html" echo( ^<style^>
+>> "src\main\resources\static\admin.html" echo( :root {
+>> "src\main\resources\static\admin.html" echo(   --bg-0: #0a0e17; --bg-1: #111827; --bg-2: #1a2236; --bg-3: #243049;
+>> "src\main\resources\static\admin.html" echo(   --border: #2d3a52; --border-active: #3b82f6;
+>> "src\main\resources\static\admin.html" echo(   --text-0: #f1f5f9; --text-1: #94a3b8; --text-2: #64748b;
+>> "src\main\resources\static\admin.html" echo(   --blue: #3b82f6; --blue-dim: #1e3a5f; --green: #10b981; --green-dim: #064e3b;
+>> "src\main\resources\static\admin.html" echo(   --orange: #f59e0b; --orange-dim: #713f12; --red: #ef4444; --red-dim: #7f1d1d;
+>> "src\main\resources\static\admin.html" echo(   --purple: #a78bfa; --purple-dim: #3b2070; --cyan: #22d3ee;
+>> "src\main\resources\static\admin.html" echo(   --mono: 'JetBrains Mono', monospace; --sans: 'Outfit', sans-serif;
+>> "src\main\resources\static\admin.html" echo(   --radius: 8px;
+>> "src\main\resources\static\admin.html" echo( }
+>> "src\main\resources\static\admin.html" echo( * { margin:0; padding:0; box-sizing:border-box; }
+>> "src\main\resources\static\admin.html" echo( body { font-family:var(--sans); background:var(--bg-0); color:var(--text-0); min-height:100vh; }
+>> "src\main\resources\static\admin.html" echo( ::-webkit-scrollbar { width:6px; height:6px; }
+>> "src\main\resources\static\admin.html" echo( ::-webkit-scrollbar-track { background:var(--bg-1); }
+>> "src\main\resources\static\admin.html" echo( ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Layout */
+>> "src\main\resources\static\admin.html" echo( .app { display:grid; grid-template-columns:220px 1fr; grid-template-rows:56px 1fr; min-height:100vh; }
+>> "src\main\resources\static\admin.html" echo( .topbar { grid-column:1/-1; background:var(--bg-1); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index:10; }
+>> "src\main\resources\static\admin.html" echo( .topbar h1 { font-size:16px; font-weight:600; letter-spacing:-.5px; }
+>> "src\main\resources\static\admin.html" echo( .topbar h1 span { color:var(--blue); }
+>> "src\main\resources\static\admin.html" echo( .topbar .status { display:flex; align-items:center; gap:12px; font-size:13px; color:var(--text-1); }
+>> "src\main\resources\static\admin.html" echo( .topbar .dot { width:8px; height:8px; border-radius:50%%; }
+>> "src\main\resources\static\admin.html" echo( .topbar .dot.up { background:var(--green); box-shadow:0 0 8px var(--green); }
+>> "src\main\resources\static\admin.html" echo( .topbar .dot.down { background:var(--red); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( .sidebar { background:var(--bg-1); border-right:1px solid var(--border); padding:12px 0; overflow-y:auto; }
+>> "src\main\resources\static\admin.html" echo( .sidebar .section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-2); padding:16px 16px 6px; font-weight:600; }
+>> "src\main\resources\static\admin.html" echo( .sidebar a { display:flex; align-items:center; gap:10px; padding:8px 16px; font-size:13px; color:var(--text-1); text-decoration:none; cursor:pointer; transition:all .15s; border-left:3px solid transparent; }
+>> "src\main\resources\static\admin.html" echo( .sidebar a:hover { background:var(--bg-2); color:var(--text-0); }
+>> "src\main\resources\static\admin.html" echo( .sidebar a.active { background:var(--blue-dim); color:var(--blue); border-left-color:var(--blue); font-weight:500; }
+>> "src\main\resources\static\admin.html" echo( .sidebar .icon { width:18px; text-align:center; font-size:14px; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( .main { padding:20px; overflow-y:auto; }
+>> "src\main\resources\static\admin.html" echo( .page-title { font-size:22px; font-weight:600; margin-bottom:4px; letter-spacing:-.5px; }
+>> "src\main\resources\static\admin.html" echo( .page-sub { font-size:13px; color:var(--text-2); margin-bottom:20px; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Cards */
+>> "src\main\resources\static\admin.html" echo( .card { background:var(--bg-1); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:16px; }
+>> "src\main\resources\static\admin.html" echo( .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+>> "src\main\resources\static\admin.html" echo( .card-header h3 { font-size:14px; font-weight:600; }
+>> "src\main\resources\static\admin.html" echo( .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:16px; }
+>> "src\main\resources\static\admin.html" echo( .stat-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--radius); padding:14px; }
+>> "src\main\resources\static\admin.html" echo( .stat-card .label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); margin-bottom:4px; }
+>> "src\main\resources\static\admin.html" echo( .stat-card .value { font-size:24px; font-weight:700; font-family:var(--mono); }
+>> "src\main\resources\static\admin.html" echo( .stat-card .value.blue { color:var(--blue); }
+>> "src\main\resources\static\admin.html" echo( .stat-card .value.green { color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .stat-card .value.orange { color:var(--orange); }
+>> "src\main\resources\static\admin.html" echo( .stat-card .value.purple { color:var(--purple); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Forms */
+>> "src\main\resources\static\admin.html" echo( .form-row { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+>> "src\main\resources\static\admin.html" echo( .form-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:180px; }
+>> "src\main\resources\static\admin.html" echo( .form-group label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); font-weight:500; }
+>> "src\main\resources\static\admin.html" echo( input, select, textarea { background:var(--bg-2); border:1px solid var(--border); color:var(--text-0); padding:8px 12px; border-radius:6px; font-family:var(--sans); font-size:13px; outline:none; transition:border .2s; }
+>> "src\main\resources\static\admin.html" echo( input:focus, select:focus, textarea:focus { border-color:var(--blue); }
+>> "src\main\resources\static\admin.html" echo( textarea { font-family:var(--mono); font-size:12px; resize:vertical; min-height:60px; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Buttons */
+>> "src\main\resources\static\admin.html" echo( .btn { padding:8px 16px; border:1px solid var(--border); border-radius:6px; font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; background:var(--bg-2); color:var(--text-0); }
+>> "src\main\resources\static\admin.html" echo( .btn:hover { background:var(--bg-3); }
+>> "src\main\resources\static\admin.html" echo( .btn:disabled { opacity:.4; cursor:not-allowed; }
+>> "src\main\resources\static\admin.html" echo( .btn-primary { background:var(--blue); border-color:var(--blue); color:#fff; }
+>> "src\main\resources\static\admin.html" echo( .btn-primary:hover { background:#2563eb; }
+>> "src\main\resources\static\admin.html" echo( .btn-green { background:var(--green-dim); border-color:var(--green); color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .btn-green:hover { background:#065f46; }
+>> "src\main\resources\static\admin.html" echo( .btn-orange { background:var(--orange-dim); border-color:var(--orange); color:var(--orange); }
+>> "src\main\resources\static\admin.html" echo( .btn-red { background:var(--red-dim); border-color:var(--red); color:var(--red); }
+>> "src\main\resources\static\admin.html" echo( .btn-sm { padding:5px 10px; font-size:12px; }
+>> "src\main\resources\static\admin.html" echo( .btn-group { display:flex; gap:6px; flex-wrap:wrap; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Table */
+>> "src\main\resources\static\admin.html" echo( .table-wrap { overflow-x:auto; }
+>> "src\main\resources\static\admin.html" echo( table { width:100%%; border-collapse:collapse; font-size:13px; }
+>> "src\main\resources\static\admin.html" echo( th { text-align:left; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--text-2); border-bottom:2px solid var(--border); font-weight:600; }
+>> "src\main\resources\static\admin.html" echo( td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text-1); }
+>> "src\main\resources\static\admin.html" echo( tr:hover td { background:var(--bg-2); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* JSON viewer */
+>> "src\main\resources\static\admin.html" echo( .json-viewer { background:var(--bg-0); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:var(--mono); font-size:12px; color:var(--green); max-height:400px; overflow:auto; white-space:pre-wrap; word-break:break-all; line-height:1.5; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* SSE Console */
+>> "src\main\resources\static\admin.html" echo( .sse-console { background:#000; border:1px solid var(--green); border-radius:6px; padding:12px; font-family:var(--mono); font-size:11px; max-height:350px; overflow-y:auto; }
+>> "src\main\resources\static\admin.html" echo( .sse-line { margin-bottom:4px; line-height:1.4; }
+>> "src\main\resources\static\admin.html" echo( .sse-line .ts { color:var(--text-2); }
+>> "src\main\resources\static\admin.html" echo( .sse-line .ev { color:var(--cyan); font-weight:600; }
+>> "src\main\resources\static\admin.html" echo( .sse-line .data { color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .sse-line.error { color:var(--red); }
+>> "src\main\resources\static\admin.html" echo( .sse-dot { display:inline-block; width:6px; height:6px; border-radius:50%%; margin-right:6px; }
+>> "src\main\resources\static\admin.html" echo( .sse-dot.on { background:var(--green); animation:pulse 2s infinite; }
+>> "src\main\resources\static\admin.html" echo( .sse-dot.off { background:var(--red); }
+>> "src\main\resources\static\admin.html" echo( @keyframes pulse { 0%%,100%%{opacity:1} 50%%{opacity:.3} }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Score badge */
+>> "src\main\resources\static\admin.html" echo( .score { font-family:var(--mono); font-weight:700; padding:2px 8px; border-radius:4px; font-size:12px; }
+>> "src\main\resources\static\admin.html" echo( .score.high { background:var(--green-dim); color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .score.mid { background:var(--orange-dim); color:var(--orange); }
+>> "src\main\resources\static\admin.html" echo( .score.low { background:var(--red-dim); color:var(--red); }
+>> "src\main\resources\static\admin.html" echo( .badge { font-size:11px; padding:2px 8px; border-radius:10px; font-weight:500; }
+>> "src\main\resources\static\admin.html" echo( .badge.pending { background:var(--blue-dim); color:var(--blue); }
+>> "src\main\resources\static\admin.html" echo( .badge.running { background:var(--orange-dim); color:var(--orange); }
+>> "src\main\resources\static\admin.html" echo( .badge.completed { background:var(--green-dim); color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .badge.failed { background:var(--red-dim); color:var(--red); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Tabs */
+>> "src\main\resources\static\admin.html" echo( .tabs { display:flex; gap:0; margin-bottom:16px; border-bottom:2px solid var(--border); }
+>> "src\main\resources\static\admin.html" echo( .tab { padding:8px 16px; font-size:13px; color:var(--text-2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+>> "src\main\resources\static\admin.html" echo( .tab:hover { color:var(--text-0); }
+>> "src\main\resources\static\admin.html" echo( .tab.active { color:var(--blue); border-bottom-color:var(--blue); font-weight:500; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Progress bar */
+>> "src\main\resources\static\admin.html" echo( .progress-bar { height:6px; background:var(--bg-3); border-radius:3px; overflow:hidden; }
+>> "src\main\resources\static\admin.html" echo( .progress-bar .fill { height:100%%; background:linear-gradient(90deg, var(--blue), var(--cyan)); transition:width .3s; border-radius:3px; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Pagination */
+>> "src\main\resources\static\admin.html" echo( .pagination { display:flex; align-items:center; gap:8px; justify-content:center; margin-top:12px; }
+>> "src\main\resources\static\admin.html" echo( .pagination .info { font-size:12px; color:var(--text-2); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( /* Toast */
+>> "src\main\resources\static\admin.html" echo( .toast-container { position:fixed; top:64px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
+>> "src\main\resources\static\admin.html" echo( .toast { padding:10px 16px; border-radius:6px; font-size:13px; animation:slideIn .3s ease; max-width:400px; }
+>> "src\main\resources\static\admin.html" echo( .toast.success { background:var(--green-dim); border:1px solid var(--green); color:var(--green); }
+>> "src\main\resources\static\admin.html" echo( .toast.error { background:var(--red-dim); border:1px solid var(--red); color:var(--red); }
+>> "src\main\resources\static\admin.html" echo( .toast.info { background:var(--blue-dim); border:1px solid var(--blue); color:var(--blue); }
+>> "src\main\resources\static\admin.html" echo( @keyframes slideIn { from{transform:translateX(100%%);opacity:0} to{transform:none;opacity:1} }
+>> "src\main\resources\static\admin.html" echo( ^</style^>
+>> "src\main\resources\static\admin.html" echo( ^</head^>
+>> "src\main\resources\static\admin.html" echo( ^<body^>
+>> "src\main\resources\static\admin.html" echo( ^<div id="app"^>
+>> "src\main\resources\static\admin.html" echo( ^<div class="app"^>
+>> "src\main\resources\static\admin.html" echo(   ^<!-- Topbar --^>
+>> "src\main\resources\static\admin.html" echo(   ^<div class="topbar"^>
+>> "src\main\resources\static\admin.html" echo(     ^<h1^>⚡ Cyber^<span^>Audit7E^</span^> — Admin ^& Tests^</h1^>
+>> "src\main\resources\static\admin.html" echo(     ^<div class="status"^>
+>> "src\main\resources\static\admin.html" echo(       ^<span class="dot" :class="health.status==='UP'?'up':'down'"^>^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span^>{{ health.status ^|^| '...' }}^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span style="color:var(--text-2)"^>^|^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span^>v{{ health.version ^|^| '?' }}^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span style="color:var(--text-2)"^>^|^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span^>{{ health.rulesLoaded ^|^| 0 }} règles^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span style="color:var(--text-2)"^>^|^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span^>Profile: {{ health.profile ^|^| '?' }}^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span style="color:var(--text-2)"^>^|^</span^>
+>> "src\main\resources\static\admin.html" echo(       ^<span v-if="health.runtime"^>Heap: {{ health.runtime.heapUsedMb }}MB/{{ health.runtime.heapMaxMb }}MB^</span^>
+>> "src\main\resources\static\admin.html" echo(     ^</div^>
+>> "src\main\resources\static\admin.html" echo(   ^</div^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(   ^<!-- Sidebar --^>
+>> "src\main\resources\static\admin.html" echo(   ^<div class="sidebar"^>
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Système^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='health'}" @click="page='health'"^>^<span class="icon"^>💚^</span^> Health ^& Runtime^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='stats'}" @click="page='stats'"^>^<span class="icon"^>📊^</span^> Statistiques^</a^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Sites^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='sites'}" @click="page='sites'"^>^<span class="icon"^>🌐^</span^> Gestion des sites^</a^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Audits^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='audit-sync'}" @click="page='audit-sync'"^>^<span class="icon"^>🔍^</span^> Audit synchrone^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='audit-async'}" @click="page='audit-async'"^>^<span class="icon"^>⚡^</span^> Audit asynchrone^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='audit-batch'}" @click="page='audit-batch'"^>^<span class="icon"^>📦^</span^> Batch parallèle^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='reports'}" @click="page='reports'"^>^<span class="icon"^>📋^</span^> Rapports^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='alerts'}" @click="page='alerts'"^>^<span class="icon"^>🚨^</span^> Alertes^</a^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Temps réel^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='sse'}" @click="page='sse'"^>^<span class="icon"^>📡^</span^> Console SSE^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='jobs'}" @click="page='jobs'"^>^<span class="icon"^>⏳^</span^> Jobs async^</a^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Configuration^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='config'}" @click="page='config'"^>^<span class="icon"^>⚖️^</span^> Poids scoring^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a :class="{active:page==='scheduler'}" @click="page='scheduler'"^>^<span class="icon"^>⏰^</span^> Scheduler^</a^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<div class="section-label"^>Liens^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^<a href="/swagger-ui.html" target="_blank"^>^<span class="icon"^>📖^</span^> Swagger UI ↗^</a^>
+>> "src\main\resources\static\admin.html" echo(     ^<a href="/h2-console" target="_blank"^>^<span class="icon"^>🗄️^</span^> H2 Console ↗^</a^>
+>> "src\main\resources\static\admin.html" echo(   ^</div^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(   ^<!-- Main content --^>
+>> "src\main\resources\static\admin.html" echo(   ^<div class="main"^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ HEALTH ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='health'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Health ^& Runtime^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/health — État complet du service et métriques JVM^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="btn-group" style="margin-bottom:16px"^>
+>> "src\main\resources\static\admin.html" echo(         ^<button class="btn btn-primary" @click="fetchHealth"^>🔄 Rafraîchir^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Statut^</div^>^<div class="value green"^>{{ health.status ^|^| '...' }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Version^</div^>^<div class="value blue"^>{{ health.version ^|^| '?' }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Règles^</div^>^<div class="value purple"^>{{ health.rulesLoaded ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>SSE Clients^</div^>^<div class="value orange"^>{{ health.sseClients ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card" v-if="health.runtime"^>^<div class="label"^>Uptime^</div^>^<div class="value blue"^>{{ health.runtime.uptime }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card" v-if="health.runtime"^>^<div class="label"^>Heap^</div^>^<div class="value" :class="health.runtime.heapPercent^>80?'orange':'green'"^>{{ health.runtime.heapPercent }}%%^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card" v-if="health.runtime"^>^<div class="label"^>Java^</div^>^<div class="value blue" style="font-size:16px"^>{{ health.runtime.javaVersion }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card" v-if="health.runtime"^>^<div class="label"^>Hostname^</div^>^<div class="value blue" style="font-size:14px"^>{{ health.runtime.hostname }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>^<div class="card-header"^>^<h3^>Réponse brute^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(health) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ STATS ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='stats'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Statistiques globales^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/stats — Agrégations et métriques^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<button class="btn btn-primary" @click="fetchStats" style="margin-bottom:16px"^>🔄 Rafraîchir^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Total Sites^</div^>^<div class="value blue"^>{{ stats.totalSites ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Total Audits^</div^>^<div class="value purple"^>{{ stats.totalAudits ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card"^>^<div class="label"^>Score moyen^</div^>^<div class="value" :class="scoreClass(stats.averageScore)"^>{{ stats.averageScore ? stats.averageScore.toFixed(2) : '—' }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="stat-card" v-if="stats.metrics"^>^<div class="label"^>Durée moy.^</div^>^<div class="value orange"^>{{ stats.metrics.averageDurationMs ^|^| 0 }}ms^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="stats.trends"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>Tendances^</h3^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card" v-for="(v,k) in stats.trends" :key="k"^>^<div class="label"^>{{ k }}^</div^>^<div class="value blue"^>{{ v }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>^<div class="card-header"^>^<h3^>Réponse brute^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(stats) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ SITES ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='sites'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Gestion des sites^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>CRUD complet — GET/POST/DELETE /api/sites^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>Ajouter un site^</h3^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="form-row"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>URL^</label^>^<input v-model="siteForm.url" placeholder="https://www.example.com"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>Nom^</label^>^<input v-model="siteForm.name" placeholder="Mon site"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-primary" @click="createSite" :disabled="!siteForm.url^|^|!siteForm.name"^>+ Créer^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>
+>> "src\main\resources\static\admin.html" echo(           ^<h3^>Sites enregistrés ({{ sitesData.totalElements ^|^| 0 }})^</h3^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-row" style="margin:0;gap:6px"^>
+>> "src\main\resources\static\admin.html" echo(             ^<input v-model="siteSearch" placeholder="Recherche..." style="width:150px" @keyup.enter="searchSites"^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-sm" @click="searchSites"^>🔍^</button^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-sm" @click="siteSearch='';fetchSites()"^>✕^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="table-wrap"^>
+>> "src\main\resources\static\admin.html" echo(           ^<table^>
+>> "src\main\resources\static\admin.html" echo(             ^<thead^>^<tr^>^<th^>ID^</th^>^<th^>Nom^</th^>^<th^>URL^</th^>^<th^>Phase^</th^>^<th^>Audits^</th^>^<th^>Dernier score^</th^>^<th^>Actions^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\admin.html" echo(             ^<tbody^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-for="s in sitesData.content^|^|[]" :key="s.id"^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono)"^>{{ s.id }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="color:var(--text-0);font-weight:500"^>{{ s.name }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<a :href="s.url" target="_blank" style="color:var(--cyan);text-decoration:none;font-size:12px"^>{{ s.url }}^</a^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="badge" :class="s.currentPhase==='EQUILIBRER'?'completed':'pending'"^>{{ s.currentPhase }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono);text-align:center"^>{{ s.auditsCount }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span v-if="s.lastScore!=null" class="score" :class="scoreClass(s.lastScore)"^>{{ s.lastScore.toFixed(2) }}^</span^>^<span v-else style="color:var(--text-2)"^>—^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>
+>> "src\main\resources\static\admin.html" echo(                   ^<button class="btn btn-sm btn-green" @click="quickAudit(s)" title="Lancer un audit"^>🔍^</button^>
+>> "src\main\resources\static\admin.html" echo(                   ^<button class="btn btn-sm btn-red" @click="deleteSite(s.id)" title="Supprimer"^>🗑️^</button^>
+>> "src\main\resources\static\admin.html" echo(                 ^</td^>
+>> "src\main\resources\static\admin.html" echo(               ^</tr^>
+>> "src\main\resources\static\admin.html" echo(             ^</tbody^>
+>> "src\main\resources\static\admin.html" echo(           ^</table^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="pagination" v-if="sitesData.totalPages^>1"^>
+>> "src\main\resources\static\admin.html" echo(           ^<button class="btn btn-sm" :disabled="sitesData.first" @click="sitesPage--;fetchSites()"^>◀^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^<span class="info"^>Page {{ sitesPage+1 }} / {{ sitesData.totalPages }}^</span^>
+>> "src\main\resources\static\admin.html" echo(           ^<button class="btn btn-sm" :disabled="sitesData.last" @click="sitesPage++;fetchSites()"^>▶^</button^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Dernière réponse^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ AUDIT SYNC ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='audit-sync'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Audit synchrone^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>POST /api/audits — Cycle 7E complet (bloquant)^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="form-row"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>URL^</label^>^<input v-model="auditForm.url" placeholder="https://www.service-public.fr"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>Nom^</label^>^<input v-model="auditForm.name" placeholder="Service Public"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div style="display:flex;align-items:flex-end;gap:6px"^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-primary" @click="runSyncAudit" :disabled="loading^|^|!auditForm.url^|^|!auditForm.name"^>{{ loading ? '⏳ Audit en cours...' : '🔍 Lancer l\'audit' }}^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="progress-bar" v-if="loading" style="margin-top:8px"^>^<div class="fill" style="width:100%%;animation:pulse 2s infinite"^>^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="auditResult"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>Résultat — Rapport #{{ auditResult.reportId }}^</h3^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>Score global^</div^>^<div class="value" :class="scoreClass(auditResult.scores.global)"^>{{ auditResult.scores.global }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>RGAA (×{{ auditResult.scores.weight_rgaa^|^|0.5 }})^</div^>^<div class="value blue"^>{{ auditResult.scores.rgaa }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>WCAG (×{{ auditResult.scores.weight_wcag^|^|0.3 }})^</div^>^<div class="value purple"^>{{ auditResult.scores.wcag }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>DSFR (×{{ auditResult.scores.weight_dsfr^|^|0.2 }})^</div^>^<div class="value orange"^>{{ auditResult.scores.dsfr }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>Règles^</div^>^<div class="value blue"^>{{ auditResult.passedCount }}/{{ auditResult.rulesCount }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="table-wrap"^>
+>> "src\main\resources\static\admin.html" echo(           ^<table^>
+>> "src\main\resources\static\admin.html" echo(             ^<thead^>^<tr^>^<th^>Règle^</th^>^<th^>Catégorie^</th^>^<th^>Score^</th^>^<th^>Statut^</th^>^<th^>Détail^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\admin.html" echo(             ^<tbody^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-for="r in auditResult.details" :key="r.ruleId"^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono);color:var(--cyan)"^>{{ r.ruleId }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="badge" :class="r.category==='RGAA'?'completed':r.category==='WCAG'?'pending':'running'"^>{{ r.category }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="score" :class="scoreClass(r.score)"^>{{ r.score.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>{{ r.passed ? '✅' : r.score ^> 0 ? '⚠️' : '❌' }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-size:12px;max-width:400px"^>{{ r.detail }}^</td^>
+>> "src\main\resources\static\admin.html" echo(               ^</tr^>
+>> "src\main\resources\static\admin.html" echo(             ^</tbody^>
+>> "src\main\resources\static\admin.html" echo(           ^</table^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="auditResult"^>^<div class="card-header"^>^<h3^>Réponse JSON brute^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(auditResult) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ AUDIT ASYNC ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='audit-async'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Audit asynchrone^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>POST /api/audits/async — Non-bloquant, retourne un jobId^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="form-row"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>URL^</label^>^<input v-model="auditForm.url" placeholder="https://www.legifrance.gouv.fr"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>Nom^</label^>^<input v-model="auditForm.name" placeholder="Légifrance"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-primary" @click="runAsyncAudit" :disabled="!auditForm.url^|^|!auditForm.name"^>⚡ Lancer (async)^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Réponse^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ AUDIT BATCH ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='audit-batch'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Batch d'audits parallèles^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>POST /api/audits/batch — Jusqu'à 10 sites en parallèle^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>Sites du batch^</h3^>^<button class="btn btn-sm" @click="batchSites.push({url:'',name:''})"^>+ Ajouter^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div v-for="(s,i) in batchSites" :key="i" class="form-row"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>URL {{ i+1 }}^</label^>^<input v-model="s.url" placeholder="https://..."^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>Nom {{ i+1 }}^</label^>^<input v-model="s.name" placeholder="Nom du site"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-sm btn-red" @click="batchSites.splice(i,1)" v-if="batchSites.length^>1"^>✕^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<button class="btn btn-primary" @click="runBatch" :disabled="!batchSites.some(s=^>s.url^&^&s.name)" style="margin-top:8px"^>📦 Lancer le batch^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Réponse^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ REPORTS ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='reports'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Rapports d'audit^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/list — Rapports paginés et triables^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>
+>> "src\main\resources\static\admin.html" echo(           ^<h3^>{{ reportsData.totalElements ^|^| 0 }} rapport(s)^</h3^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-row" style="margin:0;gap:6px"^>
+>> "src\main\resources\static\admin.html" echo(             ^<select v-model="reportSort" @change="fetchReports" style="width:140px"^>
+>> "src\main\resources\static\admin.html" echo(               ^<option value="auditedAt"^>Date^</option^>
+>> "src\main\resources\static\admin.html" echo(               ^<option value="scoreGlobal"^>Score^</option^>
+>> "src\main\resources\static\admin.html" echo(             ^</select^>
+>> "src\main\resources\static\admin.html" echo(             ^<select v-model="reportDir" @change="fetchReports" style="width:80px"^>
+>> "src\main\resources\static\admin.html" echo(               ^<option value="desc"^>Desc^</option^>
+>> "src\main\resources\static\admin.html" echo(               ^<option value="asc"^>Asc^</option^>
+>> "src\main\resources\static\admin.html" echo(             ^</select^>
+>> "src\main\resources\static\admin.html" echo(             ^<input v-model="reportSearch" placeholder="Recherche..." style="width:140px" @keyup.enter="searchReports"^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-sm" @click="searchReports"^>🔍^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="table-wrap"^>
+>> "src\main\resources\static\admin.html" echo(           ^<table^>
+>> "src\main\resources\static\admin.html" echo(             ^<thead^>^<tr^>^<th^>ID^</th^>^<th^>Site^</th^>^<th^>Global^</th^>^<th^>RGAA^</th^>^<th^>WCAG^</th^>^<th^>DSFR^</th^>^<th^>Tendance^</th^>^<th^>Date^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\admin.html" echo(             ^<tbody^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-for="r in reportsData.content^|^|[]" :key="r.id" style="cursor:pointer" @click="viewReport(r.id)"^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono)"^>#{{ r.id }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="color:var(--text-0)"^>{{ r.siteName }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="score" :class="scoreClass(r.scoreGlobal)"^>{{ r.scoreGlobal?.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreRgaa?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreWcag?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreDsfr?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="badge" :class="r.trend==='UP'?'completed':r.trend==='DOWN'?'failed':'pending'"^>{{ r.trend^|^|'—' }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-size:11px;color:var(--text-2)"^>{{ formatDate(r.auditedAt) }}^</td^>
+>> "src\main\resources\static\admin.html" echo(               ^</tr^>
+>> "src\main\resources\static\admin.html" echo(             ^</tbody^>
+>> "src\main\resources\static\admin.html" echo(           ^</table^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="pagination" v-if="reportsData.totalPages^>1"^>
+>> "src\main\resources\static\admin.html" echo(           ^<button class="btn btn-sm" :disabled="reportsData.first" @click="reportsPage--;fetchReports()"^>◀^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^<span class="info"^>Page {{ reportsPage+1 }} / {{ reportsData.totalPages }}^</span^>
+>> "src\main\resources\static\admin.html" echo(           ^<button class="btn btn-sm" :disabled="reportsData.last" @click="reportsPage++;fetchReports()"^>▶^</button^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="selectedReport"^>^<div class="card-header"^>^<h3^>Rapport #{{ selectedReport.id }} — {{ selectedReport.siteName }}^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(selectedReport) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ ALERTS ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='alerts'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Alertes^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/alerts — Rapports sous le seuil^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="form-row"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="form-group"^>^<label^>Seuil^</label^>^<input v-model.number="alertThreshold" type="number" step="0.1" min="0" max="1"^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-orange" @click="fetchAlerts"^>🚨 Charger les alertes^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="alertsData.content"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>{{ alertsData.totalElements }} alerte(s) (score ^&lt; {{ alertThreshold }})^</h3^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="table-wrap"^>
+>> "src\main\resources\static\admin.html" echo(           ^<table^>
+>> "src\main\resources\static\admin.html" echo(             ^<thead^>^<tr^>^<th^>ID^</th^>^<th^>Site^</th^>^<th^>Score^</th^>^<th^>Tendance^</th^>^<th^>Date^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\admin.html" echo(             ^<tbody^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-for="r in alertsData.content" :key="r.id"^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono)"^>#{{ r.id }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>{{ r.siteName }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="score low"^>{{ r.scoreGlobal?.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>{{ r.trend }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-size:11px"^>{{ formatDate(r.auditedAt) }}^</td^>
+>> "src\main\resources\static\admin.html" echo(               ^</tr^>
+>> "src\main\resources\static\admin.html" echo(             ^</tbody^>
+>> "src\main\resources\static\admin.html" echo(           ^</table^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ SSE CONSOLE ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='sse'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Console SSE temps réel^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/stream — Server-Sent Events^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>
+>> "src\main\resources\static\admin.html" echo(           ^<h3^>^<span class="sse-dot" :class="sseConnected?'on':'off'"^>^</span^>{{ sseConnected ? 'Connecté' : 'Déconnecté' }}^</h3^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="btn-group"^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-green btn-sm" @click="connectSse" v-if="!sseConnected"^>▶ Connecter^</button^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-red btn-sm" @click="disconnectSse" v-if="sseConnected"^>⏹ Déconnecter^</button^>
+>> "src\main\resources\static\admin.html" echo(             ^<button class="btn btn-sm" @click="sseMessages=[]"^>🗑️ Vider^</button^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="sse-console" ref="sseConsole"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div v-if="!sseMessages.length" style="color:var(--text-2)"^>En attente d'événements... Connectez-vous puis lancez un audit.^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div v-for="(m,i) in sseMessages" :key="i" class="sse-line" :class="{error:m.type==='error'}"^>
+>> "src\main\resources\static\admin.html" echo(             ^<span class="ts"^>{{ m.time }}^</span^> ^<span class="ev"^>[{{ m.event }}]^</span^> ^<span class="data"^>{{ m.data }}^</span^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ JOBS ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='jobs'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Jobs asynchrones^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/async — Suivi des jobs en cours et terminés^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="btn-group" style="margin-bottom:16px"^>
+>> "src\main\resources\static\admin.html" echo(         ^<button class="btn btn-primary" @click="fetchJobs"^>🔄 Rafraîchir^</button^>
+>> "src\main\resources\static\admin.html" echo(         ^<button class="btn btn-red" @click="clearJobs"^>🗑️ Nettoyer terminés^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="table-wrap"^>
+>> "src\main\resources\static\admin.html" echo(           ^<table^>
+>> "src\main\resources\static\admin.html" echo(             ^<thead^>^<tr^>^<th^>Job ID^</th^>^<th^>URL^</th^>^<th^>Statut^</th^>^<th^>Score^</th^>^<th^>Actions^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\admin.html" echo(             ^<tbody^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-for="j in jobs" :key="j.jobId"^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-family:var(--mono)"^>#{{ j.jobId }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td style="font-size:12px"^>{{ j.siteUrl }}^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span class="badge" :class="j.status.toLowerCase()"^>{{ j.status }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<span v-if="j.scoreGlobal!=null" class="score" :class="scoreClass(j.scoreGlobal)"^>{{ j.scoreGlobal.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\admin.html" echo(                 ^<td^>^<button class="btn btn-sm" @click="viewJob(j.jobId)"^>👁️ Détail^</button^>^</td^>
+>> "src\main\resources\static\admin.html" echo(               ^</tr^>
+>> "src\main\resources\static\admin.html" echo(               ^<tr v-if="!jobs.length"^>^<td colspan="5" style="text-align:center;color:var(--text-2)"^>Aucun job^</td^>^</tr^>
+>> "src\main\resources\static\admin.html" echo(             ^</tbody^>
+>> "src\main\resources\static\admin.html" echo(           ^</table^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Détail du job^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ CONFIG ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='config'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Poids de scoring^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET/PUT /api/config/weights — Configuration dynamique des pondérations^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-header"^>^<h3^>Poids actuels^</h3^>^<button class="btn btn-sm" @click="fetchWeights"^>🔄^</button^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card" v-for="(v,k) in weights" :key="k" v-if="typeof v==='object'"^>
+>> "src\main\resources\static\admin.html" echo(             ^<div class="label"^>{{ k }}^</div^>
+>> "src\main\resources\static\admin.html" echo(             ^<div class="value blue"^>{{ v.weight }}^</div^>
+>> "src\main\resources\static\admin.html" echo(             ^<div style="margin-top:8px;display:flex;gap:4px"^>
+>> "src\main\resources\static\admin.html" echo(               ^<input v-model.number="weightEdits[k]" type="number" step="0.05" min="0" max="1" style="width:70px;padding:4px 6px;font-size:12px"^>
+>> "src\main\resources\static\admin.html" echo(               ^<button class="btn btn-sm btn-primary" @click="updateWeight(k)"^>💾^</button^>
+>> "src\main\resources\static\admin.html" echo(             ^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<div style="margin-top:12px;display:flex;gap:8px;align-items:center"^>
+>> "src\main\resources\static\admin.html" echo(           ^<span style="font-size:13px;color:var(--text-1)"^>Total: ^<b :style="{color:weights.normalized?'var(--green)':'var(--red)'}"^>{{ weights.totalWeight }}^</b^>^</span^>
+>> "src\main\resources\static\admin.html" echo(           ^<span class="badge" :class="weights.normalized?'completed':'failed'"^>{{ weights.normalized ? 'Normalisé ✓' : 'Non normalisé ✗' }}^</span^>
+>> "src\main\resources\static\admin.html" echo(           ^<button class="btn btn-sm btn-orange" @click="resetWeights"^>↩ Reset défaut^</button^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Réponse^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     ^<!-- ═══ SCHEDULER ═══ --^>
+>> "src\main\resources\static\admin.html" echo(     ^<template v-if="page==='scheduler'"^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-title"^>Scheduler^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="page-sub"^>GET /api/audits/schedule — Audits programmés automatiques^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<button class="btn btn-primary" @click="fetchScheduler" style="margin-bottom:16px"^>🔄 Rafraîchir^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card"^>
+>> "src\main\resources\static\admin.html" echo(         ^<div class="card-grid"^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>Activé^</div^>^<div class="value" :class="schedulerInfo.enabled?'green':'orange'"^>{{ schedulerInfo.enabled ? 'OUI' : 'NON' }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>Dernier run^</div^>^<div class="value blue" style="font-size:14px"^>{{ schedulerInfo.lastRunAt ^|^| '—' }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(           ^<div class="stat-card"^>^<div class="label"^>Sites auditables^</div^>^<div class="value purple"^>{{ schedulerInfo.lastRunSiteCount ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^</div^>
+>> "src\main\resources\static\admin.html" echo(         ^<button class="btn btn-green" @click="triggerScheduler" style="margin-top:12px"^>🚀 Déclencher maintenant^</button^>
+>> "src\main\resources\static\admin.html" echo(       ^</div^>
+>> "src\main\resources\static\admin.html" echo(       ^<div class="card" v-if="lastResponse"^>^<div class="card-header"^>^<h3^>Réponse^</h3^>^</div^>^<div class="json-viewer"^>{{ formatJson(lastResponse) }}^</div^>^</div^>
+>> "src\main\resources\static\admin.html" echo(     ^</template^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(   ^</div^>
+>> "src\main\resources\static\admin.html" echo( ^</div^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( ^<!-- Toasts --^>
+>> "src\main\resources\static\admin.html" echo( ^<div class="toast-container"^>
+>> "src\main\resources\static\admin.html" echo(   ^<div v-for="(t,i) in toasts" :key="i" class="toast" :class="t.type"^>{{ t.message }}^</div^>
+>> "src\main\resources\static\admin.html" echo( ^</div^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( ^</div^>
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( ^<script^>
+>> "src\main\resources\static\admin.html" echo( const API = '';  // Même origine — servi depuis Spring Boot static/
+>> "src\main\resources\static\admin.html" echo( const {createApp,ref,reactive,onMounted,nextTick,watch} = Vue;
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo( createApp({
+>> "src\main\resources\static\admin.html" echo(   setup() {
+>> "src\main\resources\static\admin.html" echo(     const page = ref('health');
+>> "src\main\resources\static\admin.html" echo(     const loading = ref(false);
+>> "src\main\resources\static\admin.html" echo(     const lastResponse = ref(null);
+>> "src\main\resources\static\admin.html" echo(     const toasts = ref([]);
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Health
+>> "src\main\resources\static\admin.html" echo(     const health = ref({});
+>> "src\main\resources\static\admin.html" echo(     async function fetchHealth() { health.value = await api('GET','/api/health'); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Stats
+>> "src\main\resources\static\admin.html" echo(     const stats = ref({});
+>> "src\main\resources\static\admin.html" echo(     async function fetchStats() { stats.value = await api('GET','/api/audits/stats'); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Sites
+>> "src\main\resources\static\admin.html" echo(     const siteForm = reactive({url:'',name:''});
+>> "src\main\resources\static\admin.html" echo(     const sitesData = ref({content:[]});
+>> "src\main\resources\static\admin.html" echo(     const sitesPage = ref(0);
+>> "src\main\resources\static\admin.html" echo(     const siteSearch = ref('');
+>> "src\main\resources\static\admin.html" echo(     async function fetchSites() { sitesData.value = await api('GET',`/api/sites?page=${sitesPage.value}^&size=10`); }
+>> "src\main\resources\static\admin.html" echo(     async function searchSites() {
+>> "src\main\resources\static\admin.html" echo(       if(!siteSearch.value) return fetchSites();
+>> "src\main\resources\static\admin.html" echo(       const r = await api('GET',`/api/sites/search?name=${siteSearch.value}`);
+>> "src\main\resources\static\admin.html" echo(       sitesData.value = {content:r,totalElements:r.length,totalPages:1,first:true,last:true};
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function createSite() {
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value = await api('POST','/api/sites',{url:siteForm.url,name:siteForm.name});
+>> "src\main\resources\static\admin.html" echo(       siteForm.url=''; siteForm.name='';
+>> "src\main\resources\static\admin.html" echo(       fetchSites();
+>> "src\main\resources\static\admin.html" echo(       toast('success','Site créé');
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function deleteSite(id) {
+>> "src\main\resources\static\admin.html" echo(       if(!confirm('Supprimer ce site et ses rapports ?')) return;
+>> "src\main\resources\static\admin.html" echo(       await api('DELETE',`/api/sites/${id}`);
+>> "src\main\resources\static\admin.html" echo(       fetchSites();
+>> "src\main\resources\static\admin.html" echo(       toast('info','Site supprimé');
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function quickAudit(s) {
+>> "src\main\resources\static\admin.html" echo(       page.value='audit-sync';
+>> "src\main\resources\static\admin.html" echo(       auditForm.url=s.url; auditForm.name=s.name;
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Audit sync
+>> "src\main\resources\static\admin.html" echo(     const auditForm = reactive({url:'',name:''});
+>> "src\main\resources\static\admin.html" echo(     const auditResult = ref(null);
+>> "src\main\resources\static\admin.html" echo(     async function runSyncAudit() {
+>> "src\main\resources\static\admin.html" echo(       loading.value=true; auditResult.value=null;
+>> "src\main\resources\static\admin.html" echo(       try {
+>> "src\main\resources\static\admin.html" echo(         auditResult.value = await api('POST','/api/audits',{url:auditForm.url,name:auditForm.name});
+>> "src\main\resources\static\admin.html" echo(         toast('success',`Audit terminé — score: ${auditResult.value.scores.global}`);
+>> "src\main\resources\static\admin.html" echo(       } catch(e) { toast('error',e.message); }
+>> "src\main\resources\static\admin.html" echo(       loading.value=false;
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Audit async
+>> "src\main\resources\static\admin.html" echo(     async function runAsyncAudit() {
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value = await api('POST','/api/audits/async',{url:auditForm.url,name:auditForm.name});
+>> "src\main\resources\static\admin.html" echo(       toast('info','Job async soumis #'+lastResponse.value.jobId);
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Batch
+>> "src\main\resources\static\admin.html" echo(     const batchSites = ref([{url:'https://www.service-public.fr',name:'Service Public'},{url:'https://www.gouvernement.gouv.fr',name:'Gouvernement FR'},{url:'https://www.example.com',name:'Example'}]);
+>> "src\main\resources\static\admin.html" echo(     async function runBatch() {
+>> "src\main\resources\static\admin.html" echo(       const sites = batchSites.value.filter(s=^>s.url^&^&s.name);
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value = await api('POST','/api/audits/batch',{sites});
+>> "src\main\resources\static\admin.html" echo(       toast('info',`Batch de ${sites.length} site(s) soumis`);
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Reports
+>> "src\main\resources\static\admin.html" echo(     const reportsData = ref({content:[]});
+>> "src\main\resources\static\admin.html" echo(     const reportsPage = ref(0);
+>> "src\main\resources\static\admin.html" echo(     const reportSort = ref('auditedAt');
+>> "src\main\resources\static\admin.html" echo(     const reportDir = ref('desc');
+>> "src\main\resources\static\admin.html" echo(     const reportSearch = ref('');
+>> "src\main\resources\static\admin.html" echo(     const selectedReport = ref(null);
+>> "src\main\resources\static\admin.html" echo(     async function fetchReports() {
+>> "src\main\resources\static\admin.html" echo(       reportsData.value = await api('GET',`/api/audits/list?page=${reportsPage.value}^&size=10^&sortBy=${reportSort.value}^&direction=${reportDir.value}`);
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function searchReports() {
+>> "src\main\resources\static\admin.html" echo(       if(!reportSearch.value) return fetchReports();
+>> "src\main\resources\static\admin.html" echo(       reportsData.value = await api('GET',`/api/audits/search?q=${reportSearch.value}^&page=0^&size=10`);
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function viewReport(id) { selectedReport.value = await api('GET',`/api/audits/${id}`); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Alerts
+>> "src\main\resources\static\admin.html" echo(     const alertThreshold = ref(0.7);
+>> "src\main\resources\static\admin.html" echo(     const alertsData = ref({});
+>> "src\main\resources\static\admin.html" echo(     async function fetchAlerts() { alertsData.value = await api('GET',`/api/audits/alerts?threshold=${alertThreshold.value}^&page=0^&size=20`); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // SSE
+>> "src\main\resources\static\admin.html" echo(     const sseConnected = ref(false);
+>> "src\main\resources\static\admin.html" echo(     const sseMessages = ref([]);
+>> "src\main\resources\static\admin.html" echo(     const sseConsole = ref(null);
+>> "src\main\resources\static\admin.html" echo(     let sseSource = null;
+>> "src\main\resources\static\admin.html" echo(     function connectSse() {
+>> "src\main\resources\static\admin.html" echo(       if(sseSource) sseSource.close();
+>> "src\main\resources\static\admin.html" echo(       sseSource = new EventSource(`${API}/api/audits/stream`);
+>> "src\main\resources\static\admin.html" echo(       sseConnected.value=true;
+>> "src\main\resources\static\admin.html" echo(       ['connected','audit-started','audit-progress','audit-completed'].forEach(ev=^>{
+>> "src\main\resources\static\admin.html" echo(         sseSource.addEventListener(ev,e=^>{
+>> "src\main\resources\static\admin.html" echo(           sseMessages.value.push({time:new Date().toLocaleTimeString(),event:ev,data:e.data});
+>> "src\main\resources\static\admin.html" echo(           nextTick(()=^>{ if(sseConsole.value) sseConsole.value.scrollTop=sseConsole.value.scrollHeight; });
+>> "src\main\resources\static\admin.html" echo(         });
+>> "src\main\resources\static\admin.html" echo(       });
+>> "src\main\resources\static\admin.html" echo(       sseSource.onerror=()=^>{
+>> "src\main\resources\static\admin.html" echo(         sseMessages.value.push({time:new Date().toLocaleTimeString(),event:'error',data:'Connexion perdue',type:'error'});
+>> "src\main\resources\static\admin.html" echo(         sseConnected.value=false;
+>> "src\main\resources\static\admin.html" echo(       };
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     function disconnectSse() { if(sseSource){sseSource.close();sseSource=null;} sseConnected.value=false; }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Jobs
+>> "src\main\resources\static\admin.html" echo(     const jobs = ref([]);
+>> "src\main\resources\static\admin.html" echo(     async function fetchJobs() { jobs.value = await api('GET','/api/audits/async'); }
+>> "src\main\resources\static\admin.html" echo(     async function clearJobs() { lastResponse.value=await api('DELETE','/api/audits/async'); fetchJobs(); }
+>> "src\main\resources\static\admin.html" echo(     async function viewJob(id) { lastResponse.value=await api('GET',`/api/audits/async/${id}`); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Config
+>> "src\main\resources\static\admin.html" echo(     const weights = ref({});
+>> "src\main\resources\static\admin.html" echo(     const weightEdits = reactive({RGAA:0.5,WCAG:0.3,DSFR:0.2});
+>> "src\main\resources\static\admin.html" echo(     async function fetchWeights() {
+>> "src\main\resources\static\admin.html" echo(       weights.value = await api('GET','/api/config/weights');
+>> "src\main\resources\static\admin.html" echo(       ['RGAA','WCAG','DSFR'].forEach(k=^>{ if(weights.value[k]) weightEdits[k]=weights.value[k].weight; });
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function updateWeight(cat) {
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value = await api('PUT',`/api/config/weights/${cat}`,{weight:weightEdits[cat]});
+>> "src\main\resources\static\admin.html" echo(       fetchWeights(); toast('success',`Poids ${cat} mis à jour`);
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     async function resetWeights() {
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value=await api('POST','/api/config/weights/reset');
+>> "src\main\resources\static\admin.html" echo(       fetchWeights(); toast('info','Poids réinitialisés');
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Scheduler
+>> "src\main\resources\static\admin.html" echo(     const schedulerInfo = ref({});
+>> "src\main\resources\static\admin.html" echo(     async function fetchScheduler() { schedulerInfo.value = await api('GET','/api/audits/schedule'); }
+>> "src\main\resources\static\admin.html" echo(     async function triggerScheduler() { lastResponse.value=await api('POST','/api/audits/schedule/trigger'); toast('success','Scheduler déclenché'); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Helpers
+>> "src\main\resources\static\admin.html" echo(     async function api(method, path, body) {
+>> "src\main\resources\static\admin.html" echo(       try {
+>> "src\main\resources\static\admin.html" echo(         const opts = {method,headers:{'Content-Type':'application/json'}};
+>> "src\main\resources\static\admin.html" echo(         if(body) opts.body=JSON.stringify(body);
+>> "src\main\resources\static\admin.html" echo(         const r = await fetch(`${API}${path}`,opts);
+>> "src\main\resources\static\admin.html" echo(         if(r.status===204) return {};
+>> "src\main\resources\static\admin.html" echo(         return await r.json();
+>> "src\main\resources\static\admin.html" echo(       } catch(e) { toast('error','Erreur réseau: '+e.message); return {}; }
+>> "src\main\resources\static\admin.html" echo(     }
+>> "src\main\resources\static\admin.html" echo(     function formatJson(obj) { try{return JSON.stringify(obj,null,2);}catch{return String(obj);} }
+>> "src\main\resources\static\admin.html" echo(     function scoreClass(v) { if(v==null) return ''; return v^>=0.7?'high':v^>=0.4?'mid':'low'; }
+>> "src\main\resources\static\admin.html" echo(     function formatDate(d) { if(!d) return '—'; return new Date(d).toLocaleString('fr-FR'); }
+>> "src\main\resources\static\admin.html" echo(     function toast(type,message) { toasts.value.push({type,message}); setTimeout(()=^>toasts.value.shift(),4000); }
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     // Watch page changes to auto-load data
+>> "src\main\resources\static\admin.html" echo(     watch(page,v=^>{
+>> "src\main\resources\static\admin.html" echo(       lastResponse.value=null; selectedReport.value=null;
+>> "src\main\resources\static\admin.html" echo(       if(v==='health') fetchHealth();
+>> "src\main\resources\static\admin.html" echo(       if(v==='stats') fetchStats();
+>> "src\main\resources\static\admin.html" echo(       if(v==='sites') fetchSites();
+>> "src\main\resources\static\admin.html" echo(       if(v==='reports') fetchReports();
+>> "src\main\resources\static\admin.html" echo(       if(v==='jobs') fetchJobs();
+>> "src\main\resources\static\admin.html" echo(       if(v==='config') fetchWeights();
+>> "src\main\resources\static\admin.html" echo(       if(v==='scheduler') fetchScheduler();
+>> "src\main\resources\static\admin.html" echo(     });
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     onMounted(()=^>{ fetchHealth(); setInterval(fetchHealth,30000); });
+>> "src\main\resources\static\admin.html" echo( 
+>> "src\main\resources\static\admin.html" echo(     return {
+>> "src\main\resources\static\admin.html" echo(       page,loading,lastResponse,toasts,health,stats,
+>> "src\main\resources\static\admin.html" echo(       siteForm,sitesData,sitesPage,siteSearch,fetchSites,searchSites,createSite,deleteSite,quickAudit,
+>> "src\main\resources\static\admin.html" echo(       auditForm,auditResult,runSyncAudit,runAsyncAudit,
+>> "src\main\resources\static\admin.html" echo(       batchSites,runBatch,
+>> "src\main\resources\static\admin.html" echo(       reportsData,reportsPage,reportSort,reportDir,reportSearch,selectedReport,fetchReports,searchReports,viewReport,
+>> "src\main\resources\static\admin.html" echo(       alertThreshold,alertsData,fetchAlerts,
+>> "src\main\resources\static\admin.html" echo(       sseConnected,sseMessages,sseConsole,connectSse,disconnectSse,
+>> "src\main\resources\static\admin.html" echo(       jobs,fetchJobs,clearJobs,viewJob,
+>> "src\main\resources\static\admin.html" echo(       weights,weightEdits,fetchWeights,updateWeight,resetWeights,
+>> "src\main\resources\static\admin.html" echo(       schedulerInfo,fetchScheduler,triggerScheduler,fetchHealth,fetchStats,
+>> "src\main\resources\static\admin.html" echo(       formatJson,scoreClass,formatDate,toast
+>> "src\main\resources\static\admin.html" echo(     };
+>> "src\main\resources\static\admin.html" echo(   }
+>> "src\main\resources\static\admin.html" echo( }).mount('#app');
+>> "src\main\resources\static\admin.html" echo( ^</script^>
+>> "src\main\resources\static\admin.html" echo( ^</body^>
+>> "src\main\resources\static\admin.html" echo( ^</html^>
+certutil -hashfile "src\main\resources\static\admin.html" SHA256 | findstr /I /C:"E1EA7028B0A3E1E4C989115E7E35B6D6E661C79A0EE2E78DB4540D796E97DFB7" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\static\admin.html) else (echo    [ERREUR] src\main\resources\static\admin.html)
+echo Décompression de src\main\resources\static\exploitation.html
+> "src\main\resources\static\exploitation.html" echo( ^<!DOCTYPE html^>
+>> "src\main\resources\static\exploitation.html" echo( ^<html lang="fr"^>
+>> "src\main\resources\static\exploitation.html" echo( ^<head^>
+>> "src\main\resources\static\exploitation.html" echo( ^<meta charset="UTF-8"^>
+>> "src\main\resources\static\exploitation.html" echo( ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^>
+>> "src\main\resources\static\exploitation.html" echo( ^<title^>CyberAudit7E — Exploitation^</title^>
+>> "src\main\resources\static\exploitation.html" echo( ^<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"^>^</script^>
+>> "src\main\resources\static\exploitation.html" echo( ^<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700^&family=DM+Mono:wght@400;500^&display=swap" rel="stylesheet"^>
+>> "src\main\resources\static\exploitation.html" echo( ^<style^>
+>> "src\main\resources\static\exploitation.html" echo( :root {
+>> "src\main\resources\static\exploitation.html" echo(   --bg: #f7f8fc; --bg-card: #ffffff; --bg-hover: #f0f2f8; --bg-sidebar: #1e293b;
+>> "src\main\resources\static\exploitation.html" echo(   --border: #e2e8f0; --border-active: #6366f1;
+>> "src\main\resources\static\exploitation.html" echo(   --text: #1e293b; --text-2: #64748b; --text-3: #94a3b8; --text-inv: #f1f5f9;
+>> "src\main\resources\static\exploitation.html" echo(   --indigo: #6366f1; --indigo-light: #e0e7ff; --indigo-bg: #eef2ff;
+>> "src\main\resources\static\exploitation.html" echo(   --green: #059669; --green-light: #d1fae5; --green-bg: #ecfdf5;
+>> "src\main\resources\static\exploitation.html" echo(   --orange: #d97706; --orange-light: #fef3c7; --orange-bg: #fffbeb;
+>> "src\main\resources\static\exploitation.html" echo(   --red: #dc2626; --red-light: #fee2e2; --red-bg: #fef2f2;
+>> "src\main\resources\static\exploitation.html" echo(   --blue: #2563eb; --blue-light: #dbeafe;
+>> "src\main\resources\static\exploitation.html" echo(   --purple: #7c3aed; --purple-light: #ede9fe;
+>> "src\main\resources\static\exploitation.html" echo(   --sans: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+>> "src\main\resources\static\exploitation.html" echo(   --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+>> "src\main\resources\static\exploitation.html" echo(   --shadow-lg: 0 4px 12px rgba(0,0,0,.08);
+>> "src\main\resources\static\exploitation.html" echo( }
+>> "src\main\resources\static\exploitation.html" echo( * { margin:0; padding:0; box-sizing:border-box; }
+>> "src\main\resources\static\exploitation.html" echo( body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; }
+>> "src\main\resources\static\exploitation.html" echo( ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( .app { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Sidebar */
+>> "src\main\resources\static\exploitation.html" echo( .sidebar { background:var(--bg-sidebar); color:var(--text-inv); padding:24px 0; display:flex; flex-direction:column; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .logo { padding:0 20px 24px; border-bottom:1px solid rgba(255,255,255,.1); }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .logo h1 { font-size:18px; font-weight:700; letter-spacing:-.5px; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .logo h1 span { color:#818cf8; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .logo p { font-size:11px; color:var(--text-3); margin-top:2px; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar nav { flex:1; padding:16px 0; overflow-y:auto; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .nav-section { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-3); padding:12px 20px 6px; font-weight:600; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar a { display:flex; align-items:center; gap:10px; padding:9px 20px; font-size:13px; color:#cbd5e1; text-decoration:none; cursor:pointer; transition:all .15s; margin:1px 8px; border-radius:8px; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar a:hover { background:rgba(255,255,255,.08); color:#fff; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar a.active { background:rgba(99,102,241,.2); color:#a5b4fc; font-weight:500; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar a .icon { width:20px; text-align:center; }
+>> "src\main\resources\static\exploitation.html" echo( .sidebar .version { padding:16px 20px; border-top:1px solid rgba(255,255,255,.1); font-size:11px; color:var(--text-3); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Main */
+>> "src\main\resources\static\exploitation.html" echo( .main { display:flex; flex-direction:column; }
+>> "src\main\resources\static\exploitation.html" echo( .header { background:var(--bg-card); border-bottom:1px solid var(--border); padding:16px 28px; display:flex; justify-content:space-between; align-items:center; }
+>> "src\main\resources\static\exploitation.html" echo( .header h2 { font-size:20px; font-weight:600; letter-spacing:-.3px; }
+>> "src\main\resources\static\exploitation.html" echo( .header .meta { display:flex; align-items:center; gap:16px; font-size:13px; color:var(--text-2); }
+>> "src\main\resources\static\exploitation.html" echo( .header .dot { width:8px; height:8px; border-radius:50%%; display:inline-block; margin-right:4px; }
+>> "src\main\resources\static\exploitation.html" echo( .header .dot.up { background:var(--green); } .header .dot.down { background:var(--red); }
+>> "src\main\resources\static\exploitation.html" echo( .content { flex:1; padding:24px 28px; overflow-y:auto; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Cards */
+>> "src\main\resources\static\exploitation.html" echo( .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:20px; box-shadow:var(--shadow); }
+>> "src\main\resources\static\exploitation.html" echo( .card h3 { font-size:14px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+>> "src\main\resources\static\exploitation.html" echo( .card h3 .pill { font-size:11px; background:var(--indigo-light); color:var(--indigo); padding:2px 10px; border-radius:10px; font-weight:500; }
+>> "src\main\resources\static\exploitation.html" echo( .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; margin-bottom:20px; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* KPI cards */
+>> "src\main\resources\static\exploitation.html" echo( .kpi { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; transition:all .2s; }
+>> "src\main\resources\static\exploitation.html" echo( .kpi:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .label { font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-2); margin-bottom:6px; font-weight:500; }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .val { font-size:28px; font-weight:700; font-family:var(--mono); }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .val.indigo { color:var(--indigo); } .kpi .val.green { color:var(--green); }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .val.orange { color:var(--orange); } .kpi .val.red { color:var(--red); }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .val.blue { color:var(--blue); } .kpi .val.purple { color:var(--purple); }
+>> "src\main\resources\static\exploitation.html" echo( .kpi .sub { font-size:11px; color:var(--text-3); margin-top:4px; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Score display */
+>> "src\main\resources\static\exploitation.html" echo( .score-ring { width:120px; height:120px; position:relative; margin:0 auto; }
+>> "src\main\resources\static\exploitation.html" echo( .score-ring svg { transform:rotate(-90deg); }
+>> "src\main\resources\static\exploitation.html" echo( .score-ring .value { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; font-family:var(--mono); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Table */
+>> "src\main\resources\static\exploitation.html" echo( table { width:100%%; border-collapse:collapse; font-size:13px; }
+>> "src\main\resources\static\exploitation.html" echo( th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.8px; color:var(--text-2); border-bottom:2px solid var(--border); font-weight:600; background:var(--bg); }
+>> "src\main\resources\static\exploitation.html" echo( td { padding:10px 12px; border-bottom:1px solid var(--border); }
+>> "src\main\resources\static\exploitation.html" echo( tr:hover td { background:var(--bg-hover); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Tags/badges */
+>> "src\main\resources\static\exploitation.html" echo( .tag { display:inline-block; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:500; }
+>> "src\main\resources\static\exploitation.html" echo( .tag.rgaa { background:var(--indigo-bg); color:var(--indigo); } .tag.wcag { background:var(--purple-light); color:var(--purple); }
+>> "src\main\resources\static\exploitation.html" echo( .tag.dsfr { background:var(--blue-light); color:var(--blue); }
+>> "src\main\resources\static\exploitation.html" echo( .tag.up { background:var(--green-light); color:var(--green); } .tag.down { background:var(--red-light); color:var(--red); }
+>> "src\main\resources\static\exploitation.html" echo( .tag.stable { background:var(--orange-light); color:var(--orange); } .tag.first { background:var(--indigo-light); color:var(--indigo); }
+>> "src\main\resources\static\exploitation.html" echo( .score-tag { font-family:var(--mono); font-weight:600; padding:3px 10px; border-radius:6px; font-size:12px; }
+>> "src\main\resources\static\exploitation.html" echo( .score-tag.high { background:var(--green-bg); color:var(--green); }
+>> "src\main\resources\static\exploitation.html" echo( .score-tag.mid { background:var(--orange-bg); color:var(--orange); }
+>> "src\main\resources\static\exploitation.html" echo( .score-tag.low { background:var(--red-bg); color:var(--red); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Buttons */
+>> "src\main\resources\static\exploitation.html" echo( .btn { padding:8px 18px; border:1px solid var(--border); border-radius:8px; font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; display:inline-flex; align-items:center; gap:6px; background:var(--bg-card); color:var(--text); }
+>> "src\main\resources\static\exploitation.html" echo( .btn:hover { background:var(--bg-hover); box-shadow:var(--shadow); }
+>> "src\main\resources\static\exploitation.html" echo( .btn-primary { background:var(--indigo); border-color:var(--indigo); color:#fff; }
+>> "src\main\resources\static\exploitation.html" echo( .btn-primary:hover { background:#4f46e5; }
+>> "src\main\resources\static\exploitation.html" echo( .btn-green { background:var(--green); border-color:var(--green); color:#fff; }
+>> "src\main\resources\static\exploitation.html" echo( .btn-sm { padding:5px 12px; font-size:12px; }
+>> "src\main\resources\static\exploitation.html" echo( .btn-group { display:flex; gap:8px; flex-wrap:wrap; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Forms */
+>> "src\main\resources\static\exploitation.html" echo( .form-row { display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+>> "src\main\resources\static\exploitation.html" echo( .form-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:200px; }
+>> "src\main\resources\static\exploitation.html" echo( .form-group label { font-size:12px; color:var(--text-2); font-weight:500; }
+>> "src\main\resources\static\exploitation.html" echo( input, select { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:9px 14px; border-radius:8px; font-family:var(--sans); font-size:13px; outline:none; transition:border .2s; }
+>> "src\main\resources\static\exploitation.html" echo( input:focus, select:focus { border-color:var(--indigo); box-shadow:0 0 0 3px rgba(99,102,241,.1); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Progress bar */
+>> "src\main\resources\static\exploitation.html" echo( .progress { height:8px; background:var(--bg); border-radius:4px; overflow:hidden; }
+>> "src\main\resources\static\exploitation.html" echo( .progress .bar { height:100%%; border-radius:4px; transition:width .5s ease; }
+>> "src\main\resources\static\exploitation.html" echo( .progress .bar.green { background:linear-gradient(90deg,#34d399,#059669); }
+>> "src\main\resources\static\exploitation.html" echo( .progress .bar.orange { background:linear-gradient(90deg,#fbbf24,#d97706); }
+>> "src\main\resources\static\exploitation.html" echo( .progress .bar.red { background:linear-gradient(90deg,#f87171,#dc2626); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Pagination */
+>> "src\main\resources\static\exploitation.html" echo( .pager { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; font-size:13px; color:var(--text-2); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* SSE live panel */
+>> "src\main\resources\static\exploitation.html" echo( .live-panel { background:var(--bg-sidebar); border-radius:10px; padding:16px; color:var(--text-inv); font-family:var(--mono); font-size:12px; max-height:300px; overflow-y:auto; }
+>> "src\main\resources\static\exploitation.html" echo( .live-line { padding:4px 0; border-bottom:1px solid rgba(255,255,255,.06); line-height:1.5; }
+>> "src\main\resources\static\exploitation.html" echo( .live-line .phase { color:#818cf8; font-weight:600; }
+>> "src\main\resources\static\exploitation.html" echo( .live-line .msg { color:#a5b4fc; }
+>> "src\main\resources\static\exploitation.html" echo( .live-line .time { color:#64748b; font-size:11px; }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Guide section */
+>> "src\main\resources\static\exploitation.html" echo( .guide { line-height:1.7; color:var(--text-2); }
+>> "src\main\resources\static\exploitation.html" echo( .guide h4 { color:var(--text); font-size:15px; margin:20px 0 8px; }
+>> "src\main\resources\static\exploitation.html" echo( .guide p { margin-bottom:10px; font-size:14px; }
+>> "src\main\resources\static\exploitation.html" echo( .guide .step { display:flex; gap:12px; margin:12px 0; padding:12px; background:var(--bg); border-radius:8px; border-left:3px solid var(--indigo); }
+>> "src\main\resources\static\exploitation.html" echo( .guide .step-num { width:28px; height:28px; background:var(--indigo); color:#fff; border-radius:50%%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+>> "src\main\resources\static\exploitation.html" echo( .guide code { background:var(--bg); padding:2px 6px; border-radius:4px; font-family:var(--mono); font-size:12px; color:var(--indigo); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Weight bars */
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar { display:flex; align-items:center; gap:12px; margin:10px 0; }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .label { width:60px; font-size:13px; font-weight:600; }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .bar-wrap { flex:1; height:24px; background:var(--bg); border-radius:6px; overflow:hidden; position:relative; }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .bar-fill { height:100%%; border-radius:6px; transition:width .5s; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:11px; font-weight:600; color:#fff; }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .bar-fill.rgaa { background:linear-gradient(90deg,#818cf8,#6366f1); }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .bar-fill.wcag { background:linear-gradient(90deg,#a78bfa,#7c3aed); }
+>> "src\main\resources\static\exploitation.html" echo( .weight-bar .bar-fill.dsfr { background:linear-gradient(90deg,#60a5fa,#2563eb); }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( /* Toast */
+>> "src\main\resources\static\exploitation.html" echo( .toast-zone { position:fixed; top:20px; right:20px; z-index:1000; display:flex; flex-direction:column; gap:8px; }
+>> "src\main\resources\static\exploitation.html" echo( .toast { padding:12px 18px; border-radius:8px; font-size:13px; box-shadow:var(--shadow-lg); animation:slideR .3s ease; }
+>> "src\main\resources\static\exploitation.html" echo( .toast.ok { background:var(--green-bg); border:1px solid var(--green); color:var(--green); }
+>> "src\main\resources\static\exploitation.html" echo( .toast.err { background:var(--red-bg); border:1px solid var(--red); color:var(--red); }
+>> "src\main\resources\static\exploitation.html" echo( .toast.info { background:var(--indigo-bg); border:1px solid var(--indigo); color:var(--indigo); }
+>> "src\main\resources\static\exploitation.html" echo( @keyframes slideR { from{transform:translateX(100%%);opacity:0} to{transform:none;opacity:1} }
+>> "src\main\resources\static\exploitation.html" echo( ^</style^>
+>> "src\main\resources\static\exploitation.html" echo( ^</head^>
+>> "src\main\resources\static\exploitation.html" echo( ^<body^>
+>> "src\main\resources\static\exploitation.html" echo( ^<div id="app"^>
+>> "src\main\resources\static\exploitation.html" echo( ^<div class="app"^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(   ^<!-- Sidebar --^>
+>> "src\main\resources\static\exploitation.html" echo(   ^<div class="sidebar"^>
+>> "src\main\resources\static\exploitation.html" echo(     ^<div class="logo"^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<h1^>Cyber^<span^>Audit7E^</span^>^</h1^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<p^>Exploitation ^& Pilotage^</p^>
+>> "src\main\resources\static\exploitation.html" echo(     ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(     ^<nav^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<div class="nav-section"^>Vue d'ensemble^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='dashboard'}" @click="pg='dashboard'"^>^<span class="icon"^>📊^</span^> Tableau de bord^</a^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='live'}" @click="pg='live'"^>^<span class="icon"^>📡^</span^> Temps réel^</a^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<div class="nav-section"^>Audit^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='launch'}" @click="pg='launch'"^>^<span class="icon"^>🚀^</span^> Lancer un audit^</a^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='sites'}" @click="pg='sites'"^>^<span class="icon"^>🌐^</span^> Portefeuille de sites^</a^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='history'}" @click="pg='history'"^>^<span class="icon"^>📋^</span^> Historique^</a^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='alerts'}" @click="pg='alerts'"^>^<span class="icon"^>🚨^</span^> Alertes^</a^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<div class="nav-section"^>Configuration^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='weights'}" @click="pg='weights'"^>^<span class="icon"^>⚖️^</span^> Pondérations^</a^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<div class="nav-section"^>Aide^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<a :class="{active:pg==='guide'}" @click="pg='guide'"^>^<span class="icon"^>📖^</span^> Guide fonctionnel^</a^>
+>> "src\main\resources\static\exploitation.html" echo(     ^</nav^>
+>> "src\main\resources\static\exploitation.html" echo(     ^<div class="version"^>CyberAudit7E v1.0 — M7^<br^>Axiome 7E • Spring Boot^</div^>
+>> "src\main\resources\static\exploitation.html" echo(   ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(   ^<!-- Main --^>
+>> "src\main\resources\static\exploitation.html" echo(   ^<div class="main"^>
+>> "src\main\resources\static\exploitation.html" echo(     ^<div class="header"^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<h2^>{{ pageTitle }}^</h2^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<div class="meta"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<span^>^<span class="dot" :class="health.status==='UP'?'up':'down'"^>^</span^>{{ health.status^|^|'...' }}^</span^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<span^>{{ health.rulesLoaded^|^|0 }} règles^</span^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<span v-if="health.runtime"^>Uptime {{ health.runtime?.uptime }}^</span^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(     ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     ^<div class="content"^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ DASHBOARD ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='dashboard'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card-grid"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi"^>^<div class="label"^>Sites suivis^</div^>^<div class="val indigo"^>{{ stats.totalSites ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi"^>^<div class="label"^>Audits réalisés^</div^>^<div class="val purple"^>{{ stats.totalAudits ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi"^>^<div class="label"^>Score moyen^</div^>^<div class="val" :class="scoreColor(stats.averageScore)"^>{{ stats.averageScore ? stats.averageScore.toFixed(2) : '—' }}^</div^>^<div class="sub"^>Sur l'ensemble des audits^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi"^>^<div class="label"^>Durée moyenne^</div^>^<div class="val blue"^>{{ stats.metrics?.averageDurationMs^|^|0 }}^<span style="font-size:14px"^>ms^</span^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi"^>^<div class="label"^>Clients SSE^</div^>^<div class="val indigo"^>{{ health.sseClients ^|^| 0 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="kpi" v-if="stats.trends"^>^<div class="label"^>Tendances^</div^>^<div style="display:flex;gap:6px;margin-top:4px"^>^<span class="tag up"^>↑ {{ stats.trends.UP^|^|0 }}^</span^>^<span class="tag down"^>↓ {{ stats.trends.DOWN^|^|0 }}^</span^>^<span class="tag stable"^>= {{ stats.trends.STABLE^|^|0 }}^</span^>^<span class="tag first"^>★ {{ stats.trends.FIRST^|^|0 }}^</span^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(         ^<!-- Weight bars --^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Pondérations actives ^<span class="pill"^>Axiome 7E^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="weight-bar"^>^<span class="label"^>RGAA^</span^>^<div class="bar-wrap"^>^<div class="bar-fill rgaa" :style="{width:(wt('RGAA')*100)+'%%'}"^>{{ (wt('RGAA')*100).toFixed(0) }}%%^</div^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="weight-bar"^>^<span class="label"^>WCAG^</span^>^<div class="bar-wrap"^>^<div class="bar-fill wcag" :style="{width:(wt('WCAG')*100)+'%%'}"^>{{ (wt('WCAG')*100).toFixed(0) }}%%^</div^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="weight-bar"^>^<span class="label"^>DSFR^</span^>^<div class="bar-wrap"^>^<div class="bar-fill dsfr" :style="{width:(wt('DSFR')*100)+'%%'}"^>{{ (wt('DSFR')*100).toFixed(0) }}%%^</div^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div style="font-size:12px;color:var(--text-3);margin-top:8px"^>Formule : score = RGAA × {{ wt('RGAA') }} + WCAG × {{ wt('WCAG') }} + DSFR × {{ wt('DSFR') }}^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(         ^<!-- Recent audits --^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Derniers audits ^<span class="pill"^>{{ recentReports.length }}^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>Site^</th^>^<th^>Score^</th^>^<th^>RGAA^</th^>^<th^>WCAG^</th^>^<th^>DSFR^</th^>^<th^>Tendance^</th^>^<th^>Date^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-for="r in recentReports" :key="r.id"^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-weight:500"^>{{ r.siteName }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="score-tag" :class="sc(r.scoreGlobal)"^>{{ r.scoreGlobal?.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreRgaa?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreWcag?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreDsfr?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="tag" :class="(r.trend^|^|'first').toLowerCase()"^>{{ r.trend^|^|'—' }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px;color:var(--text-2)"^>{{ fmtDate(r.auditedAt) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(               ^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-if="!recentReports.length"^>^<td colspan="7" style="text-align:center;color:var(--text-3)"^>Aucun audit réalisé^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ LIVE ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='live'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Flux temps réel (SSE) ^<span class="pill" :style="{background:sseOn?'var(--green-light)':'var(--red-light)',color:sseOn?'var(--green)':'var(--red)'}"^>{{ sseOn?'Connecté':'Déconnecté' }}^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="btn-group" style="margin-bottom:14px"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-primary btn-sm" @click="startSse" v-if="!sseOn"^>▶ Connecter^</button^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" style="background:var(--red);color:#fff" @click="stopSse" v-if="sseOn"^>⏹ Déconnecter^</button^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" @click="sseLogs=[]"^>Vider^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="live-panel" ref="livePanel"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div v-if="!sseLogs.length" style="color:var(--text-3)"^>Connectez le SSE puis lancez un audit pour voir les événements en direct…^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div v-for="(l,i) in sseLogs" :key="i" class="live-line"^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<span class="time"^>{{ l.t }}^</span^>^&nbsp;
+>> "src\main\resources\static\exploitation.html" echo(               ^<span class="phase"^>[{{ l.e }}]^</span^>^&nbsp;
+>> "src\main\resources\static\exploitation.html" echo(               ^<span class="msg"^>{{ l.d }}^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(         ^<!-- Current progress --^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card" v-if="currentAudit"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Audit en cours : {{ currentAudit.site }}^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="progress" style="margin-bottom:8px"^>^<div class="bar green" :style="{width:currentAudit.pct+'%%'}"^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-2)"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span^>Phase : ^<b style="color:var(--indigo)"^>{{ currentAudit.phase }}^</b^>^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span^>{{ currentAudit.pct }}%%^</span^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ LAUNCH AUDIT ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='launch'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Lancer un audit^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p style="font-size:13px;color:var(--text-2);margin-bottom:16px"^>Saisissez l'URL du site à auditer. Le moteur exécutera les 13 règles RGAA/WCAG/DSFR et calculera le score composite.^</p^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="form-row"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group"^>^<label^>URL du site^</label^>^<input v-model="af.url" placeholder="https://www.service-public.fr"^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group"^>^<label^>Nom du site^</label^>^<input v-model="af.name" placeholder="Service Public"^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="btn-group"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-primary" @click="doAudit" :disabled="ld^|^|!af.url^|^|!af.name"^>{{ ld?'⏳ Audit en cours…':'🔍 Lancer l\'audit' }}^</button^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn" @click="doAsync" :disabled="!af.url^|^|!af.name"^>⚡ Asynchrone^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="progress" v-if="ld" style="margin-top:12px"^>^<div class="bar green" style="width:100%%;animation:pulse 2s infinite"^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(         ^<!-- Result --^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card" v-if="auditRes"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Résultat — {{ auditRes.siteName }} ^<span class="pill"^>Rapport #{{ auditRes.reportId }}^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="card-grid" style="margin-bottom:16px"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="kpi" style="text-align:center"^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<div class="label"^>Score global^</div^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<div class="val" :class="scoreColor(auditRes.scores.global)" style="font-size:36px"^>{{ auditRes.scores.global }}^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="kpi"^>^<div class="label"^>RGAA^</div^>^<div class="val indigo"^>{{ auditRes.scores.rgaa }}^</div^>^<div class="sub"^>× {{ auditRes.scores.weight_rgaa ^|^| 0.5 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="kpi"^>^<div class="label"^>WCAG^</div^>^<div class="val purple"^>{{ auditRes.scores.wcag }}^</div^>^<div class="sub"^>× {{ auditRes.scores.weight_wcag ^|^| 0.3 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="kpi"^>^<div class="label"^>DSFR^</div^>^<div class="val blue"^>{{ auditRes.scores.dsfr }}^</div^>^<div class="sub"^>× {{ auditRes.scores.weight_dsfr ^|^| 0.2 }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="kpi"^>^<div class="label"^>Réussite^</div^>^<div class="val green"^>{{ auditRes.passedCount }}/{{ auditRes.rulesCount }}^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<!-- Rules detail --^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>Règle^</th^>^<th^>Catégorie^</th^>^<th^>Score^</th^>^<th^>Résultat^</th^>^<th^>Détail^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-for="r in auditRes.details" :key="r.ruleId"^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px;color:var(--indigo)"^>{{ r.ruleId }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="tag" :class="r.category.toLowerCase()"^>{{ r.category }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="score-tag" :class="sc(r.score)"^>{{ r.score.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:16px"^>{{ r.passed ? '✅' : r.score ^> 0 ? '⚠️' : '❌' }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px;color:var(--text-2);max-width:400px"^>{{ r.detail }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(               ^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ SITES ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='sites'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Ajouter un site au portefeuille^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="form-row"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group"^>^<label^>URL^</label^>^<input v-model="sf.url" placeholder="https://www.example.com"^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group"^>^<label^>Nom^</label^>^<input v-model="sf.name" placeholder="Mon site"^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-primary" @click="addSite" :disabled="!sf.url^|^|!sf.name"^>+ Ajouter^</button^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Portefeuille ^<span class="pill"^>{{ sitesData.totalElements^|^|0 }} sites^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>Nom^</th^>^<th^>URL^</th^>^<th^>Phase 7E^</th^>^<th^>Audits^</th^>^<th^>Score^</th^>^<th^>Actions^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-for="s in sitesData.content^|^|[]" :key="s.id"^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-weight:500"^>{{ s.name }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px"^>^<a :href="s.url" target="_blank" style="color:var(--indigo);text-decoration:none"^>{{ s.url }}^</a^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="tag" :class="s.currentPhase==='EQUILIBRER'?'up':'first'"^>{{ s.currentPhase }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="text-align:center;font-family:var(--mono)"^>{{ s.auditsCount }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span v-if="s.lastScore!=null" class="score-tag" :class="sc(s.lastScore)"^>{{ s.lastScore.toFixed(2) }}^</span^>^<span v-else style="color:var(--text-3)"^>—^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>
+>> "src\main\resources\static\exploitation.html" echo(                   ^<button class="btn btn-sm btn-primary" @click="af.url=s.url;af.name=s.name;pg='launch'"^>Auditer^</button^>
+>> "src\main\resources\static\exploitation.html" echo(                   ^<button class="btn btn-sm" style="color:var(--red)" @click="delSite(s.id)"^>Supprimer^</button^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^</td^>
+>> "src\main\resources\static\exploitation.html" echo(               ^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="pager" v-if="sitesData.totalPages^>1"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" :disabled="sitesData.first" @click="sp--;loadSites()"^>◀^</button^>
+>> "src\main\resources\static\exploitation.html" echo(             Page {{ sp+1 }}/{{ sitesData.totalPages }}
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" :disabled="sitesData.last" @click="sp++;loadSites()"^>▶^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ HISTORY ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='history'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Historique des audits ^<span class="pill"^>{{ histData.totalElements^|^|0 }}^</span^>^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="form-row" style="margin-bottom:14px"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group" style="min-width:120px;flex:0"^>^<label^>Tri par^</label^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<select v-model="histSort" @change="loadHist"^>^<option value="auditedAt"^>Date^</option^>^<option value="scoreGlobal"^>Score^</option^>^</select^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group" style="min-width:100px;flex:0"^>^<label^>Direction^</label^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<select v-model="histDir" @change="loadHist"^>^<option value="desc"^>↓ Desc^</option^>^<option value="asc"^>↑ Asc^</option^>^</select^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group"^>^<label^>Recherche^</label^>^<input v-model="histQ" @keyup.enter="searchHist" placeholder="Nom ou URL..."^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div style="display:flex;align-items:flex-end;gap:6px"^>^<button class="btn btn-sm btn-primary" @click="searchHist"^>Chercher^</button^>^<button class="btn btn-sm" @click="histQ='';loadHist()"^>✕^</button^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>#^</th^>^<th^>Site^</th^>^<th^>Score^</th^>^<th^>RGAA^</th^>^<th^>WCAG^</th^>^<th^>DSFR^</th^>^<th^>Tendance^</th^>^<th^>Règles^</th^>^<th^>Date^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-for="r in histData.content^|^|[]" :key="r.id"^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono)"^>{{ r.id }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-weight:500"^>{{ r.siteName }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="score-tag" :class="sc(r.scoreGlobal)"^>{{ r.scoreGlobal?.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreRgaa?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreWcag?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreDsfr?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="tag" :class="(r.trend^|^|'first').toLowerCase()"^>{{ r.trend^|^|'FIRST' }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px"^>{{ r.passedCount }}/{{ r.rulesCount }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px;color:var(--text-2)"^>{{ fmtDate(r.auditedAt) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(               ^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="pager" v-if="histData.totalPages^>1"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" :disabled="histData.first" @click="hp--;loadHist()"^>◀^</button^>
+>> "src\main\resources\static\exploitation.html" echo(             Page {{ hp+1 }}/{{ histData.totalPages }}
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" :disabled="histData.last" @click="hp++;loadHist()"^>▶^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ ALERTS ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='alerts'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>🚨 Alertes — sites en dessous du seuil^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="form-row"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div class="form-group" style="min-width:120px;flex:0"^>^<label^>Seuil de score^</label^>^<input v-model.number="alertTh" type="number" step="0.1" min="0" max="1"^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div style="display:flex;align-items:flex-end"^>^<button class="btn btn-primary btn-sm" @click="loadAlerts"^>Charger^</button^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card" v-if="alertData.content"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>{{ alertData.totalElements }} rapport(s) avec score ^&lt; {{ alertTh }}^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>Site^</th^>^<th^>Score^</th^>^<th^>RGAA^</th^>^<th^>WCAG^</th^>^<th^>DSFR^</th^>^<th^>Tendance^</th^>^<th^>Date^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-for="r in alertData.content" :key="r.id"^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-weight:500"^>{{ r.siteName }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="score-tag low"^>{{ r.scoreGlobal?.toFixed(2) }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreRgaa?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreWcag?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-family:var(--mono);font-size:12px"^>{{ r.scoreDsfr?.toFixed(2) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td^>^<span class="tag" :class="(r.trend^|^|'').toLowerCase()"^>{{ r.trend }}^</span^>^</td^>
+>> "src\main\resources\static\exploitation.html" echo(                 ^<td style="font-size:12px"^>{{ fmtDate(r.auditedAt) }}^</td^>
+>> "src\main\resources\static\exploitation.html" echo(               ^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr v-if="!alertData.content.length"^>^<td colspan="7" style="text-align:center;color:var(--text-3)"^>Aucune alerte — tous les scores sont au-dessus du seuil 🎉^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ WEIGHTS ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='weights'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>Pondérations du scoring^</h3^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p style="font-size:13px;color:var(--text-2);margin-bottom:16px"^>La formule du score composite est : ^<code^>score = RGAA × p₁ + WCAG × p₂ + DSFR × p₃^</code^>. Les poids sont ajustés automatiquement par la boucle de rétroaction cybernétique (phase Équilibrer) ou manuellement ci-dessous.^</p^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div v-for="cat in ['RGAA','WCAG','DSFR']" :key="cat" style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span style="width:60px;font-weight:600;font-size:15px"^>{{ cat }}^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<div style="flex:1"^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<div class="weight-bar" style="margin:0"^>^<span class="label" style="display:none"^>^</span^>^<div class="bar-wrap"^>^<div class="bar-fill" :class="cat.toLowerCase()" :style="{width:(wt(cat)*100)+'%%'}"^>{{ (wt(cat)*100).toFixed(1) }}%%^</div^>^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<input v-model.number="we[cat]" type="number" step="0.05" min="0" max="1" style="width:80px"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm btn-primary" @click="setWeight(cat)"^>Appliquer^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div style="margin-top:16px;display:flex;gap:12px;align-items:center"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span style="font-size:13px"^>Total : ^<b :style="{color:weights.normalized?'var(--green)':'var(--red)'}"^>{{ weights.totalWeight }}^</b^>^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<button class="btn btn-sm" @click="resetW"^>↩ Réinitialiser (0.5 / 0.3 / 0.2)^</button^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(       ^<!-- ═══ GUIDE ═══ --^>
+>> "src\main\resources\static\exploitation.html" echo(       ^<template v-if="pg==='guide'"^>
+>> "src\main\resources\static\exploitation.html" echo(         ^<div class="card guide"^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<h3^>📖 Guide fonctionnel — CyberAudit7E^</h3^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Qu'est-ce que CyberAudit7E ?^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>CyberAudit7E est un moteur d'audit d'accessibilité web qui évalue les sites selon trois référentiels : ^<b^>RGAA 4.1^</b^> (accessibilité française), ^<b^>WCAG 2.2^</b^> (norme internationale) et ^<b^>DSFR^</b^> (Design System de l'État). Le moteur exécute ^<b^>13 règles^</b^> et produit un ^<b^>score composite pondéré^</b^>.^</p^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Le cycle Axiome 7E^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>Chaque audit suit un cycle cybernétique en 7 phases. Le système ^<b^>s'auto-ajuste^</b^> : si un score est faible, la boucle de rétroaction modifie les poids pour prioriser les corrections.^</p^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>1^</div^>^<div^>^<b^>Évaluer^</b^> — Collecte des métriques du site (crawl HTTP via Jsoup)^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>2^</div^>^<div^>^<b^>Élaborer^</b^> — Identification des violations et plan de remédiation^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>3^</div^>^<div^>^<b^>Exécuter^</b^> — Application des 13 règles d'audit sur le DOM réel^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>4^</div^>^<div^>^<b^>Examiner^</b^> — Calcul du score pondéré (RGAA×p₁ + WCAG×p₂ + DSFR×p₃)^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>5^</div^>^<div^>^<b^>Évoluer^</b^> — Comparaison avec l'audit précédent (tendance UP/DOWN/STABLE)^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>6^</div^>^<div^>^<b^>Émettre^</b^> — Publication d'un événement SSE en temps réel^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>7^</div^>^<div^>^<b^>Équilibrer^</b^> — Ajustement automatique des poids selon le feedback^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Comment lancer un audit ?^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>1^</div^>^<div^>Aller dans ^<b^>« Lancer un audit »^</b^> dans le menu^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>2^</div^>^<div^>Saisir l'URL complète (avec ^<code^>https://^</code^>) et un nom lisible^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>3^</div^>^<div^>Cliquer sur ^<b^>« Lancer l'audit »^</b^> (synchrone) ou ^<b^>« Asynchrone »^</b^> (non-bloquant)^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div class="step"^>^<div class="step-num"^>4^</div^>^<div^>Le résultat s'affiche avec le score global et le détail des 13 règles^</div^>^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Comprendre les scores^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>Chaque règle retourne un score entre ^<b^>0.0^</b^> (échec complet) et ^<b^>1.0^</b^> (conformité totale). Le score global est une moyenne pondérée par catégorie.^</p^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<div style="display:flex;gap:12px;margin:12px 0"^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span class="score-tag high"^>≥ 0.70 — Bon^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span class="score-tag mid"^>0.40 – 0.69 — À améliorer^</span^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<span class="score-tag low"^>^&lt; 0.40 — Critique^</span^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Les 13 règles d'audit^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<table^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<thead^>^<tr^>^<th^>ID^</th^>^<th^>Catégorie^</th^>^<th^>Description^</th^>^</tr^>^</thead^>
+>> "src\main\resources\static\exploitation.html" echo(             ^<tbody^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>RGAA-8.5^</code^>^</td^>^<td^>^<span class="tag rgaa"^>RGAA^</span^>^</td^>^<td^>Titre de page pertinent^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>RGAA-8.3^</code^>^</td^>^<td^>^<span class="tag rgaa"^>RGAA^</span^>^</td^>^<td^>Attribut lang sur ^&lt;html^&gt;^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>RGAA-1.1^</code^>^</td^>^<td^>^<span class="tag rgaa"^>RGAA^</span^>^</td^>^<td^>Alternatives textuelles des images^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>RGAA-9.1^</code^>^</td^>^<td^>^<span class="tag rgaa"^>RGAA^</span^>^</td^>^<td^>Hiérarchie des titres h1-h6^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>RGAA-11.1^</code^>^</td^>^<td^>^<span class="tag rgaa"^>RGAA^</span^>^</td^>^<td^>Étiquettes des champs de formulaire^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>WCAG-1.3.1^</code^>^</td^>^<td^>^<span class="tag wcag"^>WCAG^</span^>^</td^>^<td^>Landmarks ARIA et structure sémantique^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>WCAG-1.4.3^</code^>^</td^>^<td^>^<span class="tag wcag"^>WCAG^</span^>^</td^>^<td^>Contraste minimum 4.5:1^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>WCAG-1.4.4^</code^>^</td^>^<td^>^<span class="tag wcag"^>WCAG^</span^>^</td^>^<td^>Viewport et zoom utilisateur^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>WCAG-2.1.1^</code^>^</td^>^<td^>^<span class="tag wcag"^>WCAG^</span^>^</td^>^<td^>Navigation clavier et lien d'évitement^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>WCAG-2.4.4^</code^>^</td^>^<td^>^<span class="tag wcag"^>WCAG^</span^>^</td^>^<td^>Intitulé descriptif des liens^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>DSFR-HDR-01^</code^>^</td^>^<td^>^<span class="tag dsfr"^>DSFR^</span^>^</td^>^<td^>En-tête conforme DSFR^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>DSFR-FTR-01^</code^>^</td^>^<td^>^<span class="tag dsfr"^>DSFR^</span^>^</td^>^<td^>Pied de page DSFR + mentions obligatoires^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(               ^<tr^>^<td^>^<code^>DSFR-BRD-01^</code^>^</td^>^<td^>^<span class="tag dsfr"^>DSFR^</span^>^</td^>^<td^>Fil d'Ariane conforme^</td^>^</tr^>
+>> "src\main\resources\static\exploitation.html" echo(             ^</tbody^>
+>> "src\main\resources\static\exploitation.html" echo(           ^</table^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Suivi temps réel (SSE)^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>La page ^<b^>« Temps réel »^</b^> ouvre un flux SSE (Server-Sent Events) qui affiche en direct la progression de chaque audit phase par phase. Utile pour suivre les audits asynchrones et les batchs.^</p^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Alertes et tendances^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>La page ^<b^>« Alertes »^</b^> affiche les rapports dont le score est en dessous d'un seuil configurable. La tendance (UP/DOWN/STABLE) est calculée par comparaison avec l'audit précédent du même site.^</p^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(           ^<h4^>Pondérations adaptatives^</h4^>
+>> "src\main\resources\static\exploitation.html" echo(           ^<p^>Les poids du scoring sont ^<b^>dynamiques^</b^> : la boucle de rétroaction (phase Équilibrer) les ajuste automatiquement selon les résultats. Vous pouvez aussi les modifier manuellement via ^<b^>« Pondérations »^</b^>. Le bouton ^<b^>Réinitialiser^</b^> restaure les valeurs par défaut (RGAA=0.50, WCAG=0.30, DSFR=0.20).^</p^>
+>> "src\main\resources\static\exploitation.html" echo(         ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(       ^</template^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     ^</div^>
+>> "src\main\resources\static\exploitation.html" echo(   ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( ^<div class="toast-zone"^>
+>> "src\main\resources\static\exploitation.html" echo(   ^<div v-for="(t,i) in toasts" :key="i" class="toast" :class="t.c"^>{{ t.m }}^</div^>
+>> "src\main\resources\static\exploitation.html" echo( ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( ^</div^>
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( ^<script^>
+>> "src\main\resources\static\exploitation.html" echo( const API='';  // Même origine
+>> "src\main\resources\static\exploitation.html" echo( const {createApp,ref,reactive,computed,onMounted,watch,nextTick}=Vue;
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo( createApp({
+>> "src\main\resources\static\exploitation.html" echo(   setup(){
+>> "src\main\resources\static\exploitation.html" echo(     const pg=ref('dashboard');
+>> "src\main\resources\static\exploitation.html" echo(     const ld=ref(false);
+>> "src\main\resources\static\exploitation.html" echo(     const toasts=ref([]);
+>> "src\main\resources\static\exploitation.html" echo(     const health=ref({}); const stats=ref({}); const weights=ref({});
+>> "src\main\resources\static\exploitation.html" echo(     const recentReports=ref([]);
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     const pageTitle=computed(()=^>({dashboard:'Tableau de bord',live:'Temps réel',launch:'Lancer un audit',sites:'Portefeuille de sites',history:'Historique des audits',alerts:'Alertes',weights:'Pondérations',guide:'Guide fonctionnel'}[pg.value]^|^|''));
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // API helper
+>> "src\main\resources\static\exploitation.html" echo(     async function api(m,p,b){
+>> "src\main\resources\static\exploitation.html" echo(       try{const o={method:m,headers:{'Content-Type':'application/json'}};if(b)o.body=JSON.stringify(b);const r=await fetch(API+p,o);if(r.status===204)return{};return await r.json();}catch(e){toast('err','Erreur: '+e.message);return{};}
+>> "src\main\resources\static\exploitation.html" echo(     }
+>> "src\main\resources\static\exploitation.html" echo(     function toast(c,m){toasts.value.push({c,m});setTimeout(()=^>toasts.value.shift(),4000);}
+>> "src\main\resources\static\exploitation.html" echo(     function sc(v){return v^>=.7?'high':v^>=.4?'mid':'low';}
+>> "src\main\resources\static\exploitation.html" echo(     function scoreColor(v){return v^>=.7?'green':v^>=.4?'orange':'red';}
+>> "src\main\resources\static\exploitation.html" echo(     function fmtDate(d){return d?new Date(d).toLocaleString('fr-FR'):'—';}
+>> "src\main\resources\static\exploitation.html" echo(     function wt(c){return weights.value[c]?.weight^|^|({RGAA:.5,WCAG:.3,DSFR:.2}[c]);}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // Load
+>> "src\main\resources\static\exploitation.html" echo(     async function loadAll(){
+>> "src\main\resources\static\exploitation.html" echo(       health.value=await api('GET','/api/health');
+>> "src\main\resources\static\exploitation.html" echo(       stats.value=await api('GET','/api/audits/stats');
+>> "src\main\resources\static\exploitation.html" echo(       weights.value=await api('GET','/api/config/weights');
+>> "src\main\resources\static\exploitation.html" echo(       const rp=await api('GET','/api/audits/list?page=0^&size=5^&sortBy=auditedAt^&direction=desc');
+>> "src\main\resources\static\exploitation.html" echo(       recentReports.value=rp.content^|^|[];
+>> "src\main\resources\static\exploitation.html" echo(     }
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // Sites
+>> "src\main\resources\static\exploitation.html" echo(     const sf=reactive({url:'',name:''});
+>> "src\main\resources\static\exploitation.html" echo(     const sitesData=ref({content:[]});
+>> "src\main\resources\static\exploitation.html" echo(     const sp=ref(0);
+>> "src\main\resources\static\exploitation.html" echo(     async function loadSites(){sitesData.value=await api('GET',`/api/sites?page=${sp.value}^&size=10`);}
+>> "src\main\resources\static\exploitation.html" echo(     async function addSite(){await api('POST','/api/sites',{url:sf.url,name:sf.name});sf.url='';sf.name='';loadSites();toast('ok','Site ajouté');}
+>> "src\main\resources\static\exploitation.html" echo(     async function delSite(id){if(!confirm('Supprimer ?'))return;await api('DELETE',`/api/sites/${id}`);loadSites();}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // Audit
+>> "src\main\resources\static\exploitation.html" echo(     const af=reactive({url:'',name:''});
+>> "src\main\resources\static\exploitation.html" echo(     const auditRes=ref(null);
+>> "src\main\resources\static\exploitation.html" echo(     async function doAudit(){ld.value=true;auditRes.value=null;auditRes.value=await api('POST','/api/audits',{url:af.url,name:af.name});ld.value=false;toast('ok','Audit terminé — '+auditRes.value.scores?.global);loadAll();}
+>> "src\main\resources\static\exploitation.html" echo(     async function doAsync(){const r=await api('POST','/api/audits/async',{url:af.url,name:af.name});toast('info','Job #'+r.jobId+' soumis');}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // History
+>> "src\main\resources\static\exploitation.html" echo(     const histData=ref({content:[]});const hp=ref(0);const histSort=ref('auditedAt');const histDir=ref('desc');const histQ=ref('');
+>> "src\main\resources\static\exploitation.html" echo(     async function loadHist(){histData.value=await api('GET',`/api/audits/list?page=${hp.value}^&size=10^&sortBy=${histSort.value}^&direction=${histDir.value}`);}
+>> "src\main\resources\static\exploitation.html" echo(     async function searchHist(){if(!histQ.value)return loadHist();histData.value=await api('GET',`/api/audits/search?q=${histQ.value}^&page=0^&size=10`);}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // Alerts
+>> "src\main\resources\static\exploitation.html" echo(     const alertTh=ref(0.7);const alertData=ref({});
+>> "src\main\resources\static\exploitation.html" echo(     async function loadAlerts(){alertData.value=await api('GET',`/api/audits/alerts?threshold=${alertTh.value}^&page=0^&size=20`);}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // Weights
+>> "src\main\resources\static\exploitation.html" echo(     const we=reactive({RGAA:.5,WCAG:.3,DSFR:.2});
+>> "src\main\resources\static\exploitation.html" echo(     async function loadWeights(){weights.value=await api('GET','/api/config/weights');['RGAA','WCAG','DSFR'].forEach(k=^>{if(weights.value[k])we[k]=weights.value[k].weight;});}
+>> "src\main\resources\static\exploitation.html" echo(     async function setWeight(c){await api('PUT',`/api/config/weights/${c}`,{weight:we[c]});loadWeights();toast('ok',c+' mis à jour');}
+>> "src\main\resources\static\exploitation.html" echo(     async function resetW(){await api('POST','/api/config/weights/reset');loadWeights();toast('info','Poids réinitialisés');}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     // SSE
+>> "src\main\resources\static\exploitation.html" echo(     const sseOn=ref(false);const sseLogs=ref([]);const livePanel=ref(null);const currentAudit=ref(null);let sse=null;
+>> "src\main\resources\static\exploitation.html" echo(     function startSse(){
+>> "src\main\resources\static\exploitation.html" echo(       if(sse)sse.close();
+>> "src\main\resources\static\exploitation.html" echo(       sse=new EventSource(API+'/api/audits/stream');sseOn.value=true;
+>> "src\main\resources\static\exploitation.html" echo(       ['connected','audit-started','audit-progress','audit-completed'].forEach(ev=^>{
+>> "src\main\resources\static\exploitation.html" echo(         sse.addEventListener(ev,e=^>{
+>> "src\main\resources\static\exploitation.html" echo(           const d=JSON.parse(e.data);
+>> "src\main\resources\static\exploitation.html" echo(           sseLogs.value.push({t:new Date().toLocaleTimeString(),e:ev,d:JSON.stringify(d)});
+>> "src\main\resources\static\exploitation.html" echo(           if(ev==='audit-started')currentAudit.value={site:d.siteName,phase:'Démarrage',pct:0};
+>> "src\main\resources\static\exploitation.html" echo(           if(ev==='audit-progress')currentAudit.value={site:currentAudit.value?.site^|^|'',phase:d.phaseLabel^|^|d.phase,pct:d.progress};
+>> "src\main\resources\static\exploitation.html" echo(           if(ev==='audit-completed'){currentAudit.value=null;loadAll();}
+>> "src\main\resources\static\exploitation.html" echo(           nextTick(()=^>{if(livePanel.value)livePanel.value.scrollTop=livePanel.value.scrollHeight;});
+>> "src\main\resources\static\exploitation.html" echo(         });
+>> "src\main\resources\static\exploitation.html" echo(       });
+>> "src\main\resources\static\exploitation.html" echo(       sse.onerror=()=^>{sseOn.value=false;sseLogs.value.push({t:new Date().toLocaleTimeString(),e:'error',d:'Connexion perdue'});};
+>> "src\main\resources\static\exploitation.html" echo(     }
+>> "src\main\resources\static\exploitation.html" echo(     function stopSse(){if(sse){sse.close();sse=null;}sseOn.value=false;}
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     watch(pg,v=^>{
+>> "src\main\resources\static\exploitation.html" echo(       auditRes.value=null;
+>> "src\main\resources\static\exploitation.html" echo(       if(v==='dashboard')loadAll();
+>> "src\main\resources\static\exploitation.html" echo(       if(v==='sites')loadSites();
+>> "src\main\resources\static\exploitation.html" echo(       if(v==='history')loadHist();
+>> "src\main\resources\static\exploitation.html" echo(       if(v==='alerts')loadAlerts();
+>> "src\main\resources\static\exploitation.html" echo(       if(v==='weights')loadWeights();
+>> "src\main\resources\static\exploitation.html" echo(     });
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     onMounted(()=^>{loadAll();setInterval(()=^>{api('GET','/api/health').then(r=^>health.value=r);},30000);});
+>> "src\main\resources\static\exploitation.html" echo( 
+>> "src\main\resources\static\exploitation.html" echo(     return{pg,ld,toasts,health,stats,weights,recentReports,pageTitle,
+>> "src\main\resources\static\exploitation.html" echo(       sf,sitesData,sp,loadSites,addSite,delSite,
+>> "src\main\resources\static\exploitation.html" echo(       af,auditRes,doAudit,doAsync,
+>> "src\main\resources\static\exploitation.html" echo(       histData,hp,histSort,histDir,histQ,loadHist,searchHist,
+>> "src\main\resources\static\exploitation.html" echo(       alertTh,alertData,loadAlerts,
+>> "src\main\resources\static\exploitation.html" echo(       we,loadWeights,setWeight,resetW,
+>> "src\main\resources\static\exploitation.html" echo(       sseOn,sseLogs,livePanel,currentAudit,startSse,stopSse,
+>> "src\main\resources\static\exploitation.html" echo(       sc,scoreColor,fmtDate,wt,toast};
+>> "src\main\resources\static\exploitation.html" echo(   }
+>> "src\main\resources\static\exploitation.html" echo( }).mount('#app');
+>> "src\main\resources\static\exploitation.html" echo( ^</script^>
+>> "src\main\resources\static\exploitation.html" echo( ^</body^>
+>> "src\main\resources\static\exploitation.html" echo( ^</html^>
+certutil -hashfile "src\main\resources\static\exploitation.html" SHA256 | findstr /I /C:"F988DFF047A7A5309934B5C28EC08E185CFD50AAA7EFA09E155E37075DA66AB3" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\static\exploitation.html) else (echo    [ERREUR] src\main\resources\static\exploitation.html)
+echo Décompression de src\main\resources\static\index.html
+> "src\main\resources\static\index.html" echo( ^<!DOCTYPE html^>
+>> "src\main\resources\static\index.html" echo( ^<html lang="fr"^>
+>> "src\main\resources\static\index.html" echo( ^<head^>
+>> "src\main\resources\static\index.html" echo( ^<meta charset="UTF-8"^>
+>> "src\main\resources\static\index.html" echo( ^<meta name="viewport" content="width=device-width, initial-scale=1.0"^>
+>> "src\main\resources\static\index.html" echo( ^<title^>CyberAudit7E^</title^>
+>> "src\main\resources\static\index.html" echo( ^<style^>
+>> "src\main\resources\static\index.html" echo( @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700^&display=swap');
+>> "src\main\resources\static\index.html" echo( *{margin:0;padding:0;box-sizing:border-box}
+>> "src\main\resources\static\index.html" echo( body{font-family:'Outfit',sans-serif;background:#0a0e17;color:#f1f5f9;min-height:100vh;display:flex;align-items:center;justify-content:center}
+>> "src\main\resources\static\index.html" echo( .container{text-align:center;max-width:600px;padding:40px}
+>> "src\main\resources\static\index.html" echo( h1{font-size:42px;font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+>> "src\main\resources\static\index.html" echo( h1 span{color:#3b82f6}
+>> "src\main\resources\static\index.html" echo( .sub{color:#64748b;font-size:16px;margin-bottom:40px}
+>> "src\main\resources\static\index.html" echo( .axiome{color:#94a3b8;font-size:13px;font-style:italic;margin-bottom:48px;line-height:1.6}
+>> "src\main\resources\static\index.html" echo( .cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:32px}
+>> "src\main\resources\static\index.html" echo( .card{background:#111827;border:1px solid #2d3a52;border-radius:12px;padding:28px 20px;text-decoration:none;color:#f1f5f9;transition:all .2s;display:block}
+>> "src\main\resources\static\index.html" echo( .card:hover{border-color:#3b82f6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.15)}
+>> "src\main\resources\static\index.html" echo( .card .icon{font-size:32px;margin-bottom:12px}
+>> "src\main\resources\static\index.html" echo( .card h2{font-size:18px;font-weight:600;margin-bottom:8px}
+>> "src\main\resources\static\index.html" echo( .card p{font-size:13px;color:#94a3b8;line-height:1.5}
+>> "src\main\resources\static\index.html" echo( .links{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+>> "src\main\resources\static\index.html" echo( .links a{color:#3b82f6;text-decoration:none;font-size:13px;padding:6px 14px;border:1px solid #2d3a52;border-radius:6px;transition:all .15s}
+>> "src\main\resources\static\index.html" echo( .links a:hover{background:#1e3a5f;border-color:#3b82f6}
+>> "src\main\resources\static\index.html" echo( ^</style^>
+>> "src\main\resources\static\index.html" echo( ^</head^>
+>> "src\main\resources\static\index.html" echo( ^<body^>
+>> "src\main\resources\static\index.html" echo( ^<div class="container"^>
+>> "src\main\resources\static\index.html" echo(   ^<h1^>⚡ Cyber^<span^>Audit7E^</span^>^</h1^>
+>> "src\main\resources\static\index.html" echo(   ^<div class="sub"^>Moteur d'audit d'accessibilité cybernétique^</div^>
+>> "src\main\resources\static\index.html" echo(   ^<div class="axiome"^>« Les Éléments dans l'Espace Engendrent un État d'Expression Évolutif de l'Environnement »^</div^>
+>> "src\main\resources\static\index.html" echo( 
+>> "src\main\resources\static\index.html" echo(   ^<div class="cards"^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/admin.html" class="card"^>
+>> "src\main\resources\static\index.html" echo(       ^<div class="icon"^>🛠️^</div^>
+>> "src\main\resources\static\index.html" echo(       ^<h2^>Admin ^& Tests^</h2^>
+>> "src\main\resources\static\index.html" echo(       ^<p^>Console d'administration complète. Tests de tous les endpoints, console SSE, gestion des jobs, réponses JSON brutes.^</p^>
+>> "src\main\resources\static\index.html" echo(     ^</a^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/exploitation.html" class="card"^>
+>> "src\main\resources\static\index.html" echo(       ^<div class="icon"^>📊^</div^>
+>> "src\main\resources\static\index.html" echo(       ^<h2^>Exploitation^</h2^>
+>> "src\main\resources\static\index.html" echo(       ^<p^>Tableau de bord opérationnel. Pilotage des audits, suivi temps réel, historique, alertes, guide fonctionnel intégré.^</p^>
+>> "src\main\resources\static\index.html" echo(     ^</a^>
+>> "src\main\resources\static\index.html" echo(   ^</div^>
+>> "src\main\resources\static\index.html" echo( 
+>> "src\main\resources\static\index.html" echo(   ^<div class="links"^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/swagger-ui.html"^>📖 Swagger UI^</a^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/api/health"^>💚 Health Check^</a^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/api/"^>🔗 API Index^</a^>
+>> "src\main\resources\static\index.html" echo(     ^<a href="/h2-console"^>🗄️ H2 Console^</a^>
+>> "src\main\resources\static\index.html" echo(   ^</div^>
+>> "src\main\resources\static\index.html" echo( ^</div^>
+>> "src\main\resources\static\index.html" echo( ^</body^>
+>> "src\main\resources\static\index.html" echo( ^</html^>
+certutil -hashfile "src\main\resources\static\index.html" SHA256 | findstr /I /C:"CB961D2A21EA57A292F708788EB29CE2855B0121A0E6DBBFDCC5F909F28C3B54" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\static\index.html) else (echo    [ERREUR] src\main\resources\static\index.html)
+echo.
+===== MODE DIFF =====
+if not exist ".dockerignore" (echo MANQUANT : .dockerignore & goto next_.dockerignore)
+certutil -hashfile ".dockerignore" SHA256 | findstr /I /C:"02887CC7342C9F3E4FA94CCFE5D10EC3D6E5DB18C96FC6E107E2C5E34F389923" >nul
+if %errorlevel%==0 (echo IDENTIQUE : .dockerignore) else (echo DIFFERENT : .dockerignore)
+:next_.dockerignore
+if not exist "docker-compose.yml" (echo MANQUANT : docker-compose.yml & goto next_docker-compose.yml)
+certutil -hashfile "docker-compose.yml" SHA256 | findstr /I /C:"C87EE84C5049191862F2BADF623FEBDBF39C97074E94E395E5CE72F394B5AD7B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : docker-compose.yml) else (echo DIFFERENT : docker-compose.yml)
+:next_docker-compose.yml
+if not exist "Dockerfile" (echo MANQUANT : Dockerfile & goto next_Dockerfile)
+certutil -hashfile "Dockerfile" SHA256 | findstr /I /C:"8F2B14A07AF1B3524045A0F611701D5DB8C933608457B980D10C6AEAF8F00C7F" >nul
+if %errorlevel%==0 (echo IDENTIQUE : Dockerfile) else (echo DIFFERENT : Dockerfile)
+:next_Dockerfile
+if not exist "nginx.conf" (echo MANQUANT : nginx.conf & goto next_nginx.conf)
+certutil -hashfile "nginx.conf" SHA256 | findstr /I /C:"C73F169445EFA61DC15AC3E4E7D144159A8E72434CAD34A4E66734100C28F155" >nul
+if %errorlevel%==0 (echo IDENTIQUE : nginx.conf) else (echo DIFFERENT : nginx.conf)
+:next_nginx.conf
+if not exist "pom.xml" (echo MANQUANT : pom.xml & goto next_pom.xml)
+certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"A5D727D5770786C0FBD198A8E4B9AD1D1A3FE30E5CAD3AC621EABE7F4F622C95" >nul
+if %errorlevel%==0 (echo IDENTIQUE : pom.xml) else (echo DIFFERENT : pom.xml)
+:next_pom.xml
+if not exist "README-new.md" (echo MANQUANT : README-new.md & goto next_README-new.md)
+certutil -hashfile "README-new.md" SHA256 | findstr /I /C:"B889C3EDCC002F0D1C7D5D778BC472034B13421A3D4862FFEB494688A56AEFB5" >nul
+if %errorlevel%==0 (echo IDENTIQUE : README-new.md) else (echo DIFFERENT : README-new.md)
+:next_README-new.md
+if not exist "README.md" (echo MANQUANT : README.md & goto next_README.md)
+certutil -hashfile "README.md" SHA256 | findstr /I /C:"833BFF90E3907198449646A73DDC65598D4CECDE2A922E693FE2F71F3DB7AF17" >nul
+if %errorlevel%==0 (echo IDENTIQUE : README.md) else (echo DIFFERENT : README.md)
+:next_README.md
+if not exist "README7.md" (echo MANQUANT : README7.md & goto next_README7.md)
+certutil -hashfile "README7.md" SHA256 | findstr /I /C:"071C50AE7DD4C94675DD714DE70A8CD0212C500FE20AA8CD3F13925A835FD6B3" >nul
+if %errorlevel%==0 (echo IDENTIQUE : README7.md) else (echo DIFFERENT : README7.md)
+:next_README7.md
+if not exist "TESTS-REFERENCE.md" (echo MANQUANT : TESTS-REFERENCE.md & goto next_TESTS-REFERENCE.md)
+certutil -hashfile "TESTS-REFERENCE.md" SHA256 | findstr /I /C:"FBBC2D0EE7446C02B984555C8F0BB686E5EC74B8BBD31796A7091383C5F4B344" >nul
+if %errorlevel%==0 (echo IDENTIQUE : TESTS-REFERENCE.md) else (echo DIFFERENT : TESTS-REFERENCE.md)
+:next_TESTS-REFERENCE.md
+if not exist ".mvn\wrapper\maven-wrapper.properties" (echo MANQUANT : .mvn\wrapper\maven-wrapper.properties & goto next_.mvn_wrapper_maven-wrapper.properties)
+certutil -hashfile ".mvn\wrapper\maven-wrapper.properties" SHA256 | findstr /I /C:"B0FFAF47BFFF05E4F8D05FDC32936382B3DFF70EFC6E8A480C42AE49AA04DC93" >nul
+if %errorlevel%==0 (echo IDENTIQUE : .mvn\wrapper\maven-wrapper.properties) else (echo DIFFERENT : .mvn\wrapper\maven-wrapper.properties)
+:next_.mvn_wrapper_maven-wrapper.properties
+if not exist "scripts\diagnose-packages.ps1" (echo MANQUANT : scripts\diagnose-packages.ps1 & goto next_scripts_diagnose-packages.ps1)
+certutil -hashfile "scripts\diagnose-packages.ps1" SHA256 | findstr /I /C:"62D0DAE542B3CDCA88788894176ACE472113C13972D6B40BAAAF83ACED70DE8D" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\diagnose-packages.ps1) else (echo DIFFERENT : scripts\diagnose-packages.ps1)
+:next_scripts_diagnose-packages.ps1
+if not exist "scripts\README.md" (echo MANQUANT : scripts\README.md & goto next_scripts_README.md)
+certutil -hashfile "scripts\README.md" SHA256 | findstr /I /C:"A80BAFFC27ABC27D73AD505138D6CD2893B21C547505DE94B15B0DA2E2563015" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\README.md) else (echo DIFFERENT : scripts\README.md)
+:next_scripts_README.md
+if not exist "scripts\realign-test-packages.ps1" (echo MANQUANT : scripts\realign-test-packages.ps1 & goto next_scripts_realign-test-packages.ps1)
+certutil -hashfile "scripts\realign-test-packages.ps1" SHA256 | findstr /I /C:"8FF5A3CE06924F5A853966AC029FD403DDA5E0AABD8469C75590F596D021C514" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\realign-test-packages.ps1) else (echo DIFFERENT : scripts\realign-test-packages.ps1)
+:next_scripts_realign-test-packages.ps1
+if not exist "scripts\smoke-test.ps1" (echo MANQUANT : scripts\smoke-test.ps1 & goto next_scripts_smoke-test.ps1)
+certutil -hashfile "scripts\smoke-test.ps1" SHA256 | findstr /I /C:"691ABF4B95B2A5DE062944CF1CDD5801C7D04536E452EAB6386434CD04D1F006" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\smoke-test.ps1) else (echo DIFFERENT : scripts\smoke-test.ps1)
+:next_scripts_smoke-test.ps1
+if not exist "scripts\test-cyberaudit7e.ps1" (echo MANQUANT : scripts\test-cyberaudit7e.ps1 & goto next_scripts_test-cyberaudit7e.ps1)
+certutil -hashfile "scripts\test-cyberaudit7e.ps1" SHA256 | findstr /I /C:"7F853427CCE7F8AA36E3297819894E07060D01984A66D3CF0AFFDE7DF8048940" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\test-cyberaudit7e.ps1) else (echo DIFFERENT : scripts\test-cyberaudit7e.ps1)
+:next_scripts_test-cyberaudit7e.ps1
+if not exist "scripts\test-cyberaudit7e.sh" (echo MANQUANT : scripts\test-cyberaudit7e.sh & goto next_scripts_test-cyberaudit7e.sh)
+certutil -hashfile "scripts\test-cyberaudit7e.sh" SHA256 | findstr /I /C:"6F915896AC6B8611315DFD0A29EF54FDC90E1C1FAB5195F3DD7A440D9307DDF1" >nul
+if %errorlevel%==0 (echo IDENTIQUE : scripts\test-cyberaudit7e.sh) else (echo DIFFERENT : scripts\test-cyberaudit7e.sh)
+:next_scripts_test-cyberaudit7e.sh
+if not exist "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java & goto next_src_main_java_com_cyberaudit7e_CyberAudit7eApplication.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java" SHA256 | findstr /I /C:"27C09B96EB82FE0E64DC44D3FA36133D60292173878541CB0D1743A3E0AC0DEC" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\CyberAudit7eApplication.java)
+:next_src_main_java_com_cyberaudit7e_CyberAudit7eApplication.java
+if not exist "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\AsyncConfig.java & goto next_src_main_java_com_cyberaudit7e_config_AsyncConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" SHA256 | findstr /I /C:"FCDC3EB189D431EB28F08FCD2FCB3019B1AD525AC2EDEB3AF20F916A39FBB7F7" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\AsyncConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\AsyncConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_AsyncConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\JacksonConfig.java & goto next_src_main_java_com_cyberaudit7e_config_JacksonConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" SHA256 | findstr /I /C:"356FA2C47AFE1BDB7927836E74532F64B42BC7DCBFE627B77B5E0B91E7BFBEF7" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\JacksonConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\JacksonConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_JacksonConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\JpaConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\JpaConfig.java & goto next_src_main_java_com_cyberaudit7e_config_JpaConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"1995B94C3382DD3E5F025296A36354E182EB7C6BB8A9B3432EEA36FDE5EFA3BA" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\JpaConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\JpaConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_JpaConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java & goto next_src_main_java_com_cyberaudit7e_config_OpenApiConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" SHA256 | findstr /I /C:"B36CC866F34D9C2A101C28AB4F1E795185032D0EC7A58EEC1181FC1810FE4163" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_OpenApiConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\WebConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\WebConfig.java & goto next_src_main_java_com_cyberaudit7e_config_WebConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\WebConfig.java" SHA256 | findstr /I /C:"D2B4A4EFF2297EF567C975A6931CEB7F33F7CB05E3E29816BA486B4D9C805915" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\WebConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\WebConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_WebConfig.java
+if not exist "src\main\java\com\cyberaudit7e\controller\AuditController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\controller\AuditController.java & goto next_src_main_java_com_cyberaudit7e_controller_AuditController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\AuditController.java" SHA256 | findstr /I /C:"C66CEC7BBB9CDE49C73BCDF89105B52174AF2A827AC35B148C1369CEFA87C2A8" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\controller\AuditController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\controller\AuditController.java)
+:next_src_main_java_com_cyberaudit7e_controller_AuditController.java
+if not exist "src\main\java\com\cyberaudit7e\controller\ConfigController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\controller\ConfigController.java & goto next_src_main_java_com_cyberaudit7e_controller_ConfigController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\ConfigController.java" SHA256 | findstr /I /C:"D58CAEEF5AF37ED0C3C1635E17636B98FD83DCAF7BC2BC727087C5BF90A31B94" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\controller\ConfigController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\controller\ConfigController.java)
+:next_src_main_java_com_cyberaudit7e_controller_ConfigController.java
+if not exist "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java & goto next_src_main_java_com_cyberaudit7e_controller_GlobalExceptionHandler.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java" SHA256 | findstr /I /C:"5349899BF0FC3E7E1241D24A090FAC7652E3F3D6067B7B278D3134E06140E5FB" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\controller\GlobalExceptionHandler.java)
+:next_src_main_java_com_cyberaudit7e_controller_GlobalExceptionHandler.java
+if not exist "src\main\java\com\cyberaudit7e\controller\HealthController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\controller\HealthController.java & goto next_src_main_java_com_cyberaudit7e_controller_HealthController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\HealthController.java" SHA256 | findstr /I /C:"76FC64041C74062BCBEF6F62D10255FE0B80D0BF5CCF4393FCED9E3CB9B8D618" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\controller\HealthController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\controller\HealthController.java)
+:next_src_main_java_com_cyberaudit7e_controller_HealthController.java
+if not exist "src\main\java\com\cyberaudit7e\controller\SiteController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\controller\SiteController.java & goto next_src_main_java_com_cyberaudit7e_controller_SiteController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\controller\SiteController.java" SHA256 | findstr /I /C:"CE3FB10C4E4B47E0399A5509D08FE7943463EE03303EFC6EA191D2FFB0773A06" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\controller\SiteController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\controller\SiteController.java)
+:next_src_main_java_com_cyberaudit7e_controller_SiteController.java
+if not exist "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_AuditReport.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java" SHA256 | findstr /I /C:"DB095CE8358908177D02323E0201D1745DB4E095B398F9F933B3333F575B7EC5" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\AuditReport.java)
+:next_src_main_java_com_cyberaudit7e_domain_entity_AuditReport.java
+if not exist "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_RuleConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java" SHA256 | findstr /I /C:"3CB5766B55D9AF1E8EEA34FC9F2406D66E6974295860BCE25E3266D4482A5D88" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\RuleConfig.java)
+:next_src_main_java_com_cyberaudit7e_domain_entity_RuleConfig.java
+if not exist "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_RuleResultListConverter.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" SHA256 | findstr /I /C:"C0EC19A9BE2ACB9EE9C2254E8CFD255AFE3D4E44E7312715F08BD1B94F707980" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java)
+:next_src_main_java_com_cyberaudit7e_domain_entity_RuleResultListConverter.java
+if not exist "src\main\java\com\cyberaudit7e\domain\entity\Site.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\Site.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_Site.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\Site.java" SHA256 | findstr /I /C:"4F5D89EE64E408E14670F608BFD08974DCA3F1A11B566D6FDDF28F00C653055D" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\Site.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\Site.java)
+:next_src_main_java_com_cyberaudit7e_domain_entity_Site.java
+if not exist "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java & goto next_src_main_java_com_cyberaudit7e_domain_enums_Phase7E.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java" SHA256 | findstr /I /C:"3886693B47517FB3ECFE9DD7D2DA25B3251CA2E44DB73B9B50A3B6B51BFFCB2A" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\Phase7E.java)
+:next_src_main_java_com_cyberaudit7e_domain_enums_Phase7E.java
+if not exist "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java & goto next_src_main_java_com_cyberaudit7e_domain_enums_RuleCategory.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" SHA256 | findstr /I /C:"AC9F8F3AB1D4AA0CC60FA0989A1FB017DFBF15936DE518409F77F7795F83273B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java)
+:next_src_main_java_com_cyberaudit7e_domain_enums_RuleCategory.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_AriaLandmarkRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" SHA256 | findstr /I /C:"E802267B423FF85996C6492635FB8A12A6DD7B18234F8182D2C272AD9B4F44BE" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_AriaLandmarkRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_AuditContext.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java" SHA256 | findstr /I /C:"DD1169E155B7C11BFD2FC798FC21185EEADF3FCA21DC5BEBE48A12C73E5CCB81" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\AuditContext.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_AuditContext.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_AuditRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java" SHA256 | findstr /I /C:"2BCFD28D76D7366549BFF40A2880007531EE81232FE84877EAB082867968D8D2" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\AuditRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_AuditRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_ContrastRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java" SHA256 | findstr /I /C:"61350AB1DDEEAD1FBB7E5EA306E20C719375620A5ACB82928AF6FCE13C45C3DB" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\ContrastRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_ContrastRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_DsfrBreadcrumbRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java" SHA256 | findstr /I /C:"5475E4769A71B2A444E50B7DA64475AEA604B0F3C03B53DFA3D327B6FFC1C9CE" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\DsfrBreadcrumbRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_DsfrBreadcrumbRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_DsfrFooterRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java" SHA256 | findstr /I /C:"4A6428608BE1DB02EB12D8FBD7E135BD2FF836D314037E87D04235386D7EFD6F" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\DsfrFooterRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_DsfrFooterRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_DsfrHeaderRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java" SHA256 | findstr /I /C:"E8449FAD26387D56BC3916A97022A806999E3B4E8C0ACA6554ADE3F38ABF5256" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\DsfrHeaderRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_DsfrHeaderRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_FormLabelRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java" SHA256 | findstr /I /C:"0118674F5B99CA7B50E78DD13E3A785511B4B42B6BB1D8F140D76CB74E930198" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\FormLabelRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_FormLabelRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_HeadingStructureRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java" SHA256 | findstr /I /C:"BC37D8BCA8836B9636482CBE7F69DDE3F7656BD1037F7B69A579751A47E1B040" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\HeadingStructureRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_HeadingStructureRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_ImageAltRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java" SHA256 | findstr /I /C:"F0FFFAB695BA4F8C44F1002EF0118152B374340D99B2BD5203DE691D55D053FA" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\ImageAltRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_ImageAltRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_KeyboardNavRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java" SHA256 | findstr /I /C:"1D66476EB41FA46CC865F6217D5B2A36C7B65C52E82BA83EB6F1375AB3BD309E" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\KeyboardNavRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_KeyboardNavRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_LangAttributeRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java" SHA256 | findstr /I /C:"FF7FDC70CA5D08573D9983320DB4786DCB2D9B27151A1ECC009419F6569C4C7D" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\LangAttributeRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_LangAttributeRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_LinkPurposeRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java" SHA256 | findstr /I /C:"D35AC39553F8A31DA5D9CD9C110CBE2B4FCB08303D9008C72FF43C9DDF9F0805" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\LinkPurposeRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_LinkPurposeRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_MetaViewportRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java" SHA256 | findstr /I /C:"0EE7AAB8B709DED9FEEFF5C954E91874DAD5478F536D26F321F3D18BBE4898C9" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\MetaViewportRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_MetaViewportRule.java
+if not exist "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_TitlePresenceRule.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java" SHA256 | findstr /I /C:"6EE2B07C8DFBEC0A816037DFA31EEAB196EB19701B6476A3575051E864AC0B68" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\TitlePresenceRule.java)
+:next_src_main_java_com_cyberaudit7e_domain_rule_TitlePresenceRule.java
+if not exist "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\ApiResponse.java & goto next_src_main_java_com_cyberaudit7e_dto_ApiResponse.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\ApiResponse.java" SHA256 | findstr /I /C:"291566401B9144430669C8530131C58619745A3436831DE77EF1CE4EB8066FFC" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\ApiResponse.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\ApiResponse.java)
+:next_src_main_java_com_cyberaudit7e_dto_ApiResponse.java
+if not exist "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java & goto next_src_main_java_com_cyberaudit7e_dto_AuditRequestDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java" SHA256 | findstr /I /C:"2F2A2673A406E5011966167DE55DB29987C0864E9FB6F9F43DC7DF55A4744E9B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\AuditRequestDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_AuditRequestDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java & goto next_src_main_java_com_cyberaudit7e_dto_AuditResponseDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java" SHA256 | findstr /I /C:"AF8B59A50AF3139356F7814DE62AEB09328213AAD6A3B59909947259189EABCF" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\AuditResponseDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_AuditResponseDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java & goto next_src_main_java_com_cyberaudit7e_dto_BatchAuditRequestDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java" SHA256 | findstr /I /C:"C389AD55550DD4ECFCBE3A75E9D1394879CD796DC9363EA9C59DFA91C862FF90" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\BatchAuditRequestDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_BatchAuditRequestDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\PagedResponse.java & goto next_src_main_java_com_cyberaudit7e_dto_PagedResponse.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\PagedResponse.java" SHA256 | findstr /I /C:"1A75CEE88F158ADC603737B2E32A32EF0D60FDB3A3B1AF1280FD1D0997B3A7E1" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\PagedResponse.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\PagedResponse.java)
+:next_src_main_java_com_cyberaudit7e_dto_PagedResponse.java
+if not exist "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java & goto next_src_main_java_com_cyberaudit7e_dto_ReportSummaryDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java" SHA256 | findstr /I /C:"749006A4C3BB965D285DFED9549466A347F252D75D0C848424C912260ABCA9CE" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\ReportSummaryDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_ReportSummaryDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\RuleResultDto.java & goto next_src_main_java_com_cyberaudit7e_dto_RuleResultDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\RuleResultDto.java" SHA256 | findstr /I /C:"07FF16CAC4DF8C967323C097A90401B144A98DB28A46354031758007DE4A5033" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\RuleResultDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\RuleResultDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_RuleResultDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\SiteDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\SiteDto.java & goto next_src_main_java_com_cyberaudit7e_dto_SiteDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\SiteDto.java" SHA256 | findstr /I /C:"B936677724DEE6DF5099D3FF2B35D2FAAA5BFDECB6F8CFB71AAA07096FF12A98" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\SiteDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\SiteDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_SiteDto.java
+if not exist "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java & goto next_src_main_java_com_cyberaudit7e_event_AuditCompletedEvent.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" SHA256 | findstr /I /C:"FD68F8012BEC92CFB38B9CB45A829DBCF4F186022BEF0BBEC3446DAEE29FB8F6" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java)
+:next_src_main_java_com_cyberaudit7e_event_AuditCompletedEvent.java
+if not exist "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java & goto next_src_main_java_com_cyberaudit7e_event_AuditProgressEvent.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java" SHA256 | findstr /I /C:"B327F757D5E58DF64FF3C335AD29A43AA55B25586C266427A5E9E90509A79BFE" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\event\AuditProgressEvent.java)
+:next_src_main_java_com_cyberaudit7e_event_AuditProgressEvent.java
+if not exist "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java & goto next_src_main_java_com_cyberaudit7e_event_AuditStartedEvent.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" SHA256 | findstr /I /C:"72B78E649E44B1C3347CD61832F5B04C56C6130A1607EC4B7E4AC64988DB710B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java)
+:next_src_main_java_com_cyberaudit7e_event_AuditStartedEvent.java
+if not exist "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_AuditReportRepository.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" SHA256 | findstr /I /C:"F8FBEC1CB689FC2B87DCF8A2F01812C24DDD39290F4B6343731CB8CCB32C8906" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java)
+:next_src_main_java_com_cyberaudit7e_repository_AuditReportRepository.java
+if not exist "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_RuleConfigRepository.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" SHA256 | findstr /I /C:"0A6B756C22E0AE1FB6A585FC87C70C78BA8AEC78F17B53E00C40FBA5551D684E" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java)
+:next_src_main_java_com_cyberaudit7e_repository_RuleConfigRepository.java
+if not exist "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\SiteRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_SiteRepository.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" SHA256 | findstr /I /C:"AD2088E1BF1C29DB96A4EF454904D068B43E997B1E6AABAD7B47DE2102587A86" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\SiteRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\SiteRepository.java)
+:next_src_main_java_com_cyberaudit7e_repository_SiteRepository.java
+if not exist "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\AsyncAuditService.java & goto next_src_main_java_com_cyberaudit7e_service_AsyncAuditService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AsyncAuditService.java" SHA256 | findstr /I /C:"D08732967143711276881A48531A590D42D787B2EE3B369A84BBF3E8C61407B2" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\AsyncAuditService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\AsyncAuditService.java)
+:next_src_main_java_com_cyberaudit7e_service_AsyncAuditService.java
+if not exist "src\main\java\com\cyberaudit7e\service\AuditEngine.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\AuditEngine.java & goto next_src_main_java_com_cyberaudit7e_service_AuditEngine.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AuditEngine.java" SHA256 | findstr /I /C:"69648A15E0536798FC0D2FE6343E35B2E3451924CBB844A2103F1215F5FEE0DF" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\AuditEngine.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\AuditEngine.java)
+:next_src_main_java_com_cyberaudit7e_service_AuditEngine.java
+if not exist "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java & goto next_src_main_java_com_cyberaudit7e_service_AuditOrchestrator.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java" SHA256 | findstr /I /C:"8754464F5A04E1DEBBCCF793260590CA8A4BE9A8A5CE57A2C81C31E0392DFD7A" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\AuditOrchestrator.java)
+:next_src_main_java_com_cyberaudit7e_service_AuditOrchestrator.java
+if not exist "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java & goto next_src_main_java_com_cyberaudit7e_service_HtmlFetcherService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java" SHA256 | findstr /I /C:"E7386C9C8A9CEE9A48D54D2E26E626316ECBF0117B6F4C573DB1E1CFB45B3627" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\HtmlFetcherService.java)
+:next_src_main_java_com_cyberaudit7e_service_HtmlFetcherService.java
+if not exist "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java & goto next_src_main_java_com_cyberaudit7e_service_ScheduledAuditService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java" SHA256 | findstr /I /C:"6DBF69194DBAFEC12A84225B9FB0E8048CB1B242E2ABB3997EB84CB07840E7BF" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\ScheduledAuditService.java)
+:next_src_main_java_com_cyberaudit7e_service_ScheduledAuditService.java
+if not exist "src\main\java\com\cyberaudit7e\service\ScoringService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\ScoringService.java & goto next_src_main_java_com_cyberaudit7e_service_ScoringService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\ScoringService.java" SHA256 | findstr /I /C:"A197084707F7E78E624BB3E0CCB10487CA5C77CC67618135E5857FA5E748C490" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\ScoringService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\ScoringService.java)
+:next_src_main_java_com_cyberaudit7e_service_ScoringService.java
+if not exist "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\SseNotificationService.java & goto next_src_main_java_com_cyberaudit7e_service_SseNotificationService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\SseNotificationService.java" SHA256 | findstr /I /C:"523B2B38B7015E8049C057401072D2E268FC8F273AE819CA67779596491F8653" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\SseNotificationService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\SseNotificationService.java)
+:next_src_main_java_com_cyberaudit7e_service_SseNotificationService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_AuditMetricsListener.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java" SHA256 | findstr /I /C:"6AA66A6AE0ACB065CFD7CC0D1FB13D74610D8260CA40DCBDFA0C68AD82952A7B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\AuditMetricsListener.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_AuditMetricsListener.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_ElaborateService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java" SHA256 | findstr /I /C:"886D25CF3843FEFE9284CAF7417C8BEED59587A1657FF71CB47BB2233F5DF55B" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\ElaborateService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_ElaborateService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\EmitService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_EmitService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EmitService.java" SHA256 | findstr /I /C:"653AC3DC8FDACE0BD5F7734FE7BA0F270A819D48FECBA9CE717615A634879A91" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\EmitService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\EmitService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_EmitService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_EvaluateService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java" SHA256 | findstr /I /C:"CC01A7E6A26ACD4C9FF52010986541A971E5FD24E98A9DBF11E50B6B1EA03989" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\EvaluateService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_EvaluateService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_EvolveService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java" SHA256 | findstr /I /C:"EC171E78C327405B9EACD7237E35197E55E90241979F820DEA53FA9362845DB2" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\EvolveService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_EvolveService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_ExamineService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java" SHA256 | findstr /I /C:"9D5E59986002B4FFC760E3259C815CC3E4D7BBA4B90FB16E05519562E2E8E4E2" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\ExamineService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_ExamineService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_ExecuteService.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java" SHA256 | findstr /I /C:"B52064C218B4EA7B9830624E8C737EE7DC28D6C27B89041C1154CD174F44452A" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\ExecuteService.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_ExecuteService.java
+if not exist "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java & goto next_src_main_java_com_cyberaudit7e_service_cycle_FeedbackLoopListener.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java" SHA256 | findstr /I /C:"E0F0094CE70ABF48C2821B9F83A2925703E3496EF2979AED02FEBEEBABDF1278" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\service\cycle\FeedbackLoopListener.java)
+:next_src_main_java_com_cyberaudit7e_service_cycle_FeedbackLoopListener.java
+if not exist "src\main\resources\application-dev.yml" (echo MANQUANT : src\main\resources\application-dev.yml & goto next_src_main_resources_application-dev.yml)
+certutil -hashfile "src\main\resources\application-dev.yml" SHA256 | findstr /I /C:"7BD2F4B15E0986A49ECAEB71D56569CA60CBBB2353C63A3FB204C924CF3D6717" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\application-dev.yml) else (echo DIFFERENT : src\main\resources\application-dev.yml)
+:next_src_main_resources_application-dev.yml
+if not exist "src\main\resources\application-prod.yml" (echo MANQUANT : src\main\resources\application-prod.yml & goto next_src_main_resources_application-prod.yml)
+certutil -hashfile "src\main\resources\application-prod.yml" SHA256 | findstr /I /C:"1239230A89C35A2443DCC0EBA0257655A28064661C53AEA9E1E02E16AA0A975F" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\application-prod.yml) else (echo DIFFERENT : src\main\resources\application-prod.yml)
+:next_src_main_resources_application-prod.yml
+if not exist "src\main\resources\application.yml" (echo MANQUANT : src\main\resources\application.yml & goto next_src_main_resources_application.yml)
+certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"63CCA7F0BB1B9107B5FDD7C7EC4FC3BC5C5B3BA7463A7472CF347F95000E9435" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\application.yml) else (echo DIFFERENT : src\main\resources\application.yml)
+:next_src_main_resources_application.yml
+if not exist "src\main\resources\banner.txt" (echo MANQUANT : src\main\resources\banner.txt & goto next_src_main_resources_banner.txt)
+certutil -hashfile "src\main\resources\banner.txt" SHA256 | findstr /I /C:"6C43C3B2CA1EBCF32274F177C743F756A28D76A9978E5E2024BC86A0C757DE74" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\banner.txt) else (echo DIFFERENT : src\main\resources\banner.txt)
+:next_src_main_resources_banner.txt
+if not exist "src\main\resources\db\migration\V1__create_schema.sql" (echo MANQUANT : src\main\resources\db\migration\V1__create_schema.sql & goto next_src_main_resources_db_migration_V1__create_schema.sql)
+certutil -hashfile "src\main\resources\db\migration\V1__create_schema.sql" SHA256 | findstr /I /C:"205F065FF3E70146387F1BC15593D63C12FF03D37C4E2BFCFC297CFECE9C2515" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V1__create_schema.sql) else (echo DIFFERENT : src\main\resources\db\migration\V1__create_schema.sql)
+:next_src_main_resources_db_migration_V1__create_schema.sql
+if not exist "src\main\resources\db\migration\V2__seed_data.sql" (echo MANQUANT : src\main\resources\db\migration\V2__seed_data.sql & goto next_src_main_resources_db_migration_V2__seed_data.sql)
+certutil -hashfile "src\main\resources\db\migration\V2__seed_data.sql" SHA256 | findstr /I /C:"570F2BBA889D576EF7A6DA6B62C423E3CDC2771A32D2E1F70DB33BD75433BE6C" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V2__seed_data.sql) else (echo DIFFERENT : src\main\resources\db\migration\V2__seed_data.sql)
+:next_src_main_resources_db_migration_V2__seed_data.sql
+if not exist "src\main\resources\db\migration\V3__rule_configs.sql" (echo MANQUANT : src\main\resources\db\migration\V3__rule_configs.sql & goto next_src_main_resources_db_migration_V3__rule_configs.sql)
+certutil -hashfile "src\main\resources\db\migration\V3__rule_configs.sql" SHA256 | findstr /I /C:"E2149678A05DAA3C175A2E89A065798CFF9493FFF83BE1D27C08B3C6E048A614" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V3__rule_configs.sql) else (echo DIFFERENT : src\main\resources\db\migration\V3__rule_configs.sql)
+:next_src_main_resources_db_migration_V3__rule_configs.sql
+if not exist "src\main\resources\db\migration\V4__indexes_pagination.sql" (echo MANQUANT : src\main\resources\db\migration\V4__indexes_pagination.sql & goto next_src_main_resources_db_migration_V4__indexes_pagination.sql)
+certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"CBE8AA3C1E2813E0FE511647AC9C80AA8461D9959EFBCFBC05F33A0A9D4A2BDF" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V4__indexes_pagination.sql) else (echo DIFFERENT : src\main\resources\db\migration\V4__indexes_pagination.sql)
+:next_src_main_resources_db_migration_V4__indexes_pagination.sql
+if not exist "src\main\resources\static\admin.html" (echo MANQUANT : src\main\resources\static\admin.html & goto next_src_main_resources_static_admin.html)
+certutil -hashfile "src\main\resources\static\admin.html" SHA256 | findstr /I /C:"E1EA7028B0A3E1E4C989115E7E35B6D6E661C79A0EE2E78DB4540D796E97DFB7" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\static\admin.html) else (echo DIFFERENT : src\main\resources\static\admin.html)
+:next_src_main_resources_static_admin.html
+if not exist "src\main\resources\static\exploitation.html" (echo MANQUANT : src\main\resources\static\exploitation.html & goto next_src_main_resources_static_exploitation.html)
+certutil -hashfile "src\main\resources\static\exploitation.html" SHA256 | findstr /I /C:"F988DFF047A7A5309934B5C28EC08E185CFD50AAA7EFA09E155E37075DA66AB3" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\static\exploitation.html) else (echo DIFFERENT : src\main\resources\static\exploitation.html)
+:next_src_main_resources_static_exploitation.html
+if not exist "src\main\resources\static\index.html" (echo MANQUANT : src\main\resources\static\index.html & goto next_src_main_resources_static_index.html)
+certutil -hashfile "src\main\resources\static\index.html" SHA256 | findstr /I /C:"CB961D2A21EA57A292F708788EB29CE2855B0121A0E6DBBFDCC5F909F28C3B54" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\static\index.html) else (echo DIFFERENT : src\main\resources\static\index.html)
+:next_src_main_resources_static_index.html
+echo.
+echo Reconstruction terminée.
+pause

@@ -1,0 +1,103 @@
+##############################################
+# CyberAudit7E — Docker Compose
+#
+# Profiles :
+#   dev  → H2 in-memory (par défaut)
+#   prod → PostgreSQL 16 + volumes persistants
+#
+# Usage dev :
+#   docker compose up --build
+#
+# Usage prod :
+#   docker compose --profile prod up --build
+#
+# Inspiré de la stack AuditAccess (9 services)
+# et du système de profiles GitManager.
+# Ici on commence simple : 1 service (dev) ou 2 (prod).
+##############################################
+
+services:
+
+  # ── CyberAudit7E (Spring Boot) ──
+  cyberaudit7e:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cyberaudit7e-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - cyberaudit-net
+
+  # ── PostgreSQL (profile prod uniquement) ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: cyberaudit7e-db
+    profiles:
+      - prod
+    environment:
+      POSTGRES_DB: cyberaudit7e
+      POSTGRES_USER: audit
+      POSTGRES_PASSWORD: audit7e_s3cret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit -d cyberaudit7e"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - cyberaudit-net
+
+  # ── CyberAudit7E PROD (dépend de PostgreSQL) ──
+  cyberaudit7e-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cyberaudit7e-app-prod
+    profiles:
+      - prod
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: "-Xmx1g -Xms512m"
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cyberaudit7e
+      DB_USER: audit
+      DB_PASSWORD: audit7e_s3cret
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/api/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 45s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - cyberaudit-net
+
+volumes:
+  pg_data:
+    driver: local
+
+networks:
+  cyberaudit-net:
+    driver: bridge
