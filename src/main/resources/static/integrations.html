@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberAudit7E — Integrations SNOW / SailPoint</title>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8fafc;--bg-card:#fff;--bg-side:#0f172a;--bg-hover:#f1f5f9;--bg-code:#f8fafc;
+  --border:#e2e8f0;--text:#0f172a;--text2:#475569;--text3:#94a3b8;--text-inv:#f1f5f9;
+  --indigo:#4f46e5;--indigo-l:#e0e7ff;--indigo-bg:#eef2ff;
+  --green:#059669;--green-l:#d1fae5;--green-bg:#ecfdf5;
+  --orange:#d97706;--orange-l:#fef3c7;--orange-bg:#fffbeb;
+  --red:#dc2626;--red-l:#fee2e2;--red-bg:#fef2f2;
+  --blue:#2563eb;--blue-l:#dbeafe;--blue-bg:#eff6ff;
+  --purple:#7c3aed;--purple-l:#ede9fe;--purple-bg:#f5f3ff;
+  --cyan:#0891b2;--cyan-l:#cffafe;
+  --snow-color:#0ea5e9;--snow-bg:#f0f9ff;--snow-border:#bae6fd;
+  --sp-color:#8b5cf6;--sp-bg:#f5f3ff;--sp-border:#c4b5fd;
+  --sans:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --radius:10px;--shadow:0 1px 3px rgba(0,0,0,.06);--shadow-lg:0 4px 16px rgba(0,0,0,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+
+/* Sidebar */
+.side{background:var(--bg-side);color:var(--text-inv);display:flex;flex-direction:column}
+.side .logo{padding:20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.side .logo h1{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.side .logo h1 b{color:#818cf8}
+.side .logo p{font-size:11px;color:var(--text3);margin-top:3px}
+.side nav{flex:1;padding:12px 0;overflow-y:auto}
+.side .sec{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);padding:14px 16px 5px;font-weight:600}
+.side a{display:flex;align-items:center;gap:9px;padding:8px 16px;font-size:13px;color:#cbd5e1;text-decoration:none;cursor:pointer;margin:1px 8px;border-radius:7px;transition:.15s}
+.side a:hover{background:rgba(255,255,255,.07);color:#fff}
+.side a.on{background:rgba(79,70,229,.25);color:#a5b4fc;font-weight:500}
+.side .ft{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:var(--text3)}
+
+/* Main */
+.main{display:flex;flex-direction:column}
+.hdr{background:var(--bg-card);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
+.hdr h2{font-size:18px;font-weight:600}
+.hdr .meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text2)}
+.hdr .dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:3px}
+.hdr .dot.up{background:var(--green)}.hdr .dot.dn{background:var(--red)}
+.cnt{flex:1;padding:20px 24px;overflow-y:auto}
+
+/* Cards */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card h3{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .pill{font-size:10px;padding:2px 9px;border-radius:10px;font-weight:500}
+.card h3 .pill.snow{background:var(--snow-bg);color:var(--snow-color);border:1px solid var(--snow-border)}
+.card h3 .pill.sp{background:var(--sp-bg);color:var(--sp-color);border:1px solid var(--sp-border)}
+.card h3 .pill.n{background:var(--indigo-bg);color:var(--indigo)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:16px}
+
+/* KPI */
+.kpi{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;transition:.2s}
+.kpi:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.kpi .lb{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.kpi .vl{font-size:26px;font-weight:700;font-family:var(--mono)}
+.kpi .vl.indigo{color:var(--indigo)}.kpi .vl.green{color:var(--green)}.kpi .vl.orange{color:var(--orange)}
+.kpi .vl.red{color:var(--red)}.kpi .vl.blue{color:var(--blue)}.kpi .vl.purple{color:var(--purple)}.kpi .vl.cyan{color:var(--cyan)}
+.kpi .sub{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text2);border-bottom:2px solid var(--border);font-weight:600;background:var(--bg)}
+td{padding:9px 10px;border-bottom:1px solid var(--border)}
+tr:hover td{background:var(--bg-hover)}
+
+/* Tags */
+.tag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:500}
+.tag.snow{background:var(--snow-bg);color:var(--snow-color)}.tag.sp{background:var(--sp-bg);color:var(--sp-color)}
+.tag.audit{background:var(--indigo-bg);color:var(--indigo)}.tag.manual{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.tag.new{background:var(--blue-bg);color:var(--blue)}.tag.open{background:var(--indigo-bg);color:var(--indigo)}
+.tag.progress{background:var(--orange-bg);color:var(--orange)}.tag.resolved{background:var(--green-bg);color:var(--green)}
+.tag.closed{background:var(--bg);color:var(--text3)}.tag.cancelled{background:var(--red-bg);color:var(--red)}
+.tag.critical{background:var(--red-bg);color:var(--red);font-weight:600}.tag.high{background:var(--orange-bg);color:var(--orange)}
+.tag.medium{background:var(--blue-bg);color:var(--blue)}.tag.low{background:var(--green-bg);color:var(--green)}
+.tag.info{background:var(--bg);color:var(--text3)}
+.tag.synced{background:var(--green-bg);color:var(--green)}.tag.pending{background:var(--orange-bg);color:var(--orange)}
+
+/* Buttons */
+.btn{padding:7px 15px;border:1px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px;background:var(--bg-card);color:var(--text)}
+.btn:hover{background:var(--bg-hover);box-shadow:var(--shadow)}
+.btn-p{background:var(--indigo);border-color:var(--indigo);color:#fff}.btn-p:hover{background:#4338ca}
+.btn-g{background:var(--green);border-color:var(--green);color:#fff}
+.btn-o{background:var(--orange-bg);border-color:var(--orange);color:var(--orange)}
+.btn-r{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.btn-snow{background:var(--snow-bg);border-color:var(--snow-color);color:var(--snow-color)}
+.btn-sp{background:var(--sp-bg);border-color:var(--sp-color);color:var(--sp-color)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Forms */
+.fr{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:170px}
+.fg label{font-size:11px;color:var(--text2);font-weight:500}
+input,select,textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:7px;font-family:var(--sans);font-size:13px;outline:none;transition:.2s}
+input:focus,select:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+
+/* Pager */
+.pager{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text2)}
+
+/* Connection status cards */
+.conn-card{border-radius:var(--radius);padding:18px;margin-bottom:14px;border:1px solid}
+.conn-card.snow{background:var(--snow-bg);border-color:var(--snow-border)}
+.conn-card.sp{background:var(--sp-bg);border-color:var(--sp-border)}
+.conn-card h4{font-size:14px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.conn-card .row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;color:var(--text2)}
+.conn-card .row b{color:var(--text)}
+
+/* Timeline */
+.timeline{position:relative;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;padding:10px 0 10px 16px;border-bottom:1px solid var(--border)}
+.tl-item::before{content:'';position:absolute;left:-20px;top:14px;width:10px;height:10px;border-radius:50%;border:2px solid var(--indigo);background:var(--bg-card)}
+.tl-item.snow::before{border-color:var(--snow-color)}.tl-item.sp::before{border-color:var(--sp-color)}
+.tl-item.resolved::before{border-color:var(--green);background:var(--green)}
+.tl-item .tl-time{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.tl-item .tl-title{font-size:13px;font-weight:500;margin:3px 0}
+.tl-item .tl-desc{font-size:12px;color:var(--text2)}
+
+/* Detail panel */
+.detail{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:14px}
+.detail .dl{display:grid;grid-template-columns:180px 1fr;gap:6px 12px;font-size:13px}
+.detail .dl dt{color:var(--text2);font-weight:500}.detail .dl dd{color:var(--text);word-break:break-all}
+
+/* Toast */
+.toast-z{position:fixed;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow-lg);animation:sl .3s}
+.toast.ok{background:var(--green-bg);border:1px solid var(--green);color:var(--green)}
+.toast.err{background:var(--red-bg);border:1px solid var(--red);color:var(--red)}
+.toast.inf{background:var(--indigo-bg);border:1px solid var(--indigo);color:var(--indigo)}
+@keyframes sl{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="app">
+
+  <!-- Sidebar -->
+  <div class="side">
+    <div class="logo">
+      <h1><b>CyberAudit7E</b></h1>
+      <p>Integrations SNOW / SailPoint</p>
+    </div>
+    <nav>
+      <div class="sec">Vue d'ensemble</div>
+      <a :class="{on:pg==='dash'}" @click="pg='dash'">📊 Tableau de bord</a>
+      <a :class="{on:pg==='timeline'}" @click="pg='timeline'">🕐 Chronologie</a>
+
+      <div class="sec">ServiceNow</div>
+      <a :class="{on:pg==='snow-tickets'}" @click="pg='snow-tickets'">🎫 Incidents SNOW</a>
+      <a :class="{on:pg==='snow-sync'}" @click="pg='snow-sync'">🔄 Synchronisation</a>
+
+      <div class="sec">SailPoint</div>
+      <a :class="{on:pg==='sp-events'}" @click="pg='sp-events'">⚡ Evenements SailPoint</a>
+      <a :class="{on:pg==='sp-simulate'}" @click="pg='sp-simulate'">🧪 Simuler webhooks</a>
+
+      <div class="sec">Tickets</div>
+      <a :class="{on:pg==='all-tickets'}" @click="pg='all-tickets'">📋 Tous les tickets</a>
+      <a :class="{on:pg==='create'}" @click="pg='create'">➕ Creer un ticket</a>
+      <a :class="{on:pg==='resolve'}" @click="pg='resolve'">✅ Resoudre</a>
+
+      <div class="sec">Systeme</div>
+      <a :class="{on:pg==='connections'}" @click="pg='connections'">🔌 Connexions</a>
+      <a :class="{on:pg==='stats'}" @click="pg='stats'">📈 Statistiques</a>
+
+      <div class="sec">Navigation</div>
+      <a href="/admin.html">🛠 Dashboard Admin</a>
+      <a href="/exploitation.html">📊 Exploitation</a>
+      <a href="/swagger-ui.html" target="_blank">📖 Swagger UI</a>
+    </nav>
+    <div class="ft">CyberAudit7E v1.0 - M7<br>ServiceNow x SailPoint</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="hdr">
+      <h2>{{ titles[pg] }}</h2>
+      <div class="meta">
+        <span><span class="dot" :class="integ.servicenow?.connected?'up':'dn'"></span>SNOW {{ integ.servicenow?.connected?'OK':'OFF' }}</span>
+        <span><span class="dot" :class="integ.sailpoint?.connected?'up':'dn'"></span>SailPoint {{ integ.sailpoint?.connected?'OK':'OFF' }}</span>
+        <span>{{ tStats.total||0 }} ticket(s)</span>
+      </div>
+    </div>
+    <div class="cnt">
+
+      <!-- ═══ DASHBOARD ═══ -->
+      <template v-if="pg==='dash'">
+        <div class="grid">
+          <div class="kpi"><div class="lb">Total tickets</div><div class="vl indigo">{{ tStats.total||0 }}</div></div>
+          <div class="kpi"><div class="lb">Ouverts</div><div class="vl orange">{{ tStats.open||0 }}</div></div>
+          <div class="kpi"><div class="lb">Non synces SNOW</div><div class="vl red">{{ tStats.unsynced||0 }}</div></div>
+          <div class="kpi"><div class="lb">Source SailPoint</div><div class="vl purple">{{ tStats.bySource?.SAILPOINT||0 }}</div></div>
+          <div class="kpi"><div class="lb">Source Audit</div><div class="vl blue">{{ tStats.bySource?.AUDIT||0 }}</div></div>
+          <div class="kpi"><div class="lb">Source Manuel</div><div class="vl cyan">{{ tStats.bySource?.MANUAL||0 }}</div></div>
+        </div>
+
+        <!-- By severity -->
+        <div class="card">
+          <h3>Repartition par severite</h3>
+          <div class="grid">
+            <div class="kpi" v-for="s in ['CRITICAL','HIGH','MEDIUM','LOW','INFO']" :key="s">
+              <div class="lb">{{ s }}</div>
+              <div class="vl" :class="s==='CRITICAL'?'red':s==='HIGH'?'orange':s==='MEDIUM'?'blue':s==='LOW'?'green':'cyan'">{{ tStats.bySeverity?.[s]||0 }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- By status -->
+        <div class="card">
+          <h3>Repartition par statut</h3>
+          <div class="grid">
+            <div class="kpi" v-for="s in ['NEW','OPEN','IN_PROGRESS','RESOLVED','CLOSED']" :key="s">
+              <div class="lb">{{ s.replace('_',' ') }}</div>
+              <div class="vl" :class="s==='NEW'?'blue':s==='OPEN'?'indigo':s==='IN_PROGRESS'?'orange':s==='RESOLVED'?'green':'cyan'">{{ tStats.byStatus?.[s]||0 }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent tickets -->
+        <div class="card">
+          <h3>Derniers tickets <span class="pill n">{{ recent.length }}</span></h3>
+          <table>
+            <thead><tr><th>#</th><th>Source</th><th>Titre</th><th>Severite</th><th>Statut</th><th>SNOW</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="t in recent" :key="t.id" @click="viewTicket(t.id)" style="cursor:pointer">
+                <td style="font-family:var(--mono)">{{ t.id }}</td>
+                <td><span class="tag" :class="t.source.toLowerCase()">{{ t.source }}</span></td>
+                <td style="font-weight:500;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.title }}</td>
+                <td><span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span></td>
+                <td><span class="tag" :class="statusTag(t.status)">{{ t.status }}</span></td>
+                <td><span class="tag" :class="t.syncedWithServiceNow?'synced':'pending'">{{ t.serviceNowNumber||'--' }}</span></td>
+                <td style="font-size:11px;color:var(--text3)">{{ fmt(t.createdAt) }}</td>
+              </tr>
+              <tr v-if="!recent.length"><td colspan="7" style="text-align:center;color:var(--text3)">Aucun ticket</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <!-- ═══ TIMELINE ═══ -->
+      <template v-if="pg==='timeline'">
+        <div class="btns" style="margin-bottom:16px">
+          <button class="btn btn-p" @click="loadAll">Rafraichir</button>
+        </div>
+        <div class="card">
+          <h3>Chronologie des tickets</h3>
+          <div class="timeline">
+            <div v-for="t in allSorted" :key="t.id" class="tl-item" :class="t.source==='SAILPOINT'?'sp':t.source==='SERVICENOW'?'snow':t.status==='RESOLVED'?'resolved':''">
+              <div class="tl-time">{{ fmt(t.createdAt) }} | Ticket #{{ t.id }}</div>
+              <div class="tl-title">
+                <span class="tag" :class="t.source.toLowerCase()" style="margin-right:6px">{{ t.source }}</span>
+                <span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span>
+                {{ t.title }}
+              </div>
+              <div class="tl-desc">
+                Statut: <b>{{ t.status }}</b>
+                <span v-if="t.serviceNowNumber"> | SNOW: <b>{{ t.serviceNowNumber }}</b></span>
+                <span v-if="t.sailpointIdentityName"> | Identite: <b>{{ t.sailpointIdentityName }}</b></span>
+                <span v-if="t.resolvedAt"> | Resolu: {{ fmt(t.resolvedAt) }}</span>
+              </div>
+            </div>
+            <div v-if="!allSorted.length" style="padding:20px;color:var(--text3);text-align:center">Aucun ticket dans la chronologie</div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ SNOW TICKETS ═══ -->
+      <template v-if="pg==='snow-tickets'">
+        <div class="card">
+          <h3>Incidents ServiceNow <span class="pill snow">SNOW</span></h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Tickets synchronises avec ServiceNow. Seuls les tickets avec un sys_id sont affiches.</p>
+          <table>
+            <thead><tr><th>#</th><th>Incident SNOW</th><th>Titre</th><th>Source</th><th>Severite</th><th>Statut</th><th>Assigne a</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="t in snowTickets" :key="t.id" @click="viewTicket(t.id)" style="cursor:pointer">
+                <td style="font-family:var(--mono)">{{ t.id }}</td>
+                <td><a v-if="t.serviceNowUrl" :href="t.serviceNowUrl" target="_blank" style="color:var(--snow-color);text-decoration:none;font-weight:600">{{ t.serviceNowNumber }}</a><span v-else class="tag pending">En attente</span></td>
+                <td style="font-weight:500;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.title }}</td>
+                <td><span class="tag" :class="t.source.toLowerCase()">{{ t.source }}</span></td>
+                <td><span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span></td>
+                <td><span class="tag" :class="statusTag(t.status)">{{ t.status }}</span></td>
+                <td style="font-size:12px">{{ t.assignedTo||'--' }}</td>
+                <td style="font-size:11px;color:var(--text3)">{{ fmt(t.createdAt) }}</td>
+              </tr>
+              <tr v-if="!snowTickets.length"><td colspan="8" style="text-align:center;color:var(--text3)">Aucun incident ServiceNow</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="detail" v-if="selected">
+          <h3 style="margin-bottom:12px">Detail ticket #{{ selected.id }}</h3>
+          <div class="dl">
+            <dt>Titre</dt><dd>{{ selected.title }}</dd>
+            <dt>Source</dt><dd><span class="tag" :class="selected.source.toLowerCase()">{{ selected.source }}</span></dd>
+            <dt>Severite</dt><dd><span class="tag" :class="selected.severity.toLowerCase()">{{ selected.severity }}</span></dd>
+            <dt>Statut</dt><dd><span class="tag" :class="statusTag(selected.status)">{{ selected.status }}</span></dd>
+            <dt>SNOW sys_id</dt><dd style="font-family:var(--mono);font-size:12px">{{ selected.serviceNowSysId||'--' }}</dd>
+            <dt>SNOW Number</dt><dd style="font-weight:600;color:var(--snow-color)">{{ selected.serviceNowNumber||'--' }}</dd>
+            <dt>SNOW URL</dt><dd><a v-if="selected.serviceNowUrl" :href="selected.serviceNowUrl" target="_blank" style="color:var(--snow-color)">Ouvrir dans ServiceNow</a><span v-else>--</span></dd>
+            <dt>SailPoint ID</dt><dd style="font-family:var(--mono);font-size:12px">{{ selected.sailpointViolationId||'--' }}</dd>
+            <dt>SailPoint Event</dt><dd>{{ selected.sailpointEventType||'--' }}</dd>
+            <dt>Identite SP</dt><dd style="font-weight:500">{{ selected.sailpointIdentityName||'--' }}</dd>
+            <dt>Rapport audit</dt><dd>{{ selected.auditReportId?'#'+selected.auditReportId:'--' }}</dd>
+            <dt>Site URL</dt><dd>{{ selected.siteUrl||'--' }}</dd>
+            <dt>Assigne a</dt><dd>{{ selected.assignedTo||'--' }}</dd>
+            <dt>Groupe</dt><dd>{{ selected.assignmentGroup||'--' }}</dd>
+            <dt>Cree le</dt><dd>{{ fmt(selected.createdAt) }}</dd>
+            <dt>Maj le</dt><dd>{{ fmt(selected.updatedAt) }}</dd>
+            <dt>Resolu le</dt><dd>{{ selected.resolvedAt?fmt(selected.resolvedAt):'--' }}</dd>
+            <dt>Description</dt><dd style="white-space:pre-wrap;font-size:12px">{{ selected.description }}</dd>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ SNOW SYNC ═══ -->
+      <template v-if="pg==='snow-sync'">
+        <div class="card">
+          <h3>Synchronisation ServiceNow <span class="pill snow">SNOW</span></h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Tickets non encore pousses vers ServiceNow. La sync cree un incident pour chaque ticket en attente.</p>
+          <div class="grid" style="margin-bottom:14px">
+            <div class="kpi"><div class="lb">Non synchronises</div><div class="vl red">{{ tStats.unsynced||0 }}</div></div>
+            <div class="kpi"><div class="lb">Total tickets</div><div class="vl indigo">{{ tStats.total||0 }}</div></div>
+          </div>
+          <div class="btns">
+            <button class="btn btn-snow" @click="syncSnow">🔄 Synchroniser maintenant</button>
+            <button class="btn" @click="loadAll">Rafraichir</button>
+          </div>
+        </div>
+        <div class="card" v-if="lastResp">
+          <h3>Resultat</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:12px;border-radius:6px;overflow:auto">{{ JSON.stringify(lastResp,null,2) }}</pre>
+        </div>
+      </template>
+
+      <!-- ═══ SP EVENTS ═══ -->
+      <template v-if="pg==='sp-events'">
+        <div class="card">
+          <h3>Evenements SailPoint <span class="pill sp">SailPoint</span></h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Tickets crees a partir des Event Triggers SailPoint (webhooks entrants).</p>
+          <table>
+            <thead><tr><th>#</th><th>Evenement</th><th>Identite</th><th>Severite</th><th>Categorie</th><th>Statut</th><th>SNOW</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="t in spTickets" :key="t.id" @click="viewTicket(t.id)" style="cursor:pointer">
+                <td style="font-family:var(--mono)">{{ t.id }}</td>
+                <td style="font-size:11px;font-family:var(--mono);color:var(--sp-color)">{{ t.sailpointEventType||'--' }}</td>
+                <td style="font-weight:500">{{ t.sailpointIdentityName||'--' }}</td>
+                <td><span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span></td>
+                <td style="font-size:12px">{{ t.category }}</td>
+                <td><span class="tag" :class="statusTag(t.status)">{{ t.status }}</span></td>
+                <td><span class="tag" :class="t.syncedWithServiceNow?'synced':'pending'">{{ t.serviceNowNumber||'--' }}</span></td>
+                <td style="font-size:11px;color:var(--text3)">{{ fmt(t.createdAt) }}</td>
+              </tr>
+              <tr v-if="!spTickets.length"><td colspan="8" style="text-align:center;color:var(--text3)">Aucun evenement SailPoint</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="detail" v-if="selected">
+          <h3 style="margin-bottom:12px">Detail SailPoint - Ticket #{{ selected.id }}</h3>
+          <div class="dl">
+            <dt>Event Type</dt><dd style="font-family:var(--mono);color:var(--sp-color)">{{ selected.sailpointEventType }}</dd>
+            <dt>Violation ID</dt><dd style="font-family:var(--mono)">{{ selected.sailpointViolationId||'--' }}</dd>
+            <dt>Identity ID</dt><dd style="font-family:var(--mono)">{{ selected.sailpointIdentityId||'--' }}</dd>
+            <dt>Identity Name</dt><dd style="font-weight:600">{{ selected.sailpointIdentityName||'--' }}</dd>
+            <dt>Categorie</dt><dd>{{ selected.category }}</dd>
+            <dt>Titre</dt><dd>{{ selected.title }}</dd>
+            <dt>Description</dt><dd style="white-space:pre-wrap;font-size:12px">{{ selected.description }}</dd>
+            <dt>SNOW Incident</dt><dd>{{ selected.serviceNowNumber||'Non synchronise' }}</dd>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ SP SIMULATE ═══ -->
+      <template v-if="pg==='sp-simulate'">
+        <div class="card">
+          <h3>Simuler un webhook SailPoint <span class="pill sp">SailPoint</span></h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">Envoie un payload simule a POST /api/webhooks/sailpoint pour tester l'integration sans SailPoint reel.</p>
+          <div class="fr">
+            <div class="fg" style="min-width:250px">
+              <label>Type d'evenement</label>
+              <select v-model="simType">
+                <option value="policy-violation">Violation de politique (SoD)</option>
+                <option value="identity-deleted">Identite supprimee</option>
+                <option value="access-request">Demande d'acces</option>
+                <option value="certification">Certification signee</option>
+              </select>
+            </div>
+            <div class="fg"><label>Nom de l'identite</label><input v-model="simName" placeholder="Jean Dupont"></div>
+            <div class="fg"><label>ID identite</label><input v-model="simId" placeholder="uid-123"></div>
+          </div>
+          <div class="fr" v-if="simType==='policy-violation'">
+            <div class="fg"><label>Nom de la politique</label><input v-model="simPolicy" placeholder="SoD Finance-Achats"></div>
+          </div>
+          <button class="btn btn-sp" @click="simulate">⚡ Envoyer le webhook simule</button>
+        </div>
+        <div class="card" v-if="lastResp">
+          <h3>Reponse du webhook</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:12px;border-radius:6px;overflow:auto">{{ JSON.stringify(lastResp,null,2) }}</pre>
+        </div>
+      </template>
+
+      <!-- ═══ ALL TICKETS ═══ -->
+      <template v-if="pg==='all-tickets'">
+        <div class="card">
+          <h3>Tous les tickets <span class="pill n">{{ ticketData.totalElements||0 }}</span></h3>
+          <div class="fr" style="margin-bottom:10px">
+            <div class="fg" style="flex:0;min-width:130px"><label>Source</label>
+              <select v-model="fSource" @change="loadTickets"><option value="">Toutes</option><option v-for="s in ['AUDIT','SAILPOINT','SERVICENOW','MANUAL']" :value="s">{{ s }}</option></select>
+            </div>
+            <div class="fg" style="flex:0;min-width:130px"><label>Severite</label>
+              <select v-model="fSev" @change="loadTickets"><option value="">Toutes</option><option v-for="s in ['CRITICAL','HIGH','MEDIUM','LOW','INFO']" :value="s">{{ s }}</option></select>
+            </div>
+            <div class="fg" style="flex:0;min-width:130px"><label>Statut</label>
+              <select v-model="fStatus" @change="loadTickets"><option value="">Tous</option><option v-for="s in ['NEW','OPEN','IN_PROGRESS','RESOLVED','CLOSED']" :value="s">{{ s }}</option></select>
+            </div>
+            <div class="fg"><label>Recherche</label><input v-model="fQ" @keyup.enter="searchTickets" placeholder="Nom, titre, SNOW number..."></div>
+            <div style="display:flex;align-items:flex-end;gap:4px"><button class="btn btn-sm btn-p" @click="searchTickets">🔍</button><button class="btn btn-sm" @click="fQ='';fSource='';fSev='';fStatus='';loadTickets()">X</button></div>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Source</th><th>Titre</th><th>Severite</th><th>Statut</th><th>SNOW</th><th>Identite SP</th><th>Sync</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr v-for="t in ticketData.content||[]" :key="t.id" @click="viewTicket(t.id)" style="cursor:pointer">
+                <td style="font-family:var(--mono)">{{ t.id }}</td>
+                <td><span class="tag" :class="t.source.toLowerCase()">{{ t.source }}</span></td>
+                <td style="font-weight:500;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.title }}</td>
+                <td><span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span></td>
+                <td><span class="tag" :class="statusTag(t.status)">{{ t.status }}</span></td>
+                <td style="font-family:var(--mono);font-size:11px;color:var(--snow-color)">{{ t.serviceNowNumber||'--' }}</td>
+                <td style="font-size:12px">{{ t.sailpointIdentityName||'--' }}</td>
+                <td><span class="tag" :class="t.syncedWithServiceNow?'synced':'pending'">{{ t.syncedWithServiceNow?'Oui':'Non' }}</span></td>
+                <td style="font-size:11px;color:var(--text3)">{{ fmt(t.createdAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="pager" v-if="ticketData.totalPages>1">
+            <button class="btn btn-sm" :disabled="ticketData.first" @click="tPage--;loadTickets()">Prec</button>
+            Page {{ tPage+1 }}/{{ ticketData.totalPages }}
+            <button class="btn btn-sm" :disabled="ticketData.last" @click="tPage++;loadTickets()">Suiv</button>
+          </div>
+        </div>
+        <div class="detail" v-if="selected">
+          <h3 style="margin-bottom:12px">Ticket #{{ selected.id }}</h3>
+          <div class="dl">
+            <dt>Titre</dt><dd>{{ selected.title }}</dd>
+            <dt>Source</dt><dd><span class="tag" :class="selected.source.toLowerCase()">{{ selected.source }}</span></dd>
+            <dt>Severite</dt><dd><span class="tag" :class="selected.severity.toLowerCase()">{{ selected.severity }}</span></dd>
+            <dt>Statut</dt><dd><span class="tag" :class="statusTag(selected.status)">{{ selected.status }}</span></dd>
+            <dt>Categorie</dt><dd>{{ selected.category||'--' }}</dd>
+            <dt>SNOW Number</dt><dd style="color:var(--snow-color);font-weight:600">{{ selected.serviceNowNumber||'--' }}</dd>
+            <dt>SNOW sys_id</dt><dd style="font-family:var(--mono);font-size:11px">{{ selected.serviceNowSysId||'--' }}</dd>
+            <dt>SP Event</dt><dd style="font-family:var(--mono);font-size:11px;color:var(--sp-color)">{{ selected.sailpointEventType||'--' }}</dd>
+            <dt>SP Identity</dt><dd>{{ selected.sailpointIdentityName||'--' }}</dd>
+            <dt>SP Violation ID</dt><dd style="font-family:var(--mono);font-size:11px">{{ selected.sailpointViolationId||'--' }}</dd>
+            <dt>Rapport audit</dt><dd>{{ selected.auditReportId?'#'+selected.auditReportId:'--' }}</dd>
+            <dt>Site URL</dt><dd>{{ selected.siteUrl||'--' }}</dd>
+            <dt>Description</dt><dd style="white-space:pre-wrap;font-size:12px;max-height:200px;overflow:auto">{{ selected.description }}</dd>
+          </div>
+          <div class="btns" style="margin-top:12px" v-if="selected.status!=='RESOLVED'&&selected.status!=='CLOSED'">
+            <button class="btn btn-g btn-sm" @click="resolveSelected">Resoudre ce ticket</button>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ CREATE ═══ -->
+      <template v-if="pg==='create'">
+        <div class="card">
+          <h3>Creer un ticket manuellement</h3>
+          <div class="fr">
+            <div class="fg"><label>Titre</label><input v-model="cf.title" placeholder="Description courte du probleme"></div>
+          </div>
+          <div class="fr">
+            <div class="fg"><label>Description</label><textarea v-model="cf.description" rows="3" placeholder="Details du probleme..."></textarea></div>
+          </div>
+          <div class="fr">
+            <div class="fg" style="flex:0;min-width:150px"><label>Severite</label>
+              <select v-model="cf.severity"><option v-for="s in ['CRITICAL','HIGH','MEDIUM','LOW','INFO']" :value="s">{{ s }}</option></select>
+            </div>
+            <div class="fg"><label>Categorie</label><input v-model="cf.category" placeholder="sod_violation, orphan_account..."></div>
+            <div class="fg"><label>Site URL (optionnel)</label><input v-model="cf.siteUrl" placeholder="https://..."></div>
+          </div>
+          <button class="btn btn-p" @click="createTicket" :disabled="!cf.title">Creer le ticket</button>
+        </div>
+        <div class="card" v-if="lastResp">
+          <h3>Ticket cree</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:12px;border-radius:6px;overflow:auto">{{ JSON.stringify(lastResp,null,2) }}</pre>
+        </div>
+      </template>
+
+      <!-- ═══ RESOLVE ═══ -->
+      <template v-if="pg==='resolve'">
+        <div class="card">
+          <h3>Resoudre un ticket</h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:14px">La resolution synchronise aussi l'incident ServiceNow associe (state=6, close_code, close_notes).</p>
+          <div class="fr">
+            <div class="fg" style="flex:0;min-width:100px"><label>Ticket ID</label><input v-model.number="resId" type="number" placeholder="#"></div>
+            <div class="fg"><label>Notes de cloture</label><input v-model="resNotes" placeholder="Raison de la resolution..."></div>
+            <div style="display:flex;align-items:flex-end"><button class="btn btn-g" @click="resolveTicket" :disabled="!resId">Resoudre</button></div>
+          </div>
+        </div>
+        <!-- Open tickets for quick selection -->
+        <div class="card">
+          <h3>Tickets ouverts (cliquer pour selectionner)</h3>
+          <table>
+            <thead><tr><th>#</th><th>Source</th><th>Titre</th><th>Severite</th><th>SNOW</th></tr></thead>
+            <tbody>
+              <tr v-for="t in openTickets" :key="t.id" @click="resId=t.id" style="cursor:pointer" :style="resId===t.id?'background:var(--indigo-bg)':''">
+                <td style="font-family:var(--mono)">{{ t.id }}</td>
+                <td><span class="tag" :class="t.source.toLowerCase()">{{ t.source }}</span></td>
+                <td>{{ t.title }}</td>
+                <td><span class="tag" :class="t.severity.toLowerCase()">{{ t.severity }}</span></td>
+                <td>{{ t.serviceNowNumber||'--' }}</td>
+              </tr>
+              <tr v-if="!openTickets.length"><td colspan="5" style="text-align:center;color:var(--text3)">Aucun ticket ouvert</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" v-if="lastResp">
+          <h3>Resultat</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:12px;border-radius:6px;overflow:auto">{{ JSON.stringify(lastResp,null,2) }}</pre>
+        </div>
+      </template>
+
+      <!-- ═══ CONNECTIONS ═══ -->
+      <template v-if="pg==='connections'">
+        <div class="conn-card snow">
+          <h4><span class="dot" :class="integ.servicenow?.connected?'up':'dn'"></span> ServiceNow</h4>
+          <div class="row"><span>Statut</span><b>{{ integ.servicenow?.connected?'Connecte':'Deconnecte' }}</b></div>
+        </div>
+        <div class="conn-card sp">
+          <h4><span class="dot" :class="integ.sailpoint?.connected?'up':'dn'"></span> SailPoint Identity Cloud</h4>
+          <div class="row"><span>Statut</span><b>{{ integ.sailpoint?.connected?'Connecte':'Deconnecte' }}</b></div>
+          <div class="row"><span>Tenant</span><b>{{ integ.sailpoint?.tenant||'--' }}</b></div>
+          <div class="row"><span>Base URL</span><b>{{ integ.sailpoint?.baseUrl||'--' }}</b></div>
+          <div class="row"><span>Active</span><b>{{ integ.sailpoint?.enabled?'Oui':'Non' }}</b></div>
+        </div>
+        <div class="btns">
+          <button class="btn btn-p" @click="loadInteg">Rafraichir les connexions</button>
+          <button class="btn btn-snow btn-sm" @click="testSnow">Tester SNOW</button>
+          <button class="btn btn-sp btn-sm" @click="testSp">Tester SailPoint</button>
+        </div>
+        <div class="card" v-if="lastResp" style="margin-top:14px">
+          <h3>Resultat du test</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:12px;border-radius:6px">{{ JSON.stringify(lastResp,null,2) }}</pre>
+        </div>
+      </template>
+
+      <!-- ═══ STATS ═══ -->
+      <template v-if="pg==='stats'">
+        <div class="card">
+          <h3>Statistiques detaillees des tickets</h3>
+          <pre style="font-family:var(--mono);font-size:12px;background:var(--bg);padding:14px;border-radius:6px;overflow:auto">{{ JSON.stringify(tStats,null,2) }}</pre>
+        </div>
+        <div class="btns"><button class="btn btn-p" @click="loadStats">Rafraichir</button></div>
+      </template>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast-z"><div v-for="(t,i) in toasts" :key="i" class="toast" :class="t.c">{{ t.m }}</div></div>
+</div>
+
+<script>
+const API='';
+const{createApp,ref,reactive,computed,onMounted,watch}=Vue;
+createApp({
+  setup(){
+    const pg=ref('dash');
+    const toasts=ref([]);
+    const lastResp=ref(null);
+    const selected=ref(null);
+
+    const titles={dash:'Tableau de bord',timeline:'Chronologie',
+      'snow-tickets':'Incidents ServiceNow','snow-sync':'Synchronisation SNOW',
+      'sp-events':'Evenements SailPoint','sp-simulate':'Simuler webhook SP',
+      'all-tickets':'Tous les tickets',create:'Creer un ticket',resolve:'Resoudre un ticket',
+      connections:'Connexions',stats:'Statistiques'};
+
+    // Data
+    const tStats=ref({});
+    const integ=ref({});
+    const recent=ref([]);
+    const allSorted=ref([]);
+    const snowTickets=ref([]);
+    const spTickets=ref([]);
+    const openTickets=ref([]);
+    const ticketData=ref({content:[]});
+    const tPage=ref(0);
+    const fSource=ref('');const fSev=ref('');const fStatus=ref('');const fQ=ref('');
+
+    // Create form
+    const cf=reactive({title:'',description:'',severity:'HIGH',category:'',siteUrl:''});
+    // Resolve form
+    const resId=ref(null);const resNotes=ref('');
+    // Simulate form
+    const simType=ref('policy-violation');const simName=ref('Jean Dupont');const simId=ref('uid-'+Date.now());const simPolicy=ref('SoD Finance-Achats');
+
+    // API
+    async function api(m,p,b){
+      try{const o={method:m,headers:{'Content-Type':'application/json'}};if(b)o.body=JSON.stringify(b);const r=await fetch(API+p,o);if(r.status===204)return{};return await r.json();}catch(e){toast('err','Erreur: '+e.message);return{};}
+    }
+    function toast(c,m){toasts.value.push({c,m});setTimeout(()=>toasts.value.shift(),4000)}
+    function fmt(d){return d?new Date(d).toLocaleString('fr-FR'):'--'}
+    function statusTag(s){return{NEW:'new',OPEN:'open',IN_PROGRESS:'progress',PENDING_VALIDATION:'progress',RESOLVED:'resolved',CLOSED:'closed',CANCELLED:'cancelled'}[s]||''}
+
+    // Loaders
+    async function loadStats(){tStats.value=await api('GET','/api/tickets/stats')}
+    async function loadInteg(){integ.value=await api('GET','/api/tickets/integrations')}
+    async function loadRecent(){
+      const r=await api('GET','/api/tickets?page=0&size=10&sortBy=createdAt&direction=desc');
+      recent.value=r.content||[];
+      allSorted.value=[...(r.content||[])];
+    }
+    async function loadSnow(){
+      const r=await api('GET','/api/tickets?page=0&size=50');
+      snowTickets.value=(r.content||[]).filter(t=>t.syncedWithServiceNow||t.serviceNowNumber);
+    }
+    async function loadSp(){
+      const r=await api('GET','/api/tickets?source=SAILPOINT&page=0&size=50');
+      spTickets.value=r.content||[];
+    }
+    async function loadOpen(){
+      const r=await api('GET','/api/tickets/open?page=0&size=50');
+      openTickets.value=r.content||[];
+    }
+    async function loadTickets(){
+      let url=`/api/tickets?page=${tPage.value}&size=10&sortBy=createdAt&direction=desc`;
+      if(fSource.value)url+=`&source=${fSource.value}`;
+      if(fSev.value)url+=`&severity=${fSev.value}`;
+      if(fStatus.value)url+=`&status=${fStatus.value}`;
+      ticketData.value=await api('GET',url);
+    }
+    async function searchTickets(){
+      if(!fQ.value)return loadTickets();
+      ticketData.value=await api('GET',`/api/tickets/search?q=${fQ.value}&page=0&size=10`);
+    }
+
+    async function loadAll(){
+      await Promise.all([loadStats(),loadInteg(),loadRecent()]);
+    }
+
+    // Actions
+    async function viewTicket(id){selected.value=await api('GET',`/api/tickets/${id}`)}
+
+    async function createTicket(){
+      lastResp.value=await api('POST','/api/tickets',{title:cf.title,description:cf.description,severity:cf.severity,category:cf.category||'manual',siteUrl:cf.siteUrl||null});
+      toast('ok','Ticket cree #'+(lastResp.value.id||'?'));
+      cf.title='';cf.description='';loadAll();
+    }
+
+    async function resolveTicket(){
+      if(!resId.value)return;
+      lastResp.value=await api('POST',`/api/tickets/${resId.value}/resolve`,{closeNotes:resNotes.value||'Resolu via dashboard'});
+      toast('ok','Ticket #'+resId.value+' resolu');
+      resId.value=null;resNotes.value='';loadAll();loadOpen();
+    }
+    async function resolveSelected(){
+      if(!selected.value)return;
+      const notes=prompt('Notes de cloture :','Resolu via dashboard integrations');
+      if(notes===null)return;
+      await api('POST',`/api/tickets/${selected.value.id}/resolve`,{closeNotes:notes});
+      toast('ok','Ticket #'+selected.value.id+' resolu');
+      selected.value=null;loadAll();
+    }
+
+    async function syncSnow(){
+      lastResp.value=await api('POST','/api/tickets/sync');
+      toast('inf','Sync: '+(lastResp.value.synced||0)+' ticket(s)');loadAll();
+    }
+
+    async function simulate(){
+      let payload={};
+      if(simType.value==='policy-violation'){
+        payload={_metadata:{triggerId:'idn:policy-violation',invocationId:'sim-'+Date.now()},identity:{id:simId.value,name:simName.value,type:'IDENTITY'},policyName:simPolicy.value,violatingAccessItems:[{name:'Access A'},{name:'Access B'}]};
+      }else if(simType.value==='identity-deleted'){
+        payload={_metadata:{triggerId:'idn:identity-deleted',invocationId:'sim-'+Date.now()},identity:{id:simId.value,name:simName.value,type:'IDENTITY'}};
+      }else if(simType.value==='access-request'){
+        payload={_metadata:{triggerId:'idn:access-request-pre-approval',invocationId:'sim-'+Date.now()},requestedFor:{id:simId.value,name:simName.value},accessRequestId:'ar-'+Date.now(),requestedItems:[{name:'VPN Access',type:'ACCESS_PROFILE'}]};
+      }else{
+        payload={_metadata:{triggerId:'idn:certification-signed-off',invocationId:'sim-'+Date.now()},certification:{name:'Revue Q1 2026'}};
+      }
+      lastResp.value=await api('POST','/api/webhooks/sailpoint',payload);
+      toast('ok','Webhook simule envoye');
+      simId.value='uid-'+Date.now();loadAll();
+    }
+
+    async function testSnow(){lastResp.value=await api('GET','/api/webhooks/servicenow/test')}
+    async function testSp(){lastResp.value=await api('GET','/api/webhooks/sailpoint/test')}
+
+    // Watch
+    watch(pg,v=>{
+      selected.value=null;lastResp.value=null;
+      if(v==='dash')loadAll();
+      if(v==='timeline'){loadAll();}
+      if(v==='snow-tickets'){loadSnow();}
+      if(v==='snow-sync'){loadStats();}
+      if(v==='sp-events'){loadSp();}
+      if(v==='all-tickets'){loadTickets();}
+      if(v==='resolve'){loadOpen();}
+      if(v==='connections'){loadInteg();}
+      if(v==='stats'){loadStats();}
+    });
+
+    onMounted(()=>{loadAll();setInterval(loadStats,30000)});
+
+    return{pg,toasts,lastResp,selected,titles,tStats,integ,recent,allSorted,snowTickets,spTickets,openTickets,
+      ticketData,tPage,fSource,fSev,fStatus,fQ,loadTickets,searchTickets,
+      cf,resId,resNotes,simType,simName,simId,simPolicy,
+      loadAll,loadStats,loadInteg,viewTicket,createTicket,resolveTicket,resolveSelected,syncSnow,simulate,testSnow,testSp,
+      fmt,statusTag,toast};
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

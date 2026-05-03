@@ -1,864 +1,906 @@
- Nouvel onglet body { background: #FFFFFF; margin: 0; } #backgroundImage { border: none; height: 100%; pointer-events: none; position: fixed; top: 0; visibility: hidden; width: 100%; } \[show-background-image\] #backgroundImage { visibility: visible; }
-
 # CyberAudit7E
 
-**Moteur d'audit d'accessibilité cybernétique — Spring Boot 4 POC**
+**Moteur d'audit d'accessibilite cybernetique — Axiome 7E**
 
-README unifié construit à partir des documents `README.md`, `README0.md`, `README1.md`, `README2.md`, `README3.md`, `README4.md`, `README5.md`, `README6.md` et `TEST.md`.
+> *« Les Elements dans l'Espace Engendrent un Etat d'Expression Evolutif de l'Environnement »*
 
-Fusion conceptuelle de trois projets :
+CyberAudit7E est une plateforme Spring Boot d'audit d'accessibilite web qui evalue les sites selon trois referentiels (RGAA 4.1, WCAG 2.2, DSFR), implemente un cycle cybernetique auto-adaptatif a 7 phases, et s'integre avec ServiceNow (ITSM) et SailPoint (Gouvernance des identites) pour un suivi unifie des tickets de securite.
 
-*   **GitManager** → registre de services (organes) à auditer
-*   **AuditAccess** → moteur de règles multi-référentiel (RGAA, WCAG, DSFR) avec scoring pondéré
-*   **Axiome 7E** → boucle cybernétique : **Évaluer → Élaborer → Exécuter → Examiner → Évoluer → Émettre → Équilibrer**
+Inspire de trois projets : **GitManager** (usine logicielle cybernetique), **AuditAccess** (plateforme d'audit multi-referentiel) et l'**Axiome 7E** (formalisme cybernetique a 7 phases).
 
-- - -
+---
 
-## Sommaire
+## Table des matieres
 
-*   [Vision du projet](#vision-du-projet)
-*   [Stack technique](#stack-technique)
-*   [Progression pédagogique M1 → M6](#progression-p%C3%A9dagogique-m1--m6)
-*   [Architecture globale](#architecture-globale)
-*   [Cycle Axiome 7E](#cycle-axiome-7e)
-*   [Arborescence du projet](#arborescence-du-projet)
-*   [Démarrage rapide](#d%C3%A9marrage-rapide)
-*   [API REST](#api-rest)
-*   [Scoring](#scoring)
-*   [Tests](#tests)
-*   [Modules détaillés](#modules-d%C3%A9taill%C3%A9s)
-*   [Profils Spring](#profils-spring)
-*   [Références et guides](#r%C3%A9f%C3%A9rences-et-guides)
-*   [Roadmap / prolongements](#roadmap--prolongements)
-*   [Licence](#licence)
+- [1. Vue d'ensemble](#1-vue-densemble)
+- [2. Architecture technique](#2-architecture-technique)
+- [3. Le cycle Axiome 7E](#3-le-cycle-axiome-7e)
+- [4. Documentation fonctionnelle](#4-documentation-fonctionnelle)
+- [5. Les 13 regles d'audit](#5-les-13-regles-daudit)
+- [6. API REST — Reference complete](#6-api-rest--reference-complete)
+- [7. Integration ServiceNow](#7-integration-servicenow)
+- [8. Integration SailPoint](#8-integration-sailpoint)
+- [9. Tickets de securite unifies](#9-tickets-de-securite-unifies)
+- [10. Dashboards Vue.js](#10-dashboards-vuejs)
+- [11. Installation et deploiement](#11-installation-et-deploiement)
+- [12. Configuration](#12-configuration)
+- [13. Docker](#13-docker)
+- [14. Modules de formation M1-M7](#14-modules-de-formation-m1-m7)
+- [15. Statistiques du projet](#15-statistiques-du-projet)
 
-- - -
+---
 
-## Vision du projet
+## 1. Vue d'ensemble
 
-CyberAudit7E est un POC Spring Boot centré sur l'audit d'accessibilité web. Il combine :
+### Qu'est-ce que CyberAudit7E ?
 
-*   une **architecture modulaire Spring**,
-*   un **moteur de règles multi-référentiel**,
-*   une **persistance JPA/Flyway**,
-*   un **pipeline événementiel asynchrone**,
-*   une **documentation OpenAPI**,
-*   et une **boucle cybernétique 7E** comme cadre d'orchestration.
+CyberAudit7E est un moteur d'audit qui :
 
-Le projet sert à la fois de :
+- **Crawle** les sites web via Jsoup (HTTP reel, analyse du DOM)
+- **Evalue** 13 regles d'accessibilite couvrant RGAA 4.1, WCAG 2.2 et DSFR
+- **Calcule** un score composite pondere : `score = RGAA x 0.5 + WCAG x 0.3 + DSFR x 0.2`
+- **S'auto-adapte** via une boucle de retroaction cybernetique (les poids de scoring sont ajustes automatiquement)
+- **Streame** la progression en temps reel via SSE (Server-Sent Events)
+- **Cree automatiquement** des incidents ServiceNow et recoit les violations SailPoint
+- **Centralise** tous les evenements de securite dans un modele de ticket unifie
 
-*   **POC technique**,
-*   **support de formation Spring Boot**,
-*   **base d'industrialisation** vers Docker, PostgreSQL, Testcontainers, monitoring et intégration Dokploy.
+### Flux triangulaire
 
-- - -
-
-## Stack technique
-
-| Composant | Version | Rôle |
-| --- | --- | --- |
-| Java | 21+ | Runtime (testé avec JDK 25) |
-| Spring Boot | 4.0.5 | Framework applicatif |
-| Spring Web MVC | 4.x | API REST |
-| Spring Data JPA | 4.x | Persistance ORM |
-| Hibernate | 7.2.x | Implémentation JPA |
-| Jackson | 3.x (`tools.jackson`) | Sérialisation JSON |
-| H2 Database | 2.4.x | Base in-memory en développement |
-| PostgreSQL | profil prod | Base cible production |
-| Flyway | 11.x | Migrations SQL versionnées |
-| Jsoup | 1.18.3 | Crawl HTTP et analyse DOM réelle |
-| SpringDoc OpenAPI | 2.8.4 | Swagger UI + spec OpenAPI |
-| JUnit Jupiter | 6.x | Framework de tests |
-| AssertJ | 3.x | Assertions fluides |
-| Mockito | starter test | Mocks |
-| Awaitility | 4.2.2 | Tests asynchrones |
-| Maven Wrapper | 3.9.x | Build tool |
-
-- - -
-
-## Progression pédagogique M1 → M6
-
-| Module | Thème | Livrable principal |
-| --- | --- | --- |
-| **M1** | Bootstrap Spring Boot | `/api/health` opérationnel |
-| **M2** | Architecture IoC + Strategy Pattern | Structure MVC + 7 règles |
-| **M3** | Persistance JPA + H2 + Flyway | CRUD `Site` + `AuditReport` |
-| **M4** | Moteur d'audit réel avec Jsoup | 13 règles sur DOM réel |
-| **M5** | Async, Events, SSE, Scheduler | Audits asynchrones et streaming |
-| **M6** | API REST complète + OpenAPI | Swagger UI, pagination, réponses standardisées |
-| **M7** | Docker + synthèse (projection) | Industrialisation et conteneurisation |
-
-Résumé volumétrique issu des documents :
-
-| Module | Concepts | Fichiers | Lignes estimées |
-| --- | --- | --- | --- |
-| M1  | Bootstrap, `@RestController` | 1   | ~20 |
-| M2  | IoC, Strategy, Profiles, Events | 35  | ~1850 |
-| M3  | JPA, Flyway, `@Transactional` | 39  | ~2300 |
-| M4  | Jsoup, DOM réel, poids dynamiques | 50  | ~3550 |
-| M5  | `@Async`, SSE, `@Scheduled`, batch | 57  | ~4400 |
-| M6  | OpenAPI, pagination, validation | 60  | ~4750 |
-
-- - -
-
-## Architecture globale
-
-### Couches applicatives
-
-```text
-Copy┌──────────────────────────────────────────────────────┐
-│                    REST API Layer                    │
-│  HealthController │ SiteController │ AuditController │
-│               GlobalExceptionHandler                 │
-├──────────────────────────────────────────────────────┤
-│                    Service Layer                     │
-│  AuditOrchestrator ──→ chaîne les 7 phases du cycle │
-│  AuditEngine ──→ Strategy Pattern (List<AuditRule>) │
-│  ScoringService ──→ RGAA×0.5 + WCAG×0.3 + DSFR×0.2  │
-├──────────────────────────────────────────────────────┤
-│                    Domain Layer                      │
-│  Site │ AuditReport │ Phase7E │ RuleCategory        │
-│  AuditRule (interface) + implémentations            │
-├──────────────────────────────────────────────────────┤
-│                    Data Layer                        │
-│  SiteRepository │ AuditReportRepository │ RuleConfig │
-│  H2 (dev) │ PostgreSQL (prod) │ Flyway migrations   │
-└──────────────────────────────────────────────────────┘
+```mermaid
+graph LR
+    SP[SailPoint<br>Identity Cloud] -->|Event Triggers<br>webhook POST| CA[CyberAudit7E<br>Spring Boot]
+    CA -->|API V3<br>enrichissement| SP
+    CA -->|Table API<br>creation incident| SN[ServiceNow<br>ITSM]
+    SN -->|Business Rule<br>callback POST| CA
+    CA -->|SecurityTicket<br>modele unifie| DB[(Base de<br>donnees)]
 ```
 
-### Patterns utilisés
+### Stack technique
 
-| Pattern | Où  | Pourquoi |
-| --- | --- | --- |
-| Strategy | `AuditRule` + implémentations | Ajouter une règle sans modifier le moteur |
-| IoC / DI | Injection par constructeur | Découplage et testabilité |
-| Observer | Events Spring + listeners | Découplage entre exécution, métriques et rétroaction |
-| DTO | Records et wrappers API | Éviter les références circulaires JPA |
-| Repository | Interfaces Spring Data | Génération automatique des accès SQL |
-| Template Method | `AuditOrchestrator.executeFullCycle()` | Enchaînement stable des 7 phases |
+| Composant | Technologie | Version |
+|-----------|-------------|---------|
+| Backend | Spring Boot | 3.4.x |
+| Java | Eclipse Temurin | 21 LTS |
+| Crawler HTML | Jsoup | 1.18.3 |
+| Persistance | Spring Data JPA + H2/PostgreSQL | - |
+| Migrations | Flyway | - |
+| Documentation API | SpringDoc OpenAPI | 2.8.4 |
+| Frontend | Vue.js 3 (CDN) | 3.x |
+| Conteneurisation | Docker + Docker Compose | - |
+| ITSM | ServiceNow Table API | - |
+| IAM/IGA | SailPoint Identity Security Cloud V3 | - |
 
-- - -
+---
 
-## Cycle Axiome 7E
+## 2. Architecture technique
 
-Chaque audit exécute un cycle complet de sept phases orchestré par `AuditOrchestrator`.
+### Architecture en couches
 
-```text
-Copy   ┌─────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-   │ ÉVALUER ├───→│ ÉLABORER ├───→│ EXÉCUTER ├───→│ EXAMINER │
-   └─────────┘    └──────────┘    └──────────┘    └────┬─────┘
-                                                       │
-   ┌────────────┐    ┌────────┐    ┌─────────┐    ┌───┴────┐
-   │ ÉQUILIBRER │←───┤ ÉMETTRE│←───┤ ÉVOLUER │←───┤        │
-   └──────┬─────┘    └────────┘    └─────────┘    └────────┘
-          │              ▲
-          │    @Async     │ ApplicationEvent
-          └──── rétroaction cybernétique (FeedbackLoopListener)
+```mermaid
+graph TB
+    subgraph Presentation
+        VUE[Vue.js Dashboards<br>admin.html / exploitation.html]
+        SWAGGER[Swagger UI<br>/swagger-ui.html]
+    end
+    subgraph API[Couche API REST - @RestController]
+        HC[HealthController]
+        SC[SiteController]
+        AC[AuditController]
+        CC[ConfigController]
+        TC[TicketController]
+        WH[Webhook Controllers]
+    end
+    subgraph Services[Couche Service - @Service]
+        AE[AuditEngine<br>13 regles]
+        AO[AuditOrchestrator<br>cycle 7E]
+        SS[ScoringService<br>poids dynamiques]
+        HF[HtmlFetcherService<br>Jsoup crawler]
+        AS[AsyncAuditService]
+        SSE[SseNotificationService]
+        TO[TicketOrchestrator]
+    end
+    subgraph Integration[Couche Integration]
+        SNC[ServiceNowClient<br>OAuth + Table API]
+        SPC[SailPointClient<br>OAuth + V3 API]
+    end
+    subgraph Domain[Couche Domaine]
+        SITE[Site]
+        AR[AuditReport]
+        RC[RuleConfig]
+        ST[SecurityTicket]
+        RULES[13 AuditRule<br>Strategy Pattern]
+    end
+    subgraph Data[Couche Donnees]
+        JPA[Spring Data JPA]
+        FW[Flyway 5 migrations]
+        H2[H2 dev / PostgreSQL prod]
+    end
+    
+    Presentation --> API
+    API --> Services
+    Services --> Integration
+    Services --> Domain
+    Domain --> Data
 ```
 
-En M5, ce cycle devient aussi un pipeline événementiel temps réel :
+### Modele de donnees
 
-*   `AuditStartedEvent`
-*   `AuditProgressEvent`
-*   `AuditCompletedEvent`
-
-Ces événements alimentent :
-
-*   le **streaming SSE**,
-*   les **métriques d'exécution**,
-*   la **rétroaction cybernétique**,
-*   les **audits asynchrones / batch / planifiés**.
-
-- - -
-
-## Arborescence du projet
-
-```text
-Copycyberaudit7e/
-│
-├── pom.xml                                        # Dépendances Maven
-├── mvnw / mvnw.cmd                                # Maven Wrapper
-├── scripts/
-│   └── smoke-test.ps1                             # Smoke test E2E
-│
-├── src/main/java/com/cyberaudit7e/
-│   ├── CyberAudit7eApplication.java
-│   ├── config/
-│   │   ├── AsyncConfig.java
-│   │   ├── JpaConfig.java
-│   │   ├── OpenApiConfig.java
-│   │   └── WebConfig.java
-│   ├── controller/
-│   │   ├── HealthController.java
-│   │   ├── SiteController.java
-│   │   ├── AuditController.java
-│   │   ├── ConfigController.java
-│   │   └── GlobalExceptionHandler.java
-│   ├── service/
-│   │   ├── AuditEngine.java
-│   │   ├── AuditOrchestrator.java
-│   │   ├── AsyncAuditService.java
-│   │   ├── ScheduledAuditService.java
-│   │   ├── HtmlFetcherService.java
-│   │   ├── ScoringService.java
-│   │   ├── SseNotificationService.java
-│   │   └── cycle/
-│   │       ├── EvaluateService.java
-│   │       ├── ElaborateService.java
-│   │       ├── ExecuteService.java
-│   │       ├── ExamineService.java
-│   │       ├── EvolveService.java
-│   │       ├── EmitService.java
-│   │       ├── FeedbackLoopListener.java
-│   │       └── AuditMetricsListener.java
-│   ├── domain/
-│   │   ├── entity/
-│   │   │   ├── Site.java
-│   │   │   ├── AuditReport.java
-│   │   │   ├── RuleConfig.java
-│   │   │   └── RuleResultListConverter.java
-│   │   ├── enums/
-│   │   │   ├── Phase7E.java
-│   │   │   └── RuleCategory.java
-│   │   └── rule/
-│   │       ├── AuditRule.java
-│   │       ├── AuditContext.java
-│   │       ├── TitlePresenceRule.java
-│   │       ├── LangAttributeRule.java
-│   │       ├── ImageAltRule.java
-│   │       ├── ContrastRule.java
-│   │       ├── KeyboardNavRule.java
-│   │       ├── HeadingStructureRule.java
-│   │       ├── FormLabelRule.java
-│   │       ├── AriaLandmarkRule.java
-│   │       ├── MetaViewportRule.java
-│   │       ├── LinkPurposeRule.java
-│   │       ├── DsfrHeaderRule.java
-│   │       ├── DsfrFooterRule.java
-│   │       └── DsfrBreadcrumbRule.java
-│   ├── repository/
-│   │   ├── SiteRepository.java
-│   │   ├── AuditReportRepository.java
-│   │   └── RuleConfigRepository.java
-│   ├── dto/
-│   │   ├── AuditRequestDto.java
-│   │   ├── BatchAuditRequestDto.java
-│   │   ├── AuditResponseDto.java
-│   │   ├── RuleResultDto.java
-│   │   ├── SiteDto.java
-│   │   ├── ReportSummaryDto.java
-│   │   ├── ApiResponse.java
-│   │   └── PagedResponse.java
-│   └── event/
-│       ├── AuditStartedEvent.java
-│       ├── AuditProgressEvent.java
-│       └── AuditCompletedEvent.java
-│
-├── src/main/resources/
-│   ├── application.yml
-│   ├── application-dev.yml
-│   ├── application-prod.yml
-│   ├── banner.txt
-│   └── db/migration/
-│       ├── V1__create_schema.sql
-│       ├── V2__seed_data.sql
-│       └── V3__rule_configs.sql
-│
-└── src/test/java/com/cyberaudit7e/
-    ├── service/ScoringServiceTest.java
-    ├── domain/enums/Phase7ETest.java
-    ├── domain/rule/DsfrHeaderRuleTest.java
-    ├── repository/SiteRepositoryTest.java
-    ├── controller/HealthControllerTest.java
-    └── integration/AuditCycleIntegrationTest.java
-Copy
+```mermaid
+erDiagram
+    sites ||--o{ audit_reports : "1:N"
+    audit_reports ||--o| security_tickets : "0..1"
+    
+    sites {
+        bigint id PK
+        varchar url UK
+        varchar name
+        varchar current_phase
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    audit_reports {
+        bigint id PK
+        bigint site_id FK
+        double score_rgaa
+        double score_wcag
+        double score_dsfr
+        double score_global
+        varchar completed_phase
+        varchar trend
+        clob results_json
+        timestamp audited_at
+    }
+    
+    rule_configs {
+        bigint id PK
+        varchar category UK
+        double weight
+        boolean enabled
+        varchar description
+    }
+    
+    security_tickets {
+        bigint id PK
+        varchar title
+        clob description
+        varchar source
+        varchar status
+        varchar severity
+        varchar category
+        varchar sailpoint_violation_id
+        varchar sailpoint_event_type
+        varchar sailpoint_identity_id
+        varchar sailpoint_identity_name
+        varchar servicenow_sys_id
+        varchar servicenow_number
+        varchar servicenow_url
+        bigint audit_report_id FK
+        varchar site_url
+        varchar assigned_to
+        varchar assignment_group
+        clob raw_payload
+        timestamp created_at
+        timestamp updated_at
+        timestamp resolved_at
+    }
 ```
 
-- - -
+### Flux evenementiel
 
-## Démarrage rapide
-
-### Prérequis
-
-* Java 21+
-* Maven via le wrapper inclus
-* Optionnel : `jq`, H2 Console, Bruno ou HTTPie pour les tests manuels
-
-### Lancer l'application
-
-Sous Windows / DOS
-mvn -N io.takari:maven:wrapper -Dmaven=3.9.9
-
-ou mieux :
-mvn wrapper:wrapper -Dmaven=3.9.9
-
-
-Sinon
-👍mvn org.apache.maven.plugins:maven-wrapper-plugin:3.2.0:wrapper -Dmaven=3.9.9
-
-puis  :
-mvnw clean spring-boot:run
-
-Sous Windows / PowerShell :
-
-```powershell
-.\mvnw.cmd clean spring-boot:run
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller as AuditController
+    participant Orchestrator as AuditOrchestrator
+    participant Engine as AuditEngine
+    participant Jsoup as HtmlFetcher
+    participant Scoring as ScoringService
+    participant Events as Spring Events
+    participant SSE as SseNotification
+    participant Feedback as FeedbackLoop
+    participant SNOW as ServiceNowClient
+    
+    Client->>Controller: POST /api/audits
+    Controller->>Orchestrator: executeFullCycle()
+    
+    Orchestrator->>Events: AuditStartedEvent
+    Events->>SSE: broadcast "audit-started"
+    
+    Note over Orchestrator: Phase 1 - EVALUER
+    Orchestrator->>Events: AuditProgressEvent (14%)
+    Events->>SSE: broadcast "audit-progress"
+    
+    Note over Orchestrator: Phase 3 - EXECUTER
+    Orchestrator->>Engine: runAllRules(url)
+    Engine->>Jsoup: fetch(url)
+    Jsoup-->>Engine: Document HTML
+    Engine-->>Orchestrator: List RuleResultDto
+    Orchestrator->>Events: AuditProgressEvent (42%)
+    
+    Note over Orchestrator: Phase 4 - EXAMINER
+    Orchestrator->>Scoring: computeScores()
+    Scoring-->>Orchestrator: scores {rgaa, wcag, dsfr, global}
+    Orchestrator->>Events: AuditProgressEvent (57%)
+    
+    Note over Orchestrator: Phase 5 - EVOLUER
+    Orchestrator->>Events: AuditProgressEvent (71%)
+    
+    Note over Orchestrator: Phase 6 - EMETTRE
+    Orchestrator->>Events: AuditCompletedEvent
+    Events->>SSE: broadcast "audit-completed"
+    Events->>Feedback: onAuditCompleted()
+    
+    Note over Feedback: Phase 7 - EQUILIBRER (async)
+    Feedback->>Scoring: updateWeight() si score faible
+    Feedback->>SNOW: createIncident() si score < 0.5
+    
+    Orchestrator-->>Controller: AuditResponseDto
+    Controller-->>Client: 201 Created + JSON
 ```
 
-Sous Linux / macOS :
+---
 
-```bash
-./mvnw clean spring-boot:run
+## 3. Le cycle Axiome 7E
+
+Chaque audit execute un cycle cybernetique complet en 7 phases. Le systeme s'observe et s'auto-adapte a chaque iteration.
+
+```mermaid
+graph LR
+    E1[1. EVALUER<br>Collecte metriques] --> E2[2. ELABORER<br>Plan remediation]
+    E2 --> E3[3. EXECUTER<br>13 regles Jsoup]
+    E3 --> E4[4. EXAMINER<br>Score pondere]
+    E4 --> E5[5. EVOLUER<br>Tendance UP/DOWN]
+    E5 --> E6[6. EMETTRE<br>Event SSE]
+    E6 --> E7[7. EQUILIBRER<br>Ajuste poids]
+    E7 -.->|Boucle cybernetique| E1
+    
+    style E1 fill:#6366f1,color:#fff
+    style E2 fill:#8b5cf6,color:#fff
+    style E3 fill:#a855f7,color:#fff
+    style E4 fill:#d946ef,color:#fff
+    style E5 fill:#ec4899,color:#fff
+    style E6 fill:#f43f5e,color:#fff
+    style E7 fill:#ef4444,color:#fff
 ```
 
-Au démarrage, le profil `dev` doit :
+### Detail de chaque phase
 
-*   activer H2 in-memory,
-*   exécuter Flyway,
-*   charger les règles d'audit,
-*   exposer l'API sur `http://localhost:8080`.
+| Phase | Service Spring | Role | Donnees |
+|-------|---------------|------|---------|
+| **1. Evaluer** | `EvaluateService` | Valide l'URL, prepare le contexte | URL validee |
+| **2. Elaborer** | `ElaborateService` | Identifie les violations | Liste violations |
+| **3. Executer** | `ExecuteService` -> `AuditEngine` | Crawle le site + 13 regles | `List<RuleResultDto>` |
+| **4. Examiner** | `ExamineService` -> `ScoringService` | Score pondere composite | Scores RGAA/WCAG/DSFR/Global |
+| **5. Evoluer** | `EvolveService` | Compare avec audit precedent | Tendance UP/DOWN/STABLE/FIRST |
+| **6. Emettre** | `EmitService` | Publie AuditCompletedEvent | Evenement SSE broadcast |
+| **7. Equilibrer** | `FeedbackLoopListener` | Ajuste les poids en BDD | Poids mis a jour |
 
-### Console H2
+### Formule de scoring
 
-Ouvrir :
-
-```text
-Copyhttp://localhost:8080/h2-console
+```
+score_global = score_rgaa x poids_rgaa + score_wcag x poids_wcag + score_dsfr x poids_dsfr
 ```
 
-Paramètres :
+Poids par defaut : RGAA = 0.50, WCAG = 0.30, DSFR = 0.20 (somme = 1.0).
 
-*   JDBC URL : `jdbc:h2:mem:cyberaudit7e`
-*   User : `sa`
-*   Password : _(vide)_
+### Retroaction automatique (phase Equilibrer)
 
-### Swagger UI
+| Condition detectee | Action du FeedbackLoopListener |
+|---|---|
+| Score RGAA < 0.4 | Poids RGAA +0.03 |
+| Score WCAG < 0.6 | Poids WCAG +0.015 |
+| Site .gouv.fr avec DSFR < 0.6 | Poids DSFR +0.03 |
+| Tendance DOWN | Renforce la categorie la plus faible |
+| Apres ajustement | Normalise pour que la somme = 1.0 |
 
-Après démarrage :
+### Lecture des scores
 
-```text
-Copyhttp://localhost:8080/swagger-ui.html
+| Plage | Evaluation | Couleur |
+|-------|-----------|---------|
+| >= 0.70 | Bon - conforme ou en bonne voie | Vert |
+| 0.40 - 0.69 | A ameliorer - corrections necessaires | Orange |
+| < 0.40 | Critique - non-conformite majeure | Rouge |
+
+---
+
+## 4. Documentation fonctionnelle
+
+### 4.1 Gestion des sites
+
+Les sites constituent le **portefeuille** d'URLs a auditer. Chaque site maintient sa phase 7E courante et l'historique de ses audits.
+
+**Workflow** :
+1. Enregistrer un site (`POST /api/sites`)
+2. Le site demarre a la phase `EVALUER`
+3. Lancer un audit (`POST /api/audits`)
+4. Le site traverse les 7 phases et revient a `EQUILIBRER`
+5. Consulter l'historique et les tendances
+
+Les 4 sites de test sont pre-charges par la migration Flyway V2 : Service Public, Gouvernement FR, Legifrance, Example.com.
+
+### 4.2 Lancer un audit
+
+Trois modes d'execution :
+
+| Mode | Endpoint | Comportement |
+|------|----------|-------------|
+| **Synchrone** | `POST /api/audits` | Bloquant - retourne le resultat complet |
+| **Asynchrone** | `POST /api/audits/async` | Non-bloquant - retourne un `jobId` |
+| **Batch** | `POST /api/audits/batch` | Parallele - jusqu'a 10 sites simultanes |
+
+### 4.3 Suivi temps reel (SSE)
+
+Le flux SSE (`GET /api/audits/stream`) diffuse 3 types d'evenements :
+
+| Evenement | Quand | Donnees |
+|-----------|-------|---------|
+| `audit-started` | Debut du cycle 7E | siteUrl, siteName |
+| `audit-progress` | Chaque transition de phase (x7) | phase, progress (%), step (1/7 a 7/7) |
+| `audit-completed` | Fin du cycle | reportId, scoreGlobal, trend |
+
+Utilisation JavaScript :
+```javascript
+const sse = new EventSource('/api/audits/stream');
+sse.addEventListener('audit-progress', (e) => {
+    const data = JSON.parse(e.data);
+    console.log(`${data.phaseLabel} - ${data.progress}%`);
+});
 ```
 
-### OpenAPI
+### 4.4 Audits programmes (Scheduler)
 
-```text
-Copyhttp://localhost:8080/v3/api-docs
-http://localhost:8080/v3/api-docs.yaml
+```yaml
+cyberaudit7e:
+  scheduler:
+    enabled: true
+    cron: "0 0 2 * * *"   # Tous les jours a 2h du matin
 ```
 
-- - -
+Declenchement manuel : `POST /api/audits/schedule/trigger`
 
-## API REST
+### 4.5 Alertes
 
-### Santé
+`GET /api/audits/alerts?threshold=0.7` retourne les rapports sous le seuil.
 
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Health check complet |
-| `GET` | `/api/` | Index des endpoints |
+### 4.6 Configuration des poids
+
+- `GET /api/config/weights` - consulter
+- `PUT /api/config/weights/RGAA` - modifier
+- `POST /api/config/weights/reset` - reinitialiser (0.50 / 0.30 / 0.20)
+
+---
+
+## 5. Les 13 regles d'audit
+
+### Regles RGAA (5 regles - poids x0.50)
+
+| ID | Priorite | Description | Analyse DOM |
+|----|----------|-------------|-------------|
+| RGAA-8.5 | 10 | Titre de page pertinent | Presence, longueur >5 car., non-genericite |
+| RGAA-8.3 | 10 | Attribut lang sur html | Presence et format BCP 47 |
+| RGAA-1.1 | 50 | Alternative textuelle images | img avec/sans alt, alt="" decoratif |
+| RGAA-9.1 | 30 | Hierarchie titres h1-h6 | h1 unique, pas de sauts de niveau |
+| RGAA-11.1 | 60 | Etiquettes formulaires | label for, labels implicites, aria-label |
+
+### Regles WCAG (5 regles - poids x0.30)
+
+| ID | Priorite | Description | Analyse DOM |
+|----|----------|-------------|-------------|
+| WCAG-1.3.1 | 20 | Landmarks ARIA | header, nav, main, footer + roles ARIA |
+| WCAG-1.4.3 | 80 | Contraste minimum 4.5:1 | Heuristique couleurs inline |
+| WCAG-1.4.4 | 15 | Viewport et zoom | user-scalable=no, maximum-scale |
+| WCAG-2.1.1 | 40 | Navigation clavier | Skip-nav, main, tabindex negatifs |
+| WCAG-2.4.4 | 70 | Intitule des liens | Detection textes vagues |
+
+### Regles DSFR (3 regles - poids x0.20)
+
+| ID | Priorite | Description | Analyse DOM |
+|----|----------|-------------|-------------|
+| DSFR-HDR-01 | 20 | En-tete DSFR | 5 criteres : fr-header, fr-logo, service-name, nav, dsfr-assets |
+| DSFR-FTR-01 | 25 | Pied de page DSFR | 5 criteres : fr-footer, mentions legales, accessibilite, plan du site, RGPD |
+| DSFR-BRD-01 | 30 | Fil d'Ariane | fr-breadcrumb, nav, aria-label, structure liste |
+
+---
+
+## 6. API REST - Reference complete
+
+Base URL : `http://localhost:8080`
+
+Documentation interactive : `http://localhost:8080/swagger-ui.html`
+
+### Sante
+
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/health` | Health check complet (runtime, metriques, poids) |
+| GET | `/api/` | Index API avec liste des endpoints |
 
 ### Sites
 
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `POST` | `/api/sites` | Enregistrer un site |
-| `GET` | `/api/sites?page=0&size=10` | Liste paginée |
-| `GET` | `/api/sites/{id}` | Détail d'un site |
-| `GET` | `/api/sites/search?name=xxx` | Recherche par nom |
-| `DELETE` | `/api/sites/{id}` | Supprimer un site |
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/sites` | Enregistrer un site |
+| GET | `/api/sites?page=0&size=10` | Liste paginee |
+| GET | `/api/sites/{id}` | Detail d'un site |
+| GET | `/api/sites/search?name=xxx` | Recherche par nom |
+| DELETE | `/api/sites/{id}` | Supprimer (CASCADE) |
 
-### Audits synchrones
+### Audits
 
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `POST` | `/api/audits` | Audit synchrone complet |
-| `GET` | `/api/audits/list?page=0&size=10&sortBy=auditedAt&direction=desc` | Liste paginée des rapports |
-| `GET` | `/api/audits/{id}` | Détail d'un rapport |
-| `GET` | `/api/audits/site/{siteId}?page=0&size=10` | Historique paginé d'un site |
-| `GET` | `/api/audits/search?q=gouv` | Recherche full-text |
-| `GET` | `/api/audits/alerts?threshold=0.5` | Rapports sous le seuil |
-| `GET` | `/api/audits/stats` | Statistiques globales |
-
-### Audits asynchrones
-
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `POST` | `/api/audits/async` | Soumettre un audit asynchrone |
-| `POST` | `/api/audits/batch` | Batch parallèle |
-| `GET` | `/api/audits/async/{jobId}` | Statut d'un job |
-| `GET` | `/api/audits/async` | Liste des jobs |
-| `DELETE` | `/api/audits/async` | Nettoyage des jobs terminés |
-| `GET` | `/api/audits/stream` | Flux SSE temps réel |
-
-### Scheduler
-
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/api/audits/schedule` | État du scheduler |
-| `POST` | `/api/audits/schedule/trigger` | Déclenchement manuel |
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/audits` | Audit synchrone |
+| POST | `/api/audits/async` | Audit asynchrone |
+| POST | `/api/audits/batch` | Batch parallele (max 10) |
+| GET | `/api/audits/stream` | Flux SSE temps reel |
+| GET | `/api/audits/list?page=0&size=10&sortBy=auditedAt&direction=desc` | Rapports pagines |
+| GET | `/api/audits/{id}` | Detail rapport |
+| GET | `/api/audits/site/{siteId}?page=0&size=10` | Historique site |
+| GET | `/api/audits/search?q=xxx` | Recherche full-text |
+| GET | `/api/audits/alerts?threshold=0.5` | Alertes |
+| GET | `/api/audits/stats` | Statistiques |
+| GET | `/api/audits/async` | Liste jobs |
+| GET | `/api/audits/async/{jobId}` | Statut job |
+| DELETE | `/api/audits/async` | Nettoyer jobs |
+| GET | `/api/audits/schedule` | Info scheduler |
+| POST | `/api/audits/schedule/trigger` | Declenchement manuel |
 
 ### Configuration
 
-| Méthode | Endpoint | Description |
-| --- | --- | --- |
-| `GET` | `/api/config/weights` | Poids de scoring |
-| `PUT` | `/api/config/weights/{category}` | Modifier un poids |
-| `POST` | `/api/config/weights/reset` | Réinitialiser les poids |
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/config/weights` | Poids actuels |
+| PUT | `/api/config/weights/{RGAA/WCAG/DSFR}` | Modifier un poids |
+| POST | `/api/config/weights/reset` | Reinitialiser |
 
-### Exemples de commandes
+### Tickets de securite
 
-```powershell
-Copy# Health check
-curl -s http://localhost:8080/api/health
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| GET | `/api/tickets?page=0&size=10` | Liste paginee (filtres: source, status, severity) |
+| GET | `/api/tickets/open` | Tickets ouverts |
+| GET | `/api/tickets/{id}` | Detail ticket |
+| GET | `/api/tickets/search?q=xxx` | Recherche |
+| GET | `/api/tickets/stats` | Statistiques |
+| GET | `/api/tickets/integrations` | Statut connexions SNOW/SP |
+| POST | `/api/tickets` | Creer un ticket |
+| POST | `/api/tickets/{id}/resolve` | Resoudre (+sync SNOW) |
+| POST | `/api/tickets/sync` | Sync tickets non pousses |
 
-# Créer un site
-curl -X POST http://localhost:8080/api/sites `
-  -H "Content-Type: application/json" `
-  -d '{"url":"https://www.service-public.fr","name":"Service Public"}'
+### Webhooks
 
-# Lancer un audit synchrone dans DOS : 
-curl -X POST http://localhost:8080/api/audits -H "Content-Type: application/json" -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Gouvernement FR\"}"
-# Pour PowerShell :
-curl -X POST http://localhost:8080/api/audits `
-  -H "Content-Type: application/json" `
-  -d '{"url":"https://www.gouvernement.gouv.fr","name":"Gouvernement FR"}'
-  
-# Voir les statistiques
-curl -s http://localhost:8080/api/audits/stats
+| Methode | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/webhooks/sailpoint` | Recepteur Event Triggers SP |
+| GET | `/api/webhooks/sailpoint/test` | Test connectivite SP |
+| POST | `/api/webhooks/servicenow` | Callback mise a jour SNOW |
+| GET | `/api/webhooks/servicenow/test` | Test connectivite SNOW |
+
+---
+
+## 7. Integration ServiceNow
+
+### 7.1 Vue d'ensemble
+
+L'integration ServiceNow cree automatiquement des incidents ITSM quand :
+- Un audit retourne un score critique (< 0.5)
+- SailPoint detecte une violation de politique
+- Un ticket est cree manuellement dans CyberAudit7E
+
+### 7.2 Architecture du flux
+
+```mermaid
+sequenceDiagram
+    participant CA as CyberAudit7E
+    participant SNC as ServiceNowClient
+    participant SNOW as ServiceNow
+
+    Note over CA: Ticket cree (audit/sailpoint/manuel)
+    CA->>SNC: createIncident(ticket)
+    
+    alt OAuth 2.0
+        SNC->>SNOW: POST /oauth_token.do
+        SNOW-->>SNC: access_token (cache 1h)
+    end
+    
+    SNC->>SNOW: POST /api/now/table/incident
+    Note over SNC: {short_description, priority,<br>category, assignment_group}
+    SNOW-->>SNC: {sys_id, number}
+    SNC-->>CA: ticket.serviceNowSysId = sys_id<br>ticket.serviceNowNumber = INC0012345
+    
+    Note over SNOW: Incident traite par l'equipe...
+    SNOW->>CA: POST /api/webhooks/servicenow
+    Note over SNOW: Business Rule callback<br>{sys_id, number, state, assigned_to}
+    CA-->>CA: ticket.status = IN_PROGRESS/RESOLVED
+    
+    Note over CA: Resolution depuis CyberAudit7E
+    CA->>SNC: resolveIncident(sys_id, closeNotes)
+    SNC->>SNOW: PATCH /api/now/table/incident/{sys_id}
+    Note over SNC: {state:6, close_code, close_notes}
 ```
 
-### SSE depuis JavaScript
+### 7.3 Mapping des champs
 
-```javascript
-Copyconst sse = new EventSource('/api/audits/stream');
+| CyberAudit7E (SecurityTicket) | ServiceNow (incident) |
+|---|---|
+| `title` | `short_description` (tronque 160 car.) |
+| `description` (construit) | `description` |
+| `severity.snowPriority` (1-5) | `priority` |
+| `severity` (1=CRITICAL, 2=HIGH) | `impact` et `urgency` |
+| `source.label` | `u_source_system` (champ custom) |
+| `sailpointIdentityName` | `u_affected_user` (champ custom) |
+| `siteUrl` | `u_affected_resource` (champ custom) |
+| config `assignmentGroup` | `assignment_group` |
+| config `defaultCategory` | `category` |
+| config `defaultSubcategory` | `subcategory` |
 
-sse.addEventListener('audit-started', (e) => {
-  const data = JSON.parse(e.data);
-  console.log(`🚀 Audit démarré : ${data.siteName}`);
-});
+### 7.4 Authentification
 
-sse.addEventListener('audit-progress', (e) => {
-  const data = JSON.parse(e.data);
-  console.log(`⏳ ${data.phaseLabel} — ${data.progress}%`);
-});
-
-sse.addEventListener('audit-completed', (e) => {
-  const data = JSON.parse(e.data);
-  console.log(`✅ Score : ${data.scoreGlobal}`);
-});
+**Basic Auth** (dev/test) :
+```yaml
+servicenow:
+  auth-method: basic
+  username: ${SNOW_USERNAME}
+  password: ${SNOW_PASSWORD}
 ```
 
-- - -
-
-## Scoring
-
-Formule globale :
-
-```text
-Copyscore_global = score_rgaa × 0.5 + score_wcag × 0.3 + score_dsfr × 0.2
+**OAuth 2.0** (production) :
+```yaml
+servicenow:
+  auth-method: oauth
+  client-id: ${SNOW_CLIENT_ID}
+  client-secret: ${SNOW_CLIENT_SECRET}
 ```
 
-### Répartition des poids
+### 7.5 Configuration cote ServiceNow
 
-| Catégorie | Poids par défaut | Exemples de règles |
-| --- | --- | --- |
-| RGAA 4.1 | 50% | titre, `lang`, alt-text, headings, labels |
-| WCAG 2.2 | 30% | contraste, clavier, landmarks, viewport, liens |
-| DSFR | 20% | header, footer, breadcrumb |
+**Etape 1 - Creer un utilisateur API**
+- System Administration -> Users -> New
+- Roles : `itil`, `rest_service`
 
-### Règles M4 (13 règles)
+**Etape 2 - Configurer OAuth (optionnel)**
+- System OAuth -> Application Registry -> Create an OAuth API endpoint
+- Copier le Client ID et Client Secret
 
-| Priorité | ID  | Catégorie | Description |
-| --- | --- | --- | --- |
-| 10  | RGAA-8.5 | RGAA | Titre de page pertinent |
-| 10  | RGAA-8.3 | RGAA | Attribut `lang` |
-| 15  | WCAG-1.4.4 | WCAG | Viewport et zoom |
-| 20  | WCAG-1.3.1 | WCAG | Landmarks ARIA |
-| 20  | DSFR-HDR-01 | DSFR | En-tête DSFR |
-| 25  | DSFR-FTR-01 | DSFR | Pied de page DSFR |
-| 30  | RGAA-9.1 | RGAA | Hiérarchie des titres |
-| 30  | DSFR-BRD-01 | DSFR | Fil d'Ariane |
-| 40  | WCAG-2.1.1 | WCAG | Navigation clavier / skip-nav |
-| 50  | RGAA-1.1 | RGAA | Alt-text des images |
-| 60  | RGAA-11.1 | RGAA | Labels de formulaire |
-| 70  | WCAG-2.4.4 | WCAG | Intitulé des liens |
-| 80  | WCAG-1.4.3 | WCAG | Contraste (heuristique) |
+**Etape 3 - Creer les champs custom (optionnel)**
+- Incident -> form design
+- Ajouter : `u_source_system`, `u_affected_user`, `u_affected_resource`
 
-En M4+, les poids peuvent être :
+**Etape 4 - Configurer le callback webhook**
+- System Web Services -> Outbound -> REST Message -> New
+  - Endpoint : `https://cyberaudit7e.domaine.com/api/webhooks/servicenow`
+  - Method : POST
+- Business Rule sur `incident` :
+  - Table : Incident, When : after Update
+  - Condition : `current.state.changesTo()`
+  - Script : appeler le REST Message avec sys_id, number, state
 
-*   lus depuis la base via `rule_configs`,
-*   modifiés via l'API de configuration,
-*   réajustés par la boucle de rétroaction.
+### 7.6 Cycle de vie d'un incident
 
-- - -
-
-## Tests
-
-### Pyramide de tests Spring
-
-```text
-Copy           ╱╲
-          ╱  ╲       Niveau 4 : Integration (lent, complet)
-         ╱ E2E╲      @SpringBootTest — contexte complet
-        ╱──────╲
-       ╱        ╲    Niveau 3 : Web slice (moyen)
-      ╱   Web    ╲   @WebMvcTest + MockMvc + @MockitoBean
-     ╱────────────╲
-    ╱              ╲ Niveau 2 : JPA slice (moyen)
-   ╱   Repository   ╲ @DataJpaTest — couche JPA isolée
-  ╱──────────────────╲
- ╱                    ╲ Niveau 1 : Unit (rapide, pur Java)
-╱        Unit          ╲ Pas de Spring — JUnit + AssertJ + Mockito
-─────────────────────────
+```mermaid
+stateDiagram-v2
+    [*] --> NEW : Ticket cree
+    NEW --> OPEN : Incident SNOW cree (sys_id)
+    OPEN --> IN_PROGRESS : Callback SNOW (state=2)
+    IN_PROGRESS --> RESOLVED : resolveTicket() ou callback (state=6)
+    RESOLVED --> CLOSED : Callback SNOW (state=7)
+    IN_PROGRESS --> CANCELLED : Annulation
+    
+    note right of NEW : CyberAudit7E cree le ticket
+    note right of OPEN : ServiceNow cree l'incident
+    note right of RESOLVED : Sync bidirectionnelle
 ```
 
-**Règle d'or** : beaucoup de tests unitaires rapides à la base, peu de tests d'intégration lents au sommet. Une exécution complète doit rester idéalement sous 30 secondes.
+---
 
-### Dépendances de test
+## 8. Integration SailPoint
 
-Le starter `spring-boot-starter-test` apporte déjà :
+### 8.1 Vue d'ensemble
 
-*   JUnit Jupiter,
-*   AssertJ,
-*   Mockito,
-*   Spring Test,
-*   JsonPath.
+L'integration SailPoint permet de :
+- **Recevoir** les violations (SoD, suppressions, demandes d'acces) via Event Triggers webhooks
+- **Interroger** l'API V3 pour enrichir les tickets (details identite, access profiles)
 
-Ajouter si nécessaire :
+### 8.2 Architecture du flux
 
-```xml
-Copy<dependency>
-    <groupId>org.awaitility</groupId>
-    <artifactId>awaitility</artifactId>
-    <version>4.2.2</version>
-    <scope>test</scope>
-</dependency>
+```mermaid
+sequenceDiagram
+    participant SP as SailPoint<br>Identity Cloud
+    participant WH as SailPointWebhook<br>Controller
+    participant TO as TicketOrchestrator
+    participant DB as Database
+    participant SNC as ServiceNowClient
+    participant SNOW as ServiceNow
+
+    SP->>WH: POST /api/webhooks/sailpoint
+    Note over SP,WH: Bearer: {webhook-secret}<br>{triggerId, identity, policyName, ...}
+    
+    WH->>WH: validateToken()
+    WH->>WH: mapToTicket() selon triggerId
+    WH->>TO: processIncomingTicket(ticket)
+    
+    TO->>DB: findBySailpointViolationId()
+    alt Violation deja connue
+        TO->>DB: update ticket existant
+    else Nouvelle violation
+        TO->>DB: save nouveau SecurityTicket
+        TO->>SNC: pushToServiceNowAsync()
+        SNC->>SNOW: POST /api/now/table/incident
+    end
+    
+    TO-->>WH: ticket sauvegarde
+    WH-->>SP: 200 OK {ticketId, serviceNowNumber}
 ```
 
-### Contenu du pack de tests
+### 8.3 Event Triggers supportes
 
-| Fichier | Niveau | Cible | Concepts |
-| --- | --- | --- | --- |
-| `ScoringServiceTest.java` | 1 — Unit | `ScoringService` | AssertJ, `within()` |
-| `Phase7ETest.java` | 1 — Unit | `Phase7E` | `@ParameterizedTest`, `@CsvSource` |
-| `DsfrHeaderRuleTest.java` | 1 — Unit | règle DSFR | `@Nested`, Strategy |
-| `SiteRepositoryTest.java` | 2 — JPA | Repository | `@DataJpaTest`, Flyway, rollback |
-| `HealthControllerTest.java` | 3 — Web | endpoint `/health` | `@WebMvcTest`, `@MockitoBean`, MockMvc |
-| `AuditCycleIntegrationTest.java` | 4 — Intégration | cycle 7E complet | `@SpringBootTest`, Awaitility |
-| `scripts/smoke-test.ps1` | E2E | 11 endpoints | PowerShell |
+| Trigger ID | Evenement | Severite | Categorie ticket |
+|------------|-----------|----------|-----------------|
+| `idn:policy-violation` | Violation de politique SoD | HIGH | `sod_violation` |
+| `idn:identity-deleted` | Identite supprimee | MEDIUM | `orphan_account` |
+| `idn:access-request-pre-approval` | Demande d'acces (pre-approbation) | MEDIUM | `access_violation` |
+| `idn:access-request-post-approval` | Demande d'acces (post-approbation) | MEDIUM | `access_violation` |
+| `idn:account-aggregation-completed` | Agregation terminee | LOW | `account_anomaly` |
+| `idn:certification-signed-off` | Certification signee | LOW | `certification_issue` |
 
-### Lancer les tests
+### 8.4 Mapping webhook SailPoint -> SecurityTicket
 
-```powershell
-Copy# Tous les tests
-.\mvnw.cmd test
+Exemple pour `idn:policy-violation` :
 
-# Un test spécifique
-.\mvnw.cmd test "-Dtest=ScoringServiceTest"
-
-# Intégration uniquement
-.\mvnw.cmd test "-Dtest=*IntegrationTest"
-
-# Smoke test E2E
-powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1
+```json
+// Payload SailPoint entrant
+{
+  "_metadata": {"triggerId": "idn:policy-violation", "invocationId": "inv-001"},
+  "identity": {"id": "uid-789", "name": "Marie Martin", "type": "IDENTITY"},
+  "policyName": "SoD Comptabilite-Tresorerie",
+  "violatingAccessItems": [
+    {"name": "Comptabilite Admin"},
+    {"name": "Tresorerie Approbateur"}
+  ]
+}
 ```
 
-### Couverture JaCoCo
+Resultat apres `mapPolicyViolation()` :
 
-Ajouter dans `pom.xml` :
-
-```xml
-Copy<plugin>
-    <groupId>org.jacoco</groupId>
-    <artifactId>jacoco-maven-plugin</artifactId>
-    <version>0.8.12</version>
-    <executions>
-        <execution>
-            <goals><goal>prepare-agent</goal></goals>
-        </execution>
-        <execution>
-            <id>report</id>
-            <phase>test</phase>
-            <goals><goal>report</goal></goals>
-        </execution>
-    </executions>
-</plugin>
+```json
+// SecurityTicket cree
+{
+  "source": "SAILPOINT",
+  "severity": "HIGH",
+  "category": "sod_violation",
+  "title": "[SailPoint] Violation de politique (SoD) - Marie Martin",
+  "sailpointViolationId": "uid-789",
+  "sailpointEventType": "idn:policy-violation",
+  "sailpointIdentityId": "uid-789",
+  "sailpointIdentityName": "Marie Martin"
+}
 ```
 
-### Stratégie recommandée d'extension
+### 8.5 Dedoublonnage
 
-*   **M4** : 1 test unitaire par règle d'audit
-*   **M5** : tests Awaitility sur le comportement asynchrone et les listeners
-*   **M6** : tests d'erreur exhaustifs sur tous les endpoints
-*   **M7** : Testcontainers pour remplacer H2 par un vrai PostgreSQL dans les tests d'intégration
-*   **Durcissement** : JMH, Spring Cloud Contract, PIT mutation testing
+Si un webhook arrive avec un `sailpointViolationId` deja connu :
+- Le ticket existant est **mis a jour** (description, severite)
+- Pas de doublon cree
+- Le ticket ServiceNow associe reste le meme
 
-### Outils complémentaires de test manuel
+### 8.6 Configuration cote SailPoint
 
-*   **Bruno** : collections HTTP versionnables, local-first
-*   **HTTPie** : CLI plus lisible que `curl`
-*   **Spring Boot DevTools** : rechargement à chaud pour accélérer la boucle de feedback
+**Etape 1 - Creer un Personal Access Token**
+- Identity Security Cloud -> Preferences -> Personal Access Tokens -> New Token
+- Copier Client ID et Secret -> `.env` (SP_CLIENT_ID, SP_CLIENT_SECRET)
 
-- - -
+**Etape 2 - Souscrire aux Event Triggers**
+- Admin -> Event Triggers -> Selectionner un trigger
+- + Subscribe -> Type : HTTP
+- Integration URL : `https://cyberaudit7e.domaine.com/api/webhooks/sailpoint`
+- Auth Type : Bearer Token -> coller SP_WEBHOOK_SECRET
 
-## Modules détaillés
+**Etape 3 - Triggers recommandes (par priorite)**
+1. `idn:policy-violation` - violations SoD (securite)
+2. `idn:identity-deleted` - comptes orphelins (conformite)
+3. `idn:access-request-pre-approval` - demandes d'acces (gouvernance)
 
-### M1 — Bootstrap Spring Boot
+---
 
-Objectif : démarrer rapidement une application Spring Boot avec un premier endpoint de santé.
+## 9. Tickets de securite unifies
 
-Livrables principaux :
+### 9.1 Modele SecurityTicket
 
-*   `CyberAudit7eApplication.java`
-*   `HealthController`
-*   structure Maven initiale
+Le ticket unifie maintient les references croisees entre les trois systemes :
 
-- - -
-
-### M2 — Architecture Spring
-
-M2 introduit :
-
-*   l'architecture par couches,
-*   le Strategy Pattern pour les règles,
-*   les DTOs,
-*   la gestion des événements,
-*   la base du cycle 7E.
-
-#### Concepts démontrés
-
-| Concept | Où dans le code |
-| --- | --- |
-| IoC / injection constructeur | `AuditEngine`, `AuditOrchestrator` |
-| Strategy Pattern + IoC | `AuditRule` → 7 `@Component` |
-| `@RestController` | controllers REST |
-| `@RestControllerAdvice` | `GlobalExceptionHandler` |
-| `@Service` layering | engine → orchestrator → cycle |
-| `@Repository` | repositories in-memory |
-| Spring Profiles | `application-dev.yml`, `application-prod.yml` |
-| Spring Events | `AuditCompletedEvent` |
-| `@Async` | `FeedbackLoopListener` |
-| Validation Jakarta | DTOs |
-| Java Records | objets de transfert |
-| CORS | `WebConfig` |
-
-#### Transition M2 → M3
-
-*   supprimer l'exclusion de `DataSourceAutoConfiguration`
-*   annoter `Site` et `AuditReport` avec JPA
-*   transformer les repositories en interfaces `JpaRepository`
-*   activer datasource/JPA/Flyway
-
-- - -
-
-### M3 — Persistance JPA + H2 + Flyway
-
-M3 remplace les repositories en mémoire par une vraie persistance SQL.
-
-#### Apports principaux
-
-*   `@Entity`, `@Table`, `@ManyToOne`, `@OneToMany`
-*   `@Transactional`
-*   `AttributeConverter` JSON/CLOB
-*   Flyway avec schéma et seed data
-*   DTOs de sortie dédiés
-*   H2 en dev, PostgreSQL en prod
-
-#### Fichiers notables ajoutés / modifiés
-
-*   `RuleResultListConverter.java`
-*   `SiteDto.java`
-*   `ReportSummaryDto.java`
-*   `JpaConfig.java`
-*   `V1__create_schema.sql`
-*   `V2__seed_data.sql`
-
-#### Concepts démontrés
-
-| Concept | Où  |
-| --- | --- |
-| Spring Data JPA | repositories |
-| Query Methods | `findByUrl`, etc. |
-| JPQL custom | agrégats et stats |
-| `@PrePersist` / `@PreUpdate` | timestamps |
-| `@Transactional(readOnly = true)` | endpoints de lecture |
-| Flyway | versionnement du schéma |
-
-- - -
-
-### M4 — Moteur d'audit Jsoup + Strategy avancée
-
-M4 remplace les simulations par une analyse réelle du DOM.
-
-#### Nouveautés majeures
-
-*   `HtmlFetcherService` avec cache
-*   `AuditContext` riche (`url + Optional<Document>`)
-*   13 règles sur DOM réel
-*   configuration dynamique des poids via `RuleConfig`
-*   API de gestion des poids
-*   rétroaction réelle en base
-
-#### Flux d'exécution M4
-
-```text
-CopyAuditEngine.runAllRules(url)
-    ├─ HtmlFetcherService.fetch(url)
-    ├─ construction de AuditContext(url, doc)
-    ├─ évaluation des règles par priorité
-    └─ clearCache()
+```mermaid
+graph TB
+    subgraph Sources
+        AUDIT[Audit CyberAudit7E<br>score critique < 0.5]
+        SAILP[SailPoint<br>Event Trigger webhook]
+        MANUAL[Creation manuelle<br>POST /api/tickets]
+    end
+    
+    subgraph SecurityTicket
+        ST[SecurityTicket<br>- sailpointViolationId<br>- serviceNowSysId<br>- serviceNowNumber<br>- auditReportId]
+    end
+    
+    subgraph Destinations
+        SNOW[ServiceNow<br>Incident INC0012345]
+        DASHBOARD[Dashboards<br>Vue.js]
+    end
+    
+    AUDIT --> ST
+    SAILP --> ST
+    MANUAL --> ST
+    ST --> SNOW
+    ST --> DASHBOARD
 ```
 
-#### Concepts démontrés
+### 9.2 Cycle de vie
 
-| Concept | Où  |
-| --- | --- |
-| Strategy avancée | `evaluate(AuditContext)` + `priority()` |
-| cache applicatif | `HtmlFetcherService` |
-| config dynamique en BDD | `RuleConfig` |
-| fallback gracieux | mode sans document si crawl échoue |
-| gestion d'erreur par règle | `try/catch` dans `AuditEngine` |
-
-- - -
-
-### M5 — Async, Events & Streaming SSE
-
-M5 transforme le projet en système événementiel temps réel.
-
-#### Nouveautés majeures
-
-*   audits asynchrones avec `CompletableFuture`
-*   batch parallèle
-*   SSE pour progression temps réel
-*   scheduler d'audits planifiés
-*   métriques runtime thread-safe
-
-#### Événements Spring
-
-| Événement | Publié par | Consommé par |
-| --- | --- | --- |
-| `AuditStartedEvent` | orchestrateur | SSE, métriques |
-| `AuditProgressEvent` | orchestrateur | SSE |
-| `AuditCompletedEvent` | `EmitService` | SSE, métriques, feedback |
-
-#### Concepts démontrés
-
-| Concept | Où  |
-| --- | --- |
-| `@Async` + `CompletableFuture` | `AsyncAuditService` |
-| `@Scheduled` + cron | `ScheduledAuditService` |
-| `SseEmitter` | `SseNotificationService` |
-| `CopyOnWriteArrayList` | gestion des clients SSE |
-| `AtomicLong` / `volatile` | métriques thread-safe |
-| config externalisée | scheduler et timeouts |
-
-- - -
-
-### M6 — API REST complète + OpenAPI
-
-M6 formalise l'API pour un usage plus industriel et plus ergonomique.
-
-#### Nouveautés majeures
-
-*   documentation Swagger UI
-*   OpenAPI JSON/YAML
-*   pagination et tri sur les listes
-*   réponses standardisées `ApiResponse`
-*   wrapper `PagedResponse`
-*   erreurs homogènes et documentées
-
-#### Concepts démontrés
-
-| Concept | Où  |
-| --- | --- |
-| SpringDoc OpenAPI | `OpenApiConfig` + annotations |
-| `@Tag`, `@Operation`, `@Parameter` | controllers |
-| `@ApiResponses` | documentation des codes retour |
-| `Pageable` / `Page<T>` | repositories et endpoints |
-| tri dynamique | `Sort.by(...)` |
-| erreurs structurées | `GlobalExceptionHandler` |
-
-- - -
-
-## Profils Spring
-
-| Profile | DataSource | Flyway | Logs | Usage |
-| --- | --- | --- | --- | --- |
-| `dev` (défaut) | H2 in-memory | actif | DEBUG | développement local |
-| `prod` | PostgreSQL | actif | INFO | Docker / production |
-
-### Changer de profil
-
-```powershell
-Copy$env:SPRING_PROFILES_ACTIVE="prod"
-.\mvnw.cmd spring-boot:run
+```
+NEW --> OPEN --> IN_PROGRESS --> PENDING_VALIDATION --> RESOLVED --> CLOSED
+                                                         |
+                                                    CANCELLED
 ```
 
-ou
+- **NEW** : ticket cree
+- **OPEN** : incident ServiceNow cree (sys_id renseigne)
+- **IN_PROGRESS** : callback ServiceNow (state=2)
+- **RESOLVED** : resolu via CyberAudit7E ou ServiceNow
+- **CLOSED** : ferme definitivement
 
-```powershell
-Copy.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=prod"
+### 9.3 Creation automatique depuis un audit
+
+Quand un audit retourne un score global < 0.5, le `TicketOrchestrator` cree automatiquement :
+- Source : `AUDIT`
+- Severite : calculee depuis le score (`fromAuditScore()`)
+- Lien vers le rapport (`auditReportId`)
+- Pousse vers ServiceNow de facon asynchrone
+
+---
+
+## 10. Dashboards Vue.js
+
+Deux dashboards standalone (Vue 3 CDN) servis par Spring Boot.
+
+### Dashboard Admin & Tests (admin.html)
+
+Theme dark cybernetique. 12 pages : Health, Stats, Sites (CRUD), Audit sync, Audit async, Batch, Rapports (pagines), Alertes, Console SSE, Jobs, Poids scoring, Scheduler. Chaque page affiche la reponse JSON brute.
+
+### Dashboard Exploitation (exploitation.html)
+
+Theme clair moderne. 8 pages : Tableau de bord (KPIs + barres ponderations), Temps reel (SSE + barre progression), Lancer un audit, Portefeuille de sites, Historique, Alertes, Ponderations, Guide fonctionnel complet.
+
+### Acces
+
+| URL | Page |
+|-----|------|
+| `http://localhost:8080/` | Page d'accueil |
+| `http://localhost:8080/admin.html` | Dashboard Admin |
+| `http://localhost:8080/exploitation.html` | Dashboard Exploitation |
+| `http://localhost:8080/swagger-ui.html` | Documentation OpenAPI |
+| `http://localhost:8080/h2-console` | Console H2 (dev) |
+
+---
+
+## 11. Installation et deploiement
+
+### Prerequis
+
+- Java 21 (Eclipse Temurin)
+- Maven (inclus via mvnw)
+- curl + jq (pour les tests)
+
+### Installation rapide
+
+```bash
+# Lancer
+mvnw.cmd spring-boot:run         # Windows
+./mvnw spring-boot:run            # Linux/Mac
+
+# Verifier
+curl http://localhost:8080/api/health
+
+# Ouvrir
+# http://localhost:8080/
 ```
 
-- - -
+### Tests complets
 
-## Références et guides
+```bash
+# Windows CMD
+tests-cyberaudit7e.bat
+# 50 tests en 13 sections couvrant tous les endpoints
+```
 
-### Documentation de référence
+---
 
-*   [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-*   [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/4.0.5/maven-plugin)
-*   [Create an OCI image](https://docs.spring.io/spring-boot/4.0.5/maven-plugin/build-image.html)
-*   [Spring Web](https://docs.spring.io/spring-boot/4.0.5/reference/web/servlet.html)
-*   [Spring Data JPA](https://docs.spring.io/spring-boot/4.0.5/reference/data/sql.html#data.sql.jpa-and-spring-data)
-*   [Flyway Migration](https://docs.spring.io/spring-boot/4.0.5/how-to/data-initialization.html#howto.data-initialization.migration-tool.flyway)
-*   [Spring Boot DevTools](https://docs.spring.io/spring-boot/4.0.5/reference/using/devtools.html)
-*   [Validation](https://docs.spring.io/spring-boot/4.0.5/reference/io/validation.html)
+## 12. Configuration
 
-### Guides pratiques
+### Fichier .env
 
-*   [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-*   [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-*   [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
-*   [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
-*   [Validation](https://spring.io/guides/gs/validating-form-input/)
+```bash
+# ServiceNow
+SNOW_INSTANCE=mon-instance.service-now.com
+SNOW_USERNAME=api_user
+SNOW_PASSWORD=ChangeMe!S3cret
 
-### Note Maven Parent overrides
+# SailPoint
+SP_TENANT=mon-tenant
+SP_CLIENT_ID=xxxxx
+SP_CLIENT_SECRET=xxxxx
+SP_WEBHOOK_SECRET=mon-webhook-secret
+```
 
-Si le projet hérite d'un parent Maven différent, vérifier les éléments hérités comme `<license>` et `<developers>`. Le POM peut contenir des overrides vides pour neutraliser certains héritages non désirés.
+### Profiles Spring
 
-- - -
+| Profile | BDD | Scheduler | Usage |
+|---------|-----|-----------|-------|
+| `dev` | H2 in-memory | Desactive | Developpement |
+| `prod` | PostgreSQL 16 | Active (2h/jour) | Production Docker |
 
-## Roadmap / prolongements
+---
 
-### Pistes techniques immédiates
+## 13. Docker
 
-*   remplacer H2 par PostgreSQL en intégration via Testcontainers
-*   ajouter Dockerfile multi-stage + `docker-compose`
-*   intégrer Spring Security + JWT
-*   brancher un monitoring Actuator + Micrometer + Grafana
-*   connecter Gitea / webhooks pour audit au commit
-*   ajouter Redis bridge pour communication inter-services
+```bash
+# Mode dev (H2)
+docker compose up --build
 
-### Pistes d'architecture avancée
+# Mode prod (PostgreSQL)
+docker compose --profile prod up --build
+```
 
-*   Spring WebFlux pour un moteur réactif
-*   Spring Modulith pour clarifier les frontières applicatives
-*   causal discovery engine piloté par IA
-*   circuit-breaker de protection
-*   modèles dynamiques de santé par site
-*   intégration Dokploy-natif pour l'orchestration
+| Service | Port | Profile |
+|---------|------|---------|
+| cyberaudit7e | 8080 | dev |
+| cyberaudit7e-prod | 8080 | prod |
+| postgres | 5432 | prod |
 
-### Stratégie de validation industrielle
+---
 
-*   1 test unitaire par règle M4
-*   tests async exhaustifs en M5
-*   tests de validation et d'erreurs exhaustifs en M6
-*   PostgreSQL dockerisé en M7
+## 14. Modules de formation M1-M7
 
-- - -
+| Module | Horaire | Concepts Spring | Livrable |
+|--------|---------|----------------|----------|
+| **M1** Bootstrap | 08:30-09:30 | @SpringBootApplication, @RestController | /api/health |
+| **M2** Architecture | 09:30-10:30 | IoC, Strategy Pattern, Profiles | Structure MVC + 7 regles |
+| **M3** Persistance | 10:45-12:00 | JPA, Flyway, @Transactional | CRUD + H2 |
+| **M4** Moteur audit | 13:00-14:30 | Jsoup, AuditContext, poids BDD | 13 regles DOM reel |
+| **M5** Async/Events | 14:30-15:30 | @Async, @Scheduled, SSE | Streaming + batch |
+| **M6** API complete | 15:45-17:00 | OpenAPI, Pageable, validation | Swagger UI + pagination |
+| **M7** Docker | 17:00-17:30 | Dockerfile multi-stage, Compose | POC containerise |
 
-## Licence
+---
 
-POC de formation — usage pédagogique.
+## 15. Statistiques du projet
+
+| Metrique | Valeur |
+|----------|--------|
+| Fichiers Java | 65+ |
+| Regles d'audit | 13 (5 RGAA + 5 WCAG + 3 DSFR) |
+| Endpoints REST | 35+ |
+| Migrations Flyway | 5 |
+| Evenements Spring | 3 |
+| Tags OpenAPI | 7 |
+| Lignes de code Java | ~5500 |
+| Dashboards Vue.js | 2 |
+| Script de tests | 50 tests (13 sections) |
+| Integrations externes | 2 (ServiceNow + SailPoint) |
+
+### Convergence des projets source
+
+| Projet | Concept repris | Implementation CyberAudit7E |
+|--------|----------------|----------------------------|
+| **GitManager** | Registre d'organes | SiteRepository + CRUD REST |
+| **GitManager** | Redis Streams bridge | ApplicationEvent + @EventListener |
+| **GitManager** | Dokploy | Docker Compose + profiles |
+| **AuditAccess** | Moteur 17 regles Django | 13 AuditRule @Component (Strategy) |
+| **AuditAccess** | Scoring RGAA x 0.5 + WCAG x 0.3 + DSFR x 0.2 | ScoringService + RuleConfig BDD |
+| **AuditAccess** | Celery async tasks | @Async + AsyncAuditService |
+| **AuditAccess** | Crawler Playwright | HtmlFetcherService (Jsoup) |
+| **Axiome 7E** | 7 phases cybernetiques | 7 @Service dans service/cycle/ |
+| **Axiome 7E** | Boucle de retroaction | FeedbackLoopListener ajuste les poids |
+| **Axiome 7E** | Observation de 2e ordre | EvolveService compare les audits |
+
+---
+
+*CyberAudit7E - Formation Spring Boot - Avril 2026*

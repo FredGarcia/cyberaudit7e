@@ -19,11 +19,16 @@ if not exist "src\main\java\com\cyberaudit7e\controller" mkdir "src\main\java\co
 if not exist "src\main\java\com\cyberaudit7e\domain" mkdir "src\main\java\com\cyberaudit7e\domain"
 if not exist "src\main\java\com\cyberaudit7e\dto" mkdir "src\main\java\com\cyberaudit7e\dto"
 if not exist "src\main\java\com\cyberaudit7e\event" mkdir "src\main\java\com\cyberaudit7e\event"
+if not exist "src\main\java\com\cyberaudit7e\integration" mkdir "src\main\java\com\cyberaudit7e\integration"
 if not exist "src\main\java\com\cyberaudit7e\repository" mkdir "src\main\java\com\cyberaudit7e\repository"
 if not exist "src\main\java\com\cyberaudit7e\service" mkdir "src\main\java\com\cyberaudit7e\service"
 if not exist "src\main\java\com\cyberaudit7e\domain\entity" mkdir "src\main\java\com\cyberaudit7e\domain\entity"
 if not exist "src\main\java\com\cyberaudit7e\domain\enums" mkdir "src\main\java\com\cyberaudit7e\domain\enums"
 if not exist "src\main\java\com\cyberaudit7e\domain\rule" mkdir "src\main\java\com\cyberaudit7e\domain\rule"
+if not exist "src\main\java\com\cyberaudit7e\dto\integration" mkdir "src\main\java\com\cyberaudit7e\dto\integration"
+if not exist "src\main\java\com\cyberaudit7e\integration\sailpoint" mkdir "src\main\java\com\cyberaudit7e\integration\sailpoint"
+if not exist "src\main\java\com\cyberaudit7e\integration\servicenow" mkdir "src\main\java\com\cyberaudit7e\integration\servicenow"
+if not exist "src\main\java\com\cyberaudit7e\integration\webhook" mkdir "src\main\java\com\cyberaudit7e\integration\webhook"
 if not exist "src\main\java\com\cyberaudit7e\service\cycle" mkdir "src\main\java\com\cyberaudit7e\service\cycle"
 if not exist "src\main\resources\db" mkdir "src\main\resources\db"
 if not exist "src\main\resources\static" mkdir "src\main\resources\static"
@@ -77,6 +82,276 @@ echo Décompression de .dockerignore
 >> ".dockerignore" echo( *.md
 certutil -hashfile ".dockerignore" SHA256 | findstr /I /C:"02887CC7342C9F3E4FA94CCFE5D10EC3D6E5DB18C96FC6E107E2C5E34F389923" >nul
 if %errorlevel%==0 (echo    [OK] .dockerignore) else (echo    [ERREUR] .dockerignore)
+echo Décompression de .env
+> ".env" echo( ##############################################
+>> ".env" echo( # CyberAudit7E — Variables d'environnement
+>> ".env" echo( # Fichier .env — à placer à la racine du projet
+>> ".env" echo( # (à côté de pom.xml et docker-compose.yml)
+>> ".env" echo( #
+>> ".env" echo( # ⚠️  NE PAS COMMITER CE FICHIER DANS GIT
+>> ".env" echo( # Ajouter .env dans .gitignore
+>> ".env" echo( ##############################################
+>> ".env" echo( 
+>> ".env" echo( # ══════════════════════════════════════════
+>> ".env" echo( # ServiceNow
+>> ".env" echo( # ══════════════════════════════════════════
+>> ".env" echo( 
+>> ".env" echo( # Instance (sans https://)
+>> ".env" echo( SNOW_INSTANCE=mon-instance.service-now.com
+>> ".env" echo( 
+>> ".env" echo( # Authentification Basic
+>> ".env" echo( SNOW_USERNAME=api_user
+>> ".env" echo( SNOW_PASSWORD=ChangeMe!S3cret
+>> ".env" echo( 
+>> ".env" echo( # Authentification OAuth 2.0 (si auth-method: oauth)
+>> ".env" echo( SNOW_CLIENT_ID=
+>> ".env" echo( SNOW_CLIENT_SECRET=
+>> ".env" echo( 
+>> ".env" echo( # ══════════════════════════════════════════
+>> ".env" echo( # SailPoint IdentityNow
+>> ".env" echo( # ══════════════════════════════════════════
+>> ".env" echo( 
+>> ".env" echo( # Tenant (sans le domaine — résultat: https://{SP_TENANT}.api.identitynow.com)
+>> ".env" echo( SP_TENANT=mon-tenant
+>> ".env" echo( 
+>> ".env" echo( # Personal Access Token (généré dans SailPoint → Preferences → PAT)
+>> ".env" echo( SP_CLIENT_ID=
+>> ".env" echo( SP_CLIENT_SECRET=
+>> ".env" echo( 
+>> ".env" echo( # Secret partagé pour valider les webhooks entrants
+>> ".env" echo( # (doit correspondre au Bearer Token configuré dans SailPoint Event Triggers)
+>> ".env" echo( SP_WEBHOOK_SECRET=mon-webhook-secret-ultra-long-et-unique
+certutil -hashfile ".env" SHA256 | findstr /I /C:"DAB0E7E5B029B200542087719D70B76551A8A9CF64BFEC1E74053FDBFBAD82DD" >nul
+if %errorlevel%==0 (echo    [OK] .env) else (echo    [ERREUR] .env)
+echo Décompression de Before-ServiceNow-SailPoint.md
+> "Before-ServiceNow-SailPoint.md" echo( # CyberAudit7E — Module Intégrations ServiceNow × SailPoint
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Architecture
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( ┌─────────────────┐         ┌───────────────────────────────┐         ┌─────────────────┐
+>> "Before-ServiceNow-SailPoint.md" echo( │    SailPoint     │         │        CyberAudit7E          │         │   ServiceNow    │
+>> "Before-ServiceNow-SailPoint.md" echo( │  Identity Cloud  │         │    (Spring Boot — M7+)       │         │     ITSM        │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │                               │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │ Event Triggers ──┼──POST──→│ /api/webhooks/sailpoint       │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    ↓                          │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │  V3 API  ←───────┼──GET───│ SailPointClient               │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    ↓                          │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │ TicketOrchestrator             │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    ↓ save SecurityTicket       │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    ↓ push to ServiceNow       │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │ ServiceNowClient ─────POST───→│ Table API /incident │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │                               │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │ /api/webhooks/servicenow ←────┼──POST──│ Business Rule   │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    ↓ update ticket status     │         │ (on state change)│
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │                               │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │ /api/tickets                  │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( │                  │         │    → Dashboard unifié         │         │                 │
+>> "Before-ServiceNow-SailPoint.md" echo( └─────────────────┘         └───────────────────────────────┘         └─────────────────┘
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Fichiers livrés
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( src/main/java/com/cyberaudit7e/
+>> "Before-ServiceNow-SailPoint.md" echo( ├── config/
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── IntegrationProperties.java       # Config externalisée ServiceNow + SailPoint
+>> "Before-ServiceNow-SailPoint.md" echo( │   └── RestTemplateConfig.java          # Bean RestTemplate (HTTP client)
+>> "Before-ServiceNow-SailPoint.md" echo( │
+>> "Before-ServiceNow-SailPoint.md" echo( ├── domain/
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── entity/
+>> "Before-ServiceNow-SailPoint.md" echo( │   │   └── SecurityTicket.java          # Entité JPA — ticket unifié
+>> "Before-ServiceNow-SailPoint.md" echo( │   └── enums/
+>> "Before-ServiceNow-SailPoint.md" echo( │       ├── TicketSource.java            # AUDIT, SAILPOINT, SERVICENOW, MANUAL
+>> "Before-ServiceNow-SailPoint.md" echo( │       ├── TicketStatus.java            # NEW → OPEN → IN_PROGRESS → RESOLVED → CLOSED
+>> "Before-ServiceNow-SailPoint.md" echo( │       └── TicketSeverity.java          # CRITICAL, HIGH, MEDIUM, LOW, INFO
+>> "Before-ServiceNow-SailPoint.md" echo( │
+>> "Before-ServiceNow-SailPoint.md" echo( ├── repository/
+>> "Before-ServiceNow-SailPoint.md" echo( │   └── SecurityTicketRepository.java    # JPA + requêtes paginées + recherche
+>> "Before-ServiceNow-SailPoint.md" echo( │
+>> "Before-ServiceNow-SailPoint.md" echo( ├── dto/integration/
+>> "Before-ServiceNow-SailPoint.md" echo( │   └── TicketDto.java                   # DTO de réponse API
+>> "Before-ServiceNow-SailPoint.md" echo( │
+>> "Before-ServiceNow-SailPoint.md" echo( ├── integration/
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── TicketOrchestrator.java          # Pont central — persiste + pousse vers SNOW
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── TicketController.java            # REST API /api/tickets (CRUD + stats)
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── servicenow/
+>> "Before-ServiceNow-SailPoint.md" echo( │   │   └── ServiceNowClient.java        # Client REST — OAuth + Table API
+>> "Before-ServiceNow-SailPoint.md" echo( │   ├── sailpoint/
+>> "Before-ServiceNow-SailPoint.md" echo( │   │   └── SailPointClient.java         # Client REST — OAuth + V3 API
+>> "Before-ServiceNow-SailPoint.md" echo( │   └── webhook/
+>> "Before-ServiceNow-SailPoint.md" echo( │       ├── SailPointWebhookController.java     # POST /api/webhooks/sailpoint
+>> "Before-ServiceNow-SailPoint.md" echo( │       └── ServiceNowWebhookController.java    # POST /api/webhooks/servicenow
+>> "Before-ServiceNow-SailPoint.md" echo( │
+>> "Before-ServiceNow-SailPoint.md" echo( src/main/resources/db/migration/
+>> "Before-ServiceNow-SailPoint.md" echo( └── V5__security_tickets.sql             # Table security_tickets + index
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( application-integrations.yml             # Config YAML à fusionner
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Installation
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 1. Copier les fichiers
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```bash
+>> "Before-ServiceNow-SailPoint.md" echo( # Depuis la racine du projet
+>> "Before-ServiceNow-SailPoint.md" echo( cp -r src/main/java/com/cyberaudit7e/config/* ^<projet^>/src/main/java/com/cyberaudit7e/config/
+>> "Before-ServiceNow-SailPoint.md" echo( cp -r src/main/java/com/cyberaudit7e/domain/* ^<projet^>/src/main/java/com/cyberaudit7e/domain/
+>> "Before-ServiceNow-SailPoint.md" echo( cp -r src/main/java/com/cyberaudit7e/repository/* ^<projet^>/src/main/java/com/cyberaudit7e/repository/
+>> "Before-ServiceNow-SailPoint.md" echo( cp -r src/main/java/com/cyberaudit7e/dto/* ^<projet^>/src/main/java/com/cyberaudit7e/dto/
+>> "Before-ServiceNow-SailPoint.md" echo( cp -r src/main/java/com/cyberaudit7e/integration/* ^<projet^>/src/main/java/com/cyberaudit7e/integration/
+>> "Before-ServiceNow-SailPoint.md" echo( cp src/main/resources/db/migration/V5__security_tickets.sql ^<projet^>/src/main/resources/db/migration/
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 2. Ajouter la config YAML
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( Fusionner le contenu de `application-integrations.yml` dans votre `application.yml`.
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 3. Lancer
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```bash
+>> "Before-ServiceNow-SailPoint.md" echo( mvnw.cmd spring-boot:run
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( Flyway crée automatiquement la table `security_tickets`.
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Test en mode développement (sans ServiceNow/SailPoint)
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( Les intégrations sont **désactivées par défaut** (`enabled: false`).
+>> "Before-ServiceNow-SailPoint.md" echo( Le module fonctionne en mode standalone :
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```bash
+>> "Before-ServiceNow-SailPoint.md" echo( REM Créer un ticket manuellement
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s -X POST http://localhost:8080/api/tickets ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -H "Content-Type: application/json" ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -d "{\"title\":\"Test violation SoD\",\"description\":\"Utilisateur avec accès incompatibles\",\"severity\":\"HIGH\",\"category\":\"sod_violation\"}" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Simuler un webhook SailPoint
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s -X POST http://localhost:8080/api/webhooks/sailpoint ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -H "Content-Type: application/json" ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -d "{\"_metadata\":{\"triggerId\":\"idn:policy-violation\",\"invocationId\":\"test-123\"},\"identity\":{\"id\":\"uid-456\",\"name\":\"Jean Dupont\",\"type\":\"IDENTITY\"},\"policyName\":\"SoD Finance-Achats\",\"violatingAccessItems\":[{\"name\":\"Finance Admin\"},{\"name\":\"Procurement Approver\"}]}" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Lister les tickets
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s http://localhost:8080/api/tickets ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Tickets ouverts
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s http://localhost:8080/api/tickets/open ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Filtrer par source
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s "http://localhost:8080/api/tickets?source=SAILPOINT" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Filtrer par sévérité
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s "http://localhost:8080/api/tickets?severity=HIGH" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Recherche
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s "http://localhost:8080/api/tickets/search?q=Dupont" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Statistiques
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s http://localhost:8080/api/tickets/stats ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Résoudre un ticket
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s -X POST http://localhost:8080/api/tickets/1/resolve ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -H "Content-Type: application/json" ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -d "{\"closeNotes\":\"Accès révoqué dans SailPoint\"}" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Statut des intégrations
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s http://localhost:8080/api/tickets/integrations ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Simuler un callback ServiceNow
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s -X POST http://localhost:8080/api/webhooks/servicenow ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -H "Content-Type: application/json" ^^
+>> "Before-ServiceNow-SailPoint.md" echo(   -d "{\"sys_id\":\"abc123\",\"number\":\"INC0012345\",\"state\":3,\"assigned_to\":\"Équipe Sécurité\"}" ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( REM Sync manuelle vers ServiceNow
+>> "Before-ServiceNow-SailPoint.md" echo( curl -s -X POST http://localhost:8080/api/tickets/sync ^| jq .
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Configuration ServiceNow (production)
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 1. Créer un utilisateur API
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( - System Administration → Users → New
+>> "Before-ServiceNow-SailPoint.md" echo( - Rôles : `itil`, `rest_service`
+>> "Before-ServiceNow-SailPoint.md" echo( - Si OAuth : Admin → OAuth → Application Registry → New
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 2. Configurer le webhook callback (ServiceNow → CyberAudit7E)
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( - System Web Services → Outbound → REST Message → New
+>> "Before-ServiceNow-SailPoint.md" echo( - Endpoint : `https://cyberaudit7e.local/api/webhooks/servicenow`
+>> "Before-ServiceNow-SailPoint.md" echo( - Method : POST
+>> "Before-ServiceNow-SailPoint.md" echo( - Business Rule sur `incident` :
+>> "Before-ServiceNow-SailPoint.md" echo(   - When : after, Update
+>> "Before-ServiceNow-SailPoint.md" echo(   - Condition : `current.state.changesTo()`
+>> "Before-ServiceNow-SailPoint.md" echo(   - Script : appeler le REST Message avec sys_id, number, state
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 3. Activer dans application.yml
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```yaml
+>> "Before-ServiceNow-SailPoint.md" echo( cyberaudit7e:
+>> "Before-ServiceNow-SailPoint.md" echo(   integrations:
+>> "Before-ServiceNow-SailPoint.md" echo(     servicenow:
+>> "Before-ServiceNow-SailPoint.md" echo(       enabled: true
+>> "Before-ServiceNow-SailPoint.md" echo(       instance: mon-instance.service-now.com
+>> "Before-ServiceNow-SailPoint.md" echo(       auth-method: basic
+>> "Before-ServiceNow-SailPoint.md" echo(       username: api_user
+>> "Before-ServiceNow-SailPoint.md" echo(       password: ${SNOW_PASSWORD}
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Configuration SailPoint (production)
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 1. Créer un Personal Access Token
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( - Identity Security Cloud → Preferences → Personal Access Tokens → New Token
+>> "Before-ServiceNow-SailPoint.md" echo( - Noter le Client ID et le Secret
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 2. Configurer les Event Triggers
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( - Admin → Event Triggers → Sélectionner un trigger (ex: Policy Violation)
+>> "Before-ServiceNow-SailPoint.md" echo( - + Subscribe → Type: HTTP
+>> "Before-ServiceNow-SailPoint.md" echo( - Integration URL : `https://cyberaudit7e.local/api/webhooks/sailpoint`
+>> "Before-ServiceNow-SailPoint.md" echo( - Auth Type : Bearer Token → coller le webhook-secret configuré
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 3. Triggers recommandés
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ^| Trigger ^| Événement ^| Sévérité auto ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^|---------^|-----------^|---------------^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| `idn:policy-violation` ^| Violation SoD ^| HIGH ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| `idn:identity-deleted` ^| Identité supprimée ^| MEDIUM ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| `idn:access-request-pre-approval` ^| Demande d'accès ^| MEDIUM ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| `idn:account-aggregation-completed` ^| Agrégation terminée ^| LOW ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| `idn:certification-signed-off` ^| Certification signée ^| LOW ^|
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ### 4. Activer dans application.yml
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ```yaml
+>> "Before-ServiceNow-SailPoint.md" echo( cyberaudit7e:
+>> "Before-ServiceNow-SailPoint.md" echo(   integrations:
+>> "Before-ServiceNow-SailPoint.md" echo(     sailpoint:
+>> "Before-ServiceNow-SailPoint.md" echo(       enabled: true
+>> "Before-ServiceNow-SailPoint.md" echo(       tenant: mon-tenant
+>> "Before-ServiceNow-SailPoint.md" echo(       client-id: ${SP_CLIENT_ID}
+>> "Before-ServiceNow-SailPoint.md" echo(       client-secret: ${SP_CLIENT_SECRET}
+>> "Before-ServiceNow-SailPoint.md" echo(       webhook-secret: mon-secret-partage
+>> "Before-ServiceNow-SailPoint.md" echo( ```
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ## Endpoints API
+>> "Before-ServiceNow-SailPoint.md" echo( 
+>> "Before-ServiceNow-SailPoint.md" echo( ^| Méthode ^| Endpoint ^| Description ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^|---------^|----------^|-------------^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets ^| Liste paginée (filtres: source, status, severity) ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets/open ^| Tickets ouverts uniquement ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets/{id} ^| Détail d'un ticket ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets/search?q=xxx ^| Recherche full-text ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets/stats ^| Statistiques (par source, statut, sévérité) ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/tickets/integrations ^| Statut des connexions SNOW/SP ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| POST ^| /api/tickets ^| Créer un ticket manuellement ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| POST ^| /api/tickets/{id}/resolve ^| Résoudre (+ sync SNOW) ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| POST ^| /api/tickets/sync ^| Synchroniser les tickets non poussés ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| POST ^| /api/webhooks/sailpoint ^| Webhook récepteur SailPoint ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| POST ^| /api/webhooks/servicenow ^| Webhook callback ServiceNow ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/webhooks/sailpoint/test ^| Test connectivité webhook SP ^|
+>> "Before-ServiceNow-SailPoint.md" echo( ^| GET ^| /api/webhooks/servicenow/test ^| Test connectivité webhook SNOW ^|
+certutil -hashfile "Before-ServiceNow-SailPoint.md" SHA256 | findstr /I /C:"781DE186A675185E2138FA2C580DC1660F17D46FD3EB634F18231168902510B3" >nul
+if %errorlevel%==0 (echo    [OK] Before-ServiceNow-SailPoint.md) else (echo    [ERREUR] Before-ServiceNow-SailPoint.md)
 echo Décompression de docker-compose.yml
 > "docker-compose.yml" echo( ##############################################
 >> "docker-compose.yml" echo( # CyberAudit7E — Docker Compose
@@ -425,6 +700,11 @@ echo Décompression de pom.xml
 >> "pom.xml" echo( 			^<artifactId^>springdoc-openapi-starter-webmvc-ui^</artifactId^>
 >> "pom.xml" echo( 			^<version^>2.8.4^</version^>
 >> "pom.xml" echo( 		^</dependency^>
+>> "pom.xml" echo( 		^<dependency^>
+>> "pom.xml" echo( 			^<groupId^>me.paulschwarz^</groupId^>
+>> "pom.xml" echo( 			^<artifactId^>spring-dotenv^</artifactId^>
+>> "pom.xml" echo( 			^<version^>4.0.0^</version^>
+>> "pom.xml" echo( 		^</dependency^>
 >> "pom.xml" echo( ^<dependency^>
 >> "pom.xml" echo( 	^<groupId^>org.postgresql^</groupId^>
 >> "pom.xml" echo( 	^<artifactId^>postgresql^</artifactId^>
@@ -486,7 +766,7 @@ echo Décompression de pom.xml
 >> "pom.xml" echo( 	^</build^>
 >> "pom.xml" echo( 
 >> "pom.xml" echo( ^</project^>
-certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"A5D727D5770786C0FBD198A8E4B9AD1D1A3FE30E5CAD3AC621EABE7F4F622C95" >nul
+certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"4BEB3E353771182218A5514E9098736E301DC8059DD488323B85E832B0037964" >nul
 if %errorlevel%==0 (echo    [OK] pom.xml) else (echo    [ERREUR] pom.xml)
 echo Décompression de README-new.md
 > "README-new.md" echo( Analyse du projet CyberAudit7E
@@ -1822,6 +2102,512 @@ echo Décompression de README7.md
 >> "README7.md" echo( ^| Kubernetes ^| Helm chart + HPA sur les métriques d'audit ^| 1 jour ^|
 certutil -hashfile "README7.md" SHA256 | findstr /I /C:"071C50AE7DD4C94675DD714DE70A8CD0212C500FE20AA8CD3F13925A835FD6B3" >nul
 if %errorlevel%==0 (echo    [OK] README7.md) else (echo    [ERREUR] README7.md)
+echo Décompression de Test-Dev.cmd
+> "Test-Dev.cmd" echo( REM Créer un ticket manuellement
+>> "Test-Dev.cmd" echo( curl -s -X POST http://localhost:8080/api/tickets ^^
+>> "Test-Dev.cmd" echo(   -H "Content-Type: application/json" ^^
+>> "Test-Dev.cmd" echo(   -d "{\"title\":\"Test violation SoD\",\"description\":\"Utilisateur avec accès incompatibles\",\"severity\":\"HIGH\",\"category\":\"sod_violation\"}" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Simuler un webhook SailPoint
+>> "Test-Dev.cmd" echo( curl -s -X POST http://localhost:8080/api/webhooks/sailpoint ^^
+>> "Test-Dev.cmd" echo(   -H "Content-Type: application/json" ^^
+>> "Test-Dev.cmd" echo(   -d "{\"_metadata\":{\"triggerId\":\"idn:policy-violation\",\"invocationId\":\"test-123\"},\"identity\":{\"id\":\"uid-456\",\"name\":\"Jean Dupont\",\"type\":\"IDENTITY\"},\"policyName\":\"SoD Finance-Achats\",\"violatingAccessItems\":[{\"name\":\"Finance Admin\"},{\"name\":\"Procurement Approver\"}]}" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Lister les tickets
+>> "Test-Dev.cmd" echo( curl -s http://localhost:8080/api/tickets ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Tickets ouverts
+>> "Test-Dev.cmd" echo( curl -s http://localhost:8080/api/tickets/open ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Filtrer par source
+>> "Test-Dev.cmd" echo( curl -s "http://localhost:8080/api/tickets?source=SAILPOINT" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Filtrer par sévérité
+>> "Test-Dev.cmd" echo( curl -s "http://localhost:8080/api/tickets?severity=HIGH" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Recherche
+>> "Test-Dev.cmd" echo( curl -s "http://localhost:8080/api/tickets/search?q=Dupont" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Statistiques
+>> "Test-Dev.cmd" echo( curl -s http://localhost:8080/api/tickets/stats ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Résoudre un ticket
+>> "Test-Dev.cmd" echo( curl -s -X POST http://localhost:8080/api/tickets/1/resolve ^^
+>> "Test-Dev.cmd" echo(   -H "Content-Type: application/json" ^^
+>> "Test-Dev.cmd" echo(   -d "{\"closeNotes\":\"Accès révoqué dans SailPoint\"}" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Statut des intégrations
+>> "Test-Dev.cmd" echo( curl -s http://localhost:8080/api/tickets/integrations ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Simuler un callback ServiceNow
+>> "Test-Dev.cmd" echo( curl -s -X POST http://localhost:8080/api/webhooks/servicenow ^^
+>> "Test-Dev.cmd" echo(   -H "Content-Type: application/json" ^^
+>> "Test-Dev.cmd" echo(   -d "{\"sys_id\":\"abc123\",\"number\":\"INC0012345\",\"state\":3,\"assigned_to\":\"Équipe Sécurité\"}" ^| jq .
+>> "Test-Dev.cmd" echo( 
+>> "Test-Dev.cmd" echo( REM Sync manuelle vers ServiceNow
+>> "Test-Dev.cmd" echo( curl -s -X POST http://localhost:8080/api/tickets/sync ^| jq .
+certutil -hashfile "Test-Dev.cmd" SHA256 | findstr /I /C:"2D814CC7C3C058FF37AE3B486461ADA4CF8F1DBFCC9F45100FDFC3FFC60F7FDA" >nul
+if %errorlevel%==0 (echo    [OK] Test-Dev.cmd) else (echo    [ERREUR] Test-Dev.cmd)
+echo Décompression de tests-cyberaudit7e.bat
+> "tests-cyberaudit7e.bat" echo( @echo off
+>> "tests-cyberaudit7e.bat" echo( setlocal EnableDelayedExpansion
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  CyberAudit7E - Script de tests complet (Windows CMD)
+>> "tests-cyberaudit7e.bat" echo( REM  Usage : tests-cyberaudit7e.bat
+>> "tests-cyberaudit7e.bat" echo( REM  Prerequis : curl, jq (winget install jqlang.jq)
+>> "tests-cyberaudit7e.bat" echo( REM  L'application doit tourner sur http://localhost:8080
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( set BASE=http://localhost:8080
+>> "tests-cyberaudit7e.bat" echo( set JSON=-H "Content-Type: application/json"
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ============================================================
+>> "tests-cyberaudit7e.bat" echo( echo   CyberAudit7E - Tests complets
+>> "tests-cyberaudit7e.bat" echo( echo   %%date%% %%time:~0,8%%
+>> "tests-cyberaudit7e.bat" echo( echo ============================================================
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  1. SANTE ET SYSTEME
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   1. SANTE ET SYSTEME
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [1.1] GET /api/health - Health check complet
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/health ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [1.2] GET /api/ - Index API (liste des endpoints)
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/ ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [1.3] GET /v3/api-docs - OpenAPI (5 premiers paths)
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/v3/api-docs ^| jq ".paths ^| keys[:5]"
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  2. GESTION DES SITES
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   2. GESTION DES SITES
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.1] GET /api/sites - Lister les sites (seed Flyway)
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/sites?page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.2] POST /api/sites - Creer un nouveau site
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/sites %%JSON%% -d "{\"url\":\"https://www.numerique.gouv.fr\",\"name\":\"DINUM\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.3] GET /api/sites/1 - Detail d'un site
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/sites/1 ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.4] GET /api/sites/search?name=gouv - Recherche par nom
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/sites/search?name=gouv" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.5] POST /api/sites - Test conflit (409 attendu)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/sites %%JSON%% -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Doublon\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [2.6] POST /api/sites - Test validation (400 attendu)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/sites %%JSON%% -d "{\"url\":\"\",\"name\":\"\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  3. AUDIT SYNCHRONE
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   3. AUDIT SYNCHRONE (cycle 7E complet)
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.1] POST /api/audits - Audit service-public.fr
+>> "tests-cyberaudit7e.bat" echo( echo       (Crawl HTTP reel - peut prendre quelques secondes...)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Service Public\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.2] POST /api/audits - Audit site .gouv.fr (DSFR eleve)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouvernement FR\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.3] POST /api/audits - Audit site non-gouv (DSFR bas)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"https://www.example.com\",\"name\":\"Example.com\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.4] POST /api/audits - 2eme audit meme site (test tendance)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"https://www.service-public.fr\",\"name\":\"Service Public\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.5] POST /api/audits - Test validation (400 attendu)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"\",\"name\":\"\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [3.6] POST /api/audits - Test site inaccessible (mode degrade)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits %%JSON%% -d "{\"url\":\"https://site-inexistant-xyz.invalid\",\"name\":\"Test 404\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  4. RAPPORTS ET CONSULTATION
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   4. RAPPORTS ET CONSULTATION
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.1] GET /api/audits/list - Rapports pagines (tri date desc)
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/audits/list?page=0^&size=5^&sortBy=auditedAt^&direction=desc" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.2] GET /api/audits/list - Rapports tries par score asc
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/audits/list?page=0^&size=5^&sortBy=scoreGlobal^&direction=asc" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.3] GET /api/audits/1 - Detail d'un rapport
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/1 ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.4] GET /api/audits/site/1 - Historique du site 1
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/audits/site/1?page=0^&size=5" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.5] GET /api/audits/search?q=gouv - Recherche full-text
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/audits/search?q=gouv^&page=0^&size=5" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.6] GET /api/audits/alerts - Alertes (score inf 0.7)
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/audits/alerts?threshold=0.7^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.7] GET /api/audits/stats - Statistiques globales
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/stats ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [4.8] GET /api/audits/999 - Test 404
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/999 ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  5. AUDIT ASYNCHRONE
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   5. AUDIT ASYNCHRONE
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [5.1] POST /api/audits/async - Soumettre un audit async
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits/async %%JSON%% -d "{\"url\":\"https://www.legifrance.gouv.fr\",\"name\":\"Legifrance\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo      Attente 5 secondes pour laisser le job tourner...
+>> "tests-cyberaudit7e.bat" echo( timeout /t 5 /nobreak ^>nul
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [5.2] GET /api/audits/async/1 - Statut du job 1
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/async/1 ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [5.3] GET /api/audits/async - Liste de tous les jobs
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/async ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  6. BATCH PARALLELE
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   6. BATCH PARALLELE
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [6.1] POST /api/audits/batch - 3 sites en parallele
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits/batch %%JSON%% -d "{\"sites\":[{\"url\":\"https://www.service-public.fr\",\"name\":\"SP\"},{\"url\":\"https://www.gouvernement.gouv.fr\",\"name\":\"Gouv\"},{\"url\":\"https://www.example.com\",\"name\":\"Example\"}]}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo      Attente 10 secondes pour le batch...
+>> "tests-cyberaudit7e.bat" echo( timeout /t 10 /nobreak ^>nul
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [6.2] GET /api/audits/async - Verifier les jobs du batch
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/async ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [6.3] DELETE /api/audits/async - Nettoyer les jobs termines
+>> "tests-cyberaudit7e.bat" echo( curl -s -X DELETE %%BASE%%/api/audits/async ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  7. CONFIGURATION ET POIDS DE SCORING
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   7. CONFIGURATION ET POIDS DE SCORING
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [7.1] GET /api/config/weights - Poids actuels
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/config/weights ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [7.2] PUT /api/config/weights/RGAA - Modifier le poids RGAA
+>> "tests-cyberaudit7e.bat" echo( curl -s -X PUT %%BASE%%/api/config/weights/RGAA %%JSON%% -d "{\"weight\":0.6}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [7.3] GET /api/config/weights - Verifier la modification
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/config/weights ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [7.4] POST /api/config/weights/reset - Remettre par defaut
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/config/weights/reset ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [7.5] GET /api/config/weights - Verifier le reset
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/config/weights ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  8. SCHEDULER
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   8. SCHEDULER
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [8.1] GET /api/audits/schedule - Info scheduler
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/schedule ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [8.2] POST /api/audits/schedule/trigger - Declenchement manuel
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/audits/schedule/trigger ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  9. TICKETS DE SECURITE (Integrations)
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   9. TICKETS DE SECURITE (ServiceNow / SailPoint)
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.1] POST /api/tickets - Creer un ticket manuellement
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets %%JSON%% -d "{\"title\":\"Violation SoD Finance\",\"description\":\"Utilisateur avec acces Finance + Achats incompatibles\",\"severity\":\"HIGH\",\"category\":\"sod_violation\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.2] POST /api/tickets - Creer un ticket CRITICAL
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets %%JSON%% -d "{\"title\":\"Compte admin orphelin detecte\",\"description\":\"Compte AD admin sans proprietaire identifie\",\"severity\":\"CRITICAL\",\"category\":\"orphan_account\",\"siteUrl\":\"https://ad.corp.local\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.3] POST /api/tickets - Creer un ticket LOW
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets %%JSON%% -d "{\"title\":\"Certification trimestrielle completee\",\"description\":\"Campagne Q1 2026 signee par le manager\",\"severity\":\"LOW\",\"category\":\"certification_issue\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.4] Webhook SailPoint - Policy Violation
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/sailpoint %%JSON%% -d "{\"_metadata\":{\"triggerId\":\"idn:policy-violation\",\"invocationId\":\"inv-001\"},\"identity\":{\"id\":\"uid-789\",\"name\":\"Marie Martin\",\"type\":\"IDENTITY\"},\"policyName\":\"SoD Comptabilite-Tresorerie\",\"violatingAccessItems\":[{\"name\":\"Comptabilite Admin\"},{\"name\":\"Tresorerie Approbateur\"}]}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.5] Webhook SailPoint - Identity Deleted
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/sailpoint %%JSON%% -d "{\"_metadata\":{\"triggerId\":\"idn:identity-deleted\",\"invocationId\":\"inv-002\"},\"identity\":{\"id\":\"uid-999\",\"name\":\"Pierre Durand\",\"type\":\"IDENTITY\"}}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.6] Webhook SailPoint - Access Request
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/sailpoint %%JSON%% -d "{\"_metadata\":{\"triggerId\":\"idn:access-request-pre-approval\",\"invocationId\":\"inv-003\"},\"requestedFor\":{\"id\":\"uid-111\",\"name\":\"Sophie Bernard\"},\"accessRequestId\":\"ar-555\",\"requestedItems\":[{\"name\":\"VPN Full Access\",\"type\":\"ACCESS_PROFILE\"},{\"name\":\"Serveur Production\",\"type\":\"ROLE\"}]}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.7] Webhook SailPoint - Certification
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/sailpoint %%JSON%% -d "{\"_metadata\":{\"triggerId\":\"idn:certification-signed-off\",\"invocationId\":\"inv-004\"},\"certification\":{\"name\":\"Revue Q1 2026 - Equipe Finance\"}}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [9.8] Webhook SailPoint - Test dedoublonnage (meme uid-789)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/sailpoint %%JSON%% -d "{\"_metadata\":{\"triggerId\":\"idn:policy-violation\",\"invocationId\":\"inv-005\"},\"identity\":{\"id\":\"uid-789\",\"name\":\"Marie Martin\",\"type\":\"IDENTITY\"},\"policyName\":\"SoD Comptabilite-Tresorerie UPDATED\",\"violatingAccessItems\":[{\"name\":\"Comptabilite Admin\"},{\"name\":\"Tresorerie Approbateur\"},{\"name\":\"Audit Viewer\"}]}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  10. CONSULTATION ET FILTRAGE DES TICKETS
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   10. CONSULTATION ET FILTRAGE DES TICKETS
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.1] GET /api/tickets - Tous les tickets (pagine)
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets?page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.2] GET /api/tickets/open - Tickets ouverts
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets/open?page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.3] Filtrer par source SAILPOINT
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets?source=SAILPOINT^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.4] Filtrer par source MANUAL
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets?source=MANUAL^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.5] Filtrer par severite CRITICAL
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets?severity=CRITICAL^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.6] Filtrer par severite HIGH
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets?severity=HIGH^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.7] Recherche "Martin"
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets/search?q=Martin^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.8] Recherche "SoD"
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets/search?q=SoD^&page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [10.9] Detail du ticket 1
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/tickets/1 ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  11. ACTIONS SUR LES TICKETS
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   11. ACTIONS SUR LES TICKETS
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [11.1] Resoudre le ticket 3
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets/3/resolve %%JSON%% -d "{\"closeNotes\":\"Certification validee - aucune action requise\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [11.2] Resoudre le ticket 1
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets/1/resolve %%JSON%% -d "{\"closeNotes\":\"Acces incompatibles revoques dans SailPoint\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [11.3] Statistiques apres resolutions
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/tickets/stats ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [11.4] Tickets encore ouverts
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/tickets/open?page=0^&size=10" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [11.5] Sync manuelle vers ServiceNow
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/tickets/sync ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  12. WEBHOOKS SERVICENOW (callback)
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   12. WEBHOOKS SERVICENOW (callbacks)
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [12.1] Test connectivite ServiceNow
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/webhooks/servicenow/test ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [12.2] Test connectivite SailPoint
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/webhooks/sailpoint/test ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [12.3] Callback SNOW simule (ticket inconnu)
+>> "tests-cyberaudit7e.bat" echo( curl -s -X POST %%BASE%%/api/webhooks/servicenow %%JSON%% -d "{\"sys_id\":\"unknown-123\",\"number\":\"INC9999999\",\"state\":3,\"assigned_to\":\"Equipe Securite\"}" ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [12.4] Statut des integrations
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/tickets/integrations ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( pause
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( REM  13. STATISTIQUES FINALES
+>> "tests-cyberaudit7e.bat" echo( REM ============================================================
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo   13. STATISTIQUES FINALES
+>> "tests-cyberaudit7e.bat" echo( echo ------------------------------------------------------------
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [13.1] Health final
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/health ^| jq "{status,version,profile,rulesLoaded,sseClients}"
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [13.2] Stats audits
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/audits/stats ^| jq "{totalSites,totalAudits,averageScore,trends}"
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [13.3] Stats tickets
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/tickets/stats ^| jq .
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [13.4] Poids finaux
+>> "tests-cyberaudit7e.bat" echo( curl -s %%BASE%%/api/config/weights ^| jq "{RGAA:.RGAA.weight,WCAG:.WCAG.weight,DSFR:.DSFR.weight,totalWeight,normalized}"
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo [13.5] Tous les sites avec scores
+>> "tests-cyberaudit7e.bat" echo( curl -s "%%BASE%%/api/sites?page=0^&size=20" ^| jq ".content[] ^| {name,currentPhase,auditsCount,lastScore}"
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo ============================================================
+>> "tests-cyberaudit7e.bat" echo( echo   TESTS TERMINES
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo   Dashboards :
+>> "tests-cyberaudit7e.bat" echo( echo     http://localhost:8080/
+>> "tests-cyberaudit7e.bat" echo( echo     http://localhost:8080/admin.html
+>> "tests-cyberaudit7e.bat" echo( echo     http://localhost:8080/exploitation.html
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo   Documentation :
+>> "tests-cyberaudit7e.bat" echo( echo     http://localhost:8080/swagger-ui.html
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( echo   Console H2 :
+>> "tests-cyberaudit7e.bat" echo( echo     http://localhost:8080/h2-console
+>> "tests-cyberaudit7e.bat" echo( echo     JDBC URL: jdbc:h2:mem:cyberaudit7e
+>> "tests-cyberaudit7e.bat" echo( echo     User: sa / Password: (vide)
+>> "tests-cyberaudit7e.bat" echo( echo ============================================================
+>> "tests-cyberaudit7e.bat" echo( echo.
+>> "tests-cyberaudit7e.bat" echo( 
+>> "tests-cyberaudit7e.bat" echo( endlocal
+>> "tests-cyberaudit7e.bat" echo( pause
+certutil -hashfile "tests-cyberaudit7e.bat" SHA256 | findstr /I /C:"3DA1DBBC41C87FB94382607F193583A2D79B6FD306618C24E26D678A23300965" >nul
+if %errorlevel%==0 (echo    [OK] tests-cyberaudit7e.bat) else (echo    [ERREUR] tests-cyberaudit7e.bat)
 echo Décompression de TESTS-REFERENCE.md
 > "TESTS-REFERENCE.md" echo( # CyberAudit7E — Référence rapide des tests curl
 >> "TESTS-REFERENCE.md" echo( 
@@ -3379,6 +4165,128 @@ echo Décompression de src\main\java\com\cyberaudit7e\config\AsyncConfig.java
 >> "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" SHA256 | findstr /I /C:"FCDC3EB189D431EB28F08FCD2FCB3019B1AD525AC2EDEB3AF20F916A39FBB7F7" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\AsyncConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\AsyncConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\IntegrationProperties.java
+> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( import org.springframework.boot.context.properties.ConfigurationProperties;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  * Configuration externalisée pour les intégrations ServiceNow et SailPoint.
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  * Lue depuis application.yml :
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  *   cyberaudit7e.integrations.servicenow.*
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  *   cyberaudit7e.integrations.sailpoint.*
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  * Les secrets sont injectés via variables d'environnement en prod :
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  *   SNOW_CLIENT_ID, SNOW_CLIENT_SECRET, SP_CLIENT_ID, SP_CLIENT_SECRET
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( @ConfigurationProperties(prefix = "cyberaudit7e.integrations")
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( public class IntegrationProperties {
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     private ServiceNowConfig servicenow = new ServiceNowConfig();
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     private SailPointConfig sailpoint = new SailPointConfig();
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public ServiceNowConfig getServicenow() { return servicenow; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public void setServicenow(ServiceNowConfig servicenow) { this.servicenow = servicenow; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public SailPointConfig getSailpoint() { return sailpoint; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public void setSailpoint(SailPointConfig sailpoint) { this.sailpoint = sailpoint; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     // ── ServiceNow Configuration ──
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public static class ServiceNowConfig {
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Activer/désactiver l'intégration ServiceNow */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private boolean enabled = false;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Instance ServiceNow (ex: "mon-instance.service-now.com") */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String instance = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** OAuth 2.0 Client ID */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String clientId = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** OAuth 2.0 Client Secret */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String clientSecret = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Username pour Basic Auth (fallback si OAuth non configuré) */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String username = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Password pour Basic Auth */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String password = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Méthode d'authentification : "oauth" ou "basic" */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String authMethod = "basic";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Assignment group par défaut pour les incidents créés */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String assignmentGroup = "Accessibility Team";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Catégorie par défaut pour les incidents */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String defaultCategory = "Security";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Sous-catégorie par défaut */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String defaultSubcategory = "Vulnerability";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Timeout des appels HTTP en secondes */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private int timeout = 30;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         // Getters ^& Setters
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public boolean isEnabled() { return enabled; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setEnabled(boolean enabled) { this.enabled = enabled; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getInstance() { return instance; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setInstance(String instance) { this.instance = instance; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getClientId() { return clientId; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setClientId(String clientId) { this.clientId = clientId; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getClientSecret() { return clientSecret; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setClientSecret(String clientSecret) { this.clientSecret = clientSecret; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getUsername() { return username; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setUsername(String username) { this.username = username; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getPassword() { return password; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setPassword(String password) { this.password = password; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getAuthMethod() { return authMethod; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setAuthMethod(String authMethod) { this.authMethod = authMethod; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getAssignmentGroup() { return assignmentGroup; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setAssignmentGroup(String g) { this.assignmentGroup = g; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getDefaultCategory() { return defaultCategory; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setDefaultCategory(String c) { this.defaultCategory = c; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getDefaultSubcategory() { return defaultSubcategory; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setDefaultSubcategory(String s) { this.defaultSubcategory = s; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public int getTimeout() { return timeout; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setTimeout(int timeout) { this.timeout = timeout; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** URL de base de l'API ServiceNow */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getBaseUrl() {
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(             return "https://" + instance;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     // ── SailPoint Configuration ──
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     public static class SailPointConfig {
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Activer/désactiver l'intégration SailPoint */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private boolean enabled = false;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Tenant SailPoint (ex: "mon-tenant") */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String tenant = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Personal Access Token — Client ID */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String clientId = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Personal Access Token — Client Secret */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String clientSecret = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Secret partagé pour valider les webhooks entrants */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private String webhookSecret = "";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** Timeout en secondes */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         private int timeout = 30;
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         // Getters ^& Setters
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public boolean isEnabled() { return enabled; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setEnabled(boolean enabled) { this.enabled = enabled; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getTenant() { return tenant; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setTenant(String tenant) { this.tenant = tenant; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getClientId() { return clientId; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setClientId(String clientId) { this.clientId = clientId; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getClientSecret() { return clientSecret; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setClientSecret(String clientSecret) { this.clientSecret = clientSecret; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getWebhookSecret() { return webhookSecret; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setWebhookSecret(String s) { this.webhookSecret = s; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public int getTimeout() { return timeout; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public void setTimeout(int timeout) { this.timeout = timeout; }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         /** URL de base de l'API SailPoint */
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         public String getBaseUrl() {
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(             return "https://" + tenant + ".api.identitynow.com";
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" SHA256 | findstr /I /C:"59AB4D7FA5333DA82F53086CBD7D4273E27F9F01D26AC4152893BACD12F2AC24" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\IntegrationProperties.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\IntegrationProperties.java)
 echo Décompression de src\main\java\com\cyberaudit7e\config\JacksonConfig.java
 > "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( package com.cyberaudit7e.config;
 >> "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" echo( 
@@ -3409,24 +4317,24 @@ if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\JacksonCo
 echo Décompression de src\main\java\com\cyberaudit7e\config\JpaConfig.java
 > "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( package com.cyberaudit7e.config;
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
->> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( /*import com.fasterxml.jackson.databind.ObjectMapper;
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.databind.SerializationFeature;
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
->> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import org.springframework.context.annotation.Bean;*/
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( import org.springframework.context.annotation.Configuration;
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( @Configuration
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( public class JpaConfig {
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( 
->> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     @Bean
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(   /*  @Bean
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     public ObjectMapper objectMapper() {
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         ObjectMapper mapper = new ObjectMapper();
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         mapper.registerModule(new JavaTimeModule());
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(         return mapper;
->> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo(     }*/
 >> "src\main\java\com\cyberaudit7e\config\JpaConfig.java" echo( }
-certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"1995B94C3382DD3E5F025296A36354E182EB7C6BB8A9B3432EEA36FDE5EFA3BA" >nul
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"49E2F6ADC6FA8F80874EA3D5D1ACECEBDD4F42B8A847A91C4BDF8DC7C31D8D4D" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\JpaConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\JpaConfig.java)
 echo Décompression de src\main\java\com\cyberaudit7e\config\OpenApiConfig.java
 > "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( package com.cyberaudit7e.config;
@@ -3493,6 +4401,31 @@ echo Décompression de src\main\java\com\cyberaudit7e\config\OpenApiConfig.java
 >> "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" SHA256 | findstr /I /C:"B36CC866F34D9C2A101C28AB4F1E795185032D0EC7A58EEC1181FC1810FE4163" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\OpenApiConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\OpenApiConfig.java)
+echo Décompression de src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java
+> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( package com.cyberaudit7e.config;
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( import org.springframework.context.annotation.Bean;
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( import org.springframework.context.annotation.Configuration;
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( import org.springframework.http.client.SimpleClientHttpRequestFactory;
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( import org.springframework.web.client.RestTemplate;
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(  * Configuration RestTemplate pour les appels HTTP sortants
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(  * vers ServiceNow et SailPoint.
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( @Configuration
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( public class RestTemplateConfig {
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( 
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(     @Bean
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(     public RestTemplate restTemplate() {
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(         factory.setConnectTimeout(10_000); // 10 secondes
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(         factory.setReadTimeout(30_000); // 30 secondes
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(         return new RestTemplate(factory);
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" SHA256 | findstr /I /C:"4129B1F4C128A5E50514FBFEEC61280ABC477BA641276DDFB697881DB7369FE7" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java)
 echo Décompression de src\main\java\com\cyberaudit7e\config\WebConfig.java
 > "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( package com.cyberaudit7e.config;
 >> "src\main\java\com\cyberaudit7e\config\WebConfig.java" echo( 
@@ -4666,6 +5599,267 @@ echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\RuleResultLi
 >> "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" SHA256 | findstr /I /C:"C0EC19A9BE2ACB9EE9C2254E8CFD255AFE3D4E44E7312715F08BD1B94F707980" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java
+> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( package com.cyberaudit7e.domain.entity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( import com.cyberaudit7e.domain.enums.TicketSeverity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( import com.cyberaudit7e.domain.enums.TicketSource;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( import com.cyberaudit7e.domain.enums.TicketStatus;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( import jakarta.persistence.*;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * Ticket de sécurité unifié — le pont entre les trois systèmes.
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * Un SecurityTicket peut être créé par :
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - CyberAudit7E (audit d'accessibilité avec score critique)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - SailPoint (violation de policy, SoD, compte orphelin)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - ServiceNow (incident créé manuellement)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * Il maintient les références croisées :
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - sailpointViolationId → ID de la violation dans SailPoint
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - serviceNowSysId → sys_id de l'incident dans ServiceNow
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - serviceNowNumber → numéro lisible (INC0012345)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * - auditReportId → ID du rapport d'audit CyberAudit7E
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * Le cycle de vie suit l'Axiome 7E :
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  * NEW → OPEN → IN_PROGRESS → PENDING_VALIDATION → RESOLVED → CLOSED
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( @Entity
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( @Table(name = "security_tickets")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( public class SecurityTicket {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Id
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @GeneratedValue(strategy = GenerationType.IDENTITY)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private Long id;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Identité du ticket ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(nullable = false, length = 500)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String title;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(columnDefinition = "CLOB")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String description;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(nullable = false, length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private TicketSource source;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(nullable = false, length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private TicketStatus status = TicketStatus.NEW;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Enumerated(EnumType.STRING)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(nullable = false, length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private TicketSeverity severity;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(length = 100)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String category; // ex: "accessibility", "sod_violation", "orphan_account"
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Références croisées ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** ID de la violation dans SailPoint IdentityNow (nullable si source != SAILPOINT) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "sailpoint_violation_id", length = 100)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String sailpointViolationId;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** Type d'événement SailPoint (ex: "idn:policy-violation", "idn:identity-deleted") */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "sailpoint_event_type", length = 100)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String sailpointEventType;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** ID SailPoint de l'identité concernée */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "sailpoint_identity_id", length = 100)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String sailpointIdentityId;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** Nom de l'identité SailPoint */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "sailpoint_identity_name", length = 255)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String sailpointIdentityName;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** sys_id de l'incident ServiceNow (nullable si pas encore créé) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "servicenow_sys_id", length = 50)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String serviceNowSysId;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** Numéro d'incident ServiceNow lisible (ex: INC0012345) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "servicenow_number", length = 20)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String serviceNowNumber;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** URL directe vers l'incident ServiceNow */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "servicenow_url", length = 500)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String serviceNowUrl;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** Lien vers le rapport d'audit CyberAudit7E (nullable si source != AUDIT) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "audit_report_id")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private Long auditReportId;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** URL du site associé (si applicable) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "site_url", length = 500)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String siteUrl;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Assignation ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "assigned_to", length = 255)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String assignedTo;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "assignment_group", length = 255)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String assignmentGroup;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Métadonnées ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /** Payload JSON brut reçu de SailPoint ou ServiceNow (pour debug) */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "raw_payload", columnDefinition = "CLOB")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private String rawPayload;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "created_at", updatable = false)
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private LocalDateTime createdAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "updated_at")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private LocalDateTime updatedAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Column(name = "resolved_at")
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private LocalDateTime resolvedAt;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Lifecycle callbacks ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @PrePersist
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     protected void onCreate() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         createdAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         updatedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @PreUpdate
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     protected void onUpdate() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         updatedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (status == TicketStatus.RESOLVED ^&^& resolvedAt == null) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             resolvedAt = LocalDateTime.now();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Constructeurs ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public SecurityTicket() {}
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      * Factory pour un ticket issu d'un audit CyberAudit7E.
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public static SecurityTicket fromAudit(Long auditReportId, String siteUrl,
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                                             double score, String details) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         SecurityTicket ticket = new SecurityTicket();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSource(TicketSource.AUDIT);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setCategory("accessibility");
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSeverity(TicketSeverity.fromAuditScore(score));
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setTitle(String.format("Audit accessibilité — score %%.0f%%%% — %%s",
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                 score * 100, siteUrl));
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setDescription(details);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setAuditReportId(auditReportId);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSiteUrl(siteUrl);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      * Factory pour un ticket issu d'une violation SailPoint.
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public static SecurityTicket fromSailpoint(String eventType, String violationId,
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                                                 String identityId, String identityName,
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                                                 String riskTag, String description) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         SecurityTicket ticket = new SecurityTicket();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSource(TicketSource.SAILPOINT);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSailpointEventType(eventType);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSailpointViolationId(violationId);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSailpointIdentityId(identityId);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSailpointIdentityName(identityName);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setSeverity(TicketSeverity.fromSailpointRisk(riskTag));
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setCategory(mapSailpointEventToCategory(eventType));
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setTitle(String.format("[SailPoint] %%s — %%s",
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                 formatEventType(eventType), identityName != null ? identityName : violationId));
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         ticket.setDescription(description);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Getters ^& Setters ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public Long getId() { return id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setId(Long id) { this.id = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getTitle() { return title; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setTitle(String title) { this.title = title; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getDescription() { return description; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setDescription(String description) { this.description = description; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public TicketSource getSource() { return source; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSource(TicketSource source) { this.source = source; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public TicketStatus getStatus() { return status; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setStatus(TicketStatus status) { this.status = status; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public TicketSeverity getSeverity() { return severity; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSeverity(TicketSeverity severity) { this.severity = severity; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getCategory() { return category; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setCategory(String category) { this.category = category; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getSailpointViolationId() { return sailpointViolationId; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSailpointViolationId(String v) { this.sailpointViolationId = v; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getSailpointEventType() { return sailpointEventType; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSailpointEventType(String t) { this.sailpointEventType = t; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getSailpointIdentityId() { return sailpointIdentityId; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSailpointIdentityId(String id) { this.sailpointIdentityId = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getSailpointIdentityName() { return sailpointIdentityName; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSailpointIdentityName(String n) { this.sailpointIdentityName = n; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getServiceNowSysId() { return serviceNowSysId; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setServiceNowSysId(String id) { this.serviceNowSysId = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getServiceNowNumber() { return serviceNowNumber; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setServiceNowNumber(String n) { this.serviceNowNumber = n; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getServiceNowUrl() { return serviceNowUrl; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setServiceNowUrl(String url) { this.serviceNowUrl = url; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public Long getAuditReportId() { return auditReportId; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setAuditReportId(Long id) { this.auditReportId = id; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getSiteUrl() { return siteUrl; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setSiteUrl(String url) { this.siteUrl = url; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getAssignedTo() { return assignedTo; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setAssignedTo(String to) { this.assignedTo = to; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getAssignmentGroup() { return assignmentGroup; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setAssignmentGroup(String g) { this.assignmentGroup = g; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String getRawPayload() { return rawPayload; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setRawPayload(String p) { this.rawPayload = p; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public LocalDateTime getCreatedAt() { return createdAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public LocalDateTime getUpdatedAt() { return updatedAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public LocalDateTime getResolvedAt() { return resolvedAt; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public void setResolvedAt(LocalDateTime r) { this.resolvedAt = r; }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      * Vérifie si le ticket est synchronisé avec ServiceNow.
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public boolean isSyncedWithServiceNow() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return serviceNowSysId != null ^&^& !serviceNowSysId.isBlank();
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     // ── Helpers privés ──
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private static String mapSailpointEventToCategory(String eventType) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType == null) return "unknown";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType.contains("policy-violation")) return "sod_violation";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType.contains("identity-deleted")) return "orphan_account";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType.contains("access-request")) return "access_violation";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType.contains("account-aggregation")) return "account_anomaly";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType.contains("certification")) return "certification_issue";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return "identity_governance";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     private static String formatEventType(String eventType) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         if (eventType == null) return "Événement inconnu";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return switch (eventType) {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:policy-violation" -^> "Violation de politique (SoD)";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:identity-deleted" -^> "Identité supprimée";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:access-request-pre-approval" -^> "Demande d'accès (pré-approbation)";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:access-request-post-approval" -^> "Demande d'accès (post-approbation)";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:account-aggregation-completed" -^> "Agrégation de comptes terminée";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             case "idn:certification-signed-off" -^> "Certification signée";
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(             default -^> eventType;
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         };
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     @Override
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     public String toString() {
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(         return String.format("SecurityTicket{id=%%d, source=%%s, severity=%%s, status=%%s, snow=%%s, sp=%%s}",
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(                 id, source, severity, status, serviceNowNumber, sailpointViolationId);
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" SHA256 | findstr /I /C:"0F26677D3824994DDBA3454427C570621D153CEF5AC52FEC5123DC9A28DB8774" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java)
 echo Décompression de src\main\java\com\cyberaudit7e\domain\entity\Site.java
 > "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( package com.cyberaudit7e.domain.entity;
 >> "src\main\java\com\cyberaudit7e\domain\entity\Site.java" echo( 
@@ -4866,6 +6060,132 @@ echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.
 >> "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" SHA256 | findstr /I /C:"AC9F8F3AB1D4AA0CC60FA0989A1FB017DFBF15936DE518409F77F7795F83273B" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java
+> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( package com.cyberaudit7e.domain.enums;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(  * Sévérité d'un ticket de sécurité.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(  * Alignée sur les niveaux de risque SailPoint (HIGH_RISK, MEDIUM_RISK, LOW_RISK)
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(  * et les priorités ServiceNow (1=Critical, 2=High, 3=Medium, 4=Low).
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( public enum TicketSeverity {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     CRITICAL("Critique", 1, "HIGH_RISK"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     HIGH("Haute", 2, "HIGH_RISK"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     MEDIUM("Moyenne", 3, "MEDIUM_RISK"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     LOW("Basse", 4, "LOW_RISK"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     INFO("Information", 5, "LOW_RISK");
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     private final String label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     private final int snowPriority;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     private final String sailpointRiskLevel;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     TicketSeverity(String label, int snowPriority, String sailpointRiskLevel) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         this.label = label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         this.snowPriority = snowPriority;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         this.sailpointRiskLevel = sailpointRiskLevel;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     public String getLabel() { return label; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     public int getSnowPriority() { return snowPriority; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     public String getSailpointRiskLevel() { return sailpointRiskLevel; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(      * Détermine la sévérité à partir d'un score d'audit (0.0-1.0).
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(      * Score bas = haute sévérité.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     public static TicketSeverity fromAuditScore(double score) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         if (score ^< 0.3) return CRITICAL;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         if (score ^< 0.5) return HIGH;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         if (score ^< 0.7) return MEDIUM;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         if (score ^< 0.9) return LOW;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         return INFO;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(      * Convertit un tag de risque SailPoint en sévérité.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     public static TicketSeverity fromSailpointRisk(String riskTag) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         if (riskTag == null) return MEDIUM;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         return switch (riskTag.toUpperCase()) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(             case "HIGH_RISK" -^> HIGH;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(             case "MEDIUM_RISK" -^> MEDIUM;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(             case "LOW_RISK" -^> LOW;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(             default -^> MEDIUM;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(         };
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" SHA256 | findstr /I /C:"64B8A8012FB84F3103B4F75646A55EEB6696FAA9B95CA498468000F3756D6EBA" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java
+> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( package com.cyberaudit7e.domain.enums;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(  * Source d'origine d'un ticket de sécurité.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(  * Permet de tracer d'où vient chaque ticket dans le flux triangulaire
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(  * SailPoint ↔ CyberAudit7E ↔ ServiceNow.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( public enum TicketSource {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     AUDIT("CyberAudit7E", "Détecté par un audit d'accessibilité"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     SAILPOINT("SailPoint", "Violation d'identité détectée par SailPoint"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     SERVICENOW("ServiceNow", "Incident créé manuellement dans ServiceNow"),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     MANUAL("Manuel", "Créé manuellement dans CyberAudit7E");
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     private final String label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     private final String description;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     TicketSource(String label, String description) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(         this.label = label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(         this.description = description;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     public String getLabel() { return label; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo(     public String getDescription() { return description; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" SHA256 | findstr /I /C:"77E6B1ED56201087AAEFF3C24B9BC599FA4C9B4CB6E344F43CAAC752A50E0C32" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java)
+echo Décompression de src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java
+> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( package com.cyberaudit7e.domain.enums;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(  * Statut d'un ticket de sécurité dans son cycle de vie.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(  * Aligné sur les états ServiceNow (New→In Progress→Resolved→Closed)
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(  * et les états SailPoint (Pending→Approved→Completed).
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( public enum TicketStatus {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     NEW("Nouveau", 1),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     OPEN("Ouvert", 2),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     IN_PROGRESS("En cours", 3),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     PENDING_VALIDATION("En attente de validation", 4),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     RESOLVED("Résolu", 5),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     CLOSED("Fermé", 6),
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     CANCELLED("Annulé", 7);
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     private final String label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     private final int snowStateCode;  // Mapping ServiceNow incident state
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     TicketStatus(String label, int snowStateCode) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(         this.label = label;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(         this.snowStateCode = snowStateCode;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     public String getLabel() { return label; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     public int getSnowStateCode() { return snowStateCode; }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( 
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(      * Convertit un état ServiceNow (1-7) en TicketStatus.
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     public static TicketStatus fromSnowState(int state) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(         for (TicketStatus s : values()) {
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(             if (s.snowStateCode == state) return s;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(         return OPEN;
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" SHA256 | findstr /I /C:"0E760C0F6821DB89BF468C985AA8DD31C00054C5DB6F3E21CA9EE95E4492DE28" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java)
 echo Décompression de src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java
 > "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( package com.cyberaudit7e.domain.rule;
 >> "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" echo( 
@@ -6300,6 +7620,63 @@ echo Décompression de src\main\java\com\cyberaudit7e\dto\SiteDto.java
 >> "src\main\java\com\cyberaudit7e\dto\SiteDto.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\dto\SiteDto.java" SHA256 | findstr /I /C:"B936677724DEE6DF5099D3FF2B35D2FAAA5BFDECB6F8CFB71AAA07096FF12A98" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\SiteDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\SiteDto.java)
+echo Décompression de src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java
+> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( package com.cyberaudit7e.dto.integration;
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( import java.time.LocalDateTime;
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(  * DTO de réponse pour un SecurityTicket.
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(  * Expose toutes les données sans les champs internes JPA.
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( public record TicketDto(
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         Long id,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String title,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String description,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String source,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String status,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String severity,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String category,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         // Références croisées
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String sailpointViolationId,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String sailpointEventType,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String sailpointIdentityId,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String sailpointIdentityName,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String serviceNowSysId,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String serviceNowNumber,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String serviceNowUrl,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         Long auditReportId,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String siteUrl,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         // Assignation
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String assignedTo,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         String assignmentGroup,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         // Sync status
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         boolean syncedWithServiceNow,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         // Dates
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         LocalDateTime createdAt,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         LocalDateTime updatedAt,
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         LocalDateTime resolvedAt
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( ) {
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( 
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(     public static TicketDto from(SecurityTicket t) {
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         return new TicketDto(
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getId(), t.getTitle(), t.getDescription(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getSource().name(), t.getStatus().name(), t.getSeverity().name(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getCategory(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getSailpointViolationId(), t.getSailpointEventType(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getSailpointIdentityId(), t.getSailpointIdentityName(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getServiceNowSysId(), t.getServiceNowNumber(), t.getServiceNowUrl(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getAuditReportId(), t.getSiteUrl(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getAssignedTo(), t.getAssignmentGroup(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.isSyncedWithServiceNow(),
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(                 t.getCreatedAt(), t.getUpdatedAt(), t.getResolvedAt()
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" SHA256 | findstr /I /C:"DDC691BDEBF6832C7416A2EEE66F0C63DC971A9C8604ECC203B525B156913C80" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java)
 echo Décompression de src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java
 > "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( package com.cyberaudit7e.event;
 >> "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" echo( 
@@ -6418,6 +7795,1365 @@ echo Décompression de src\main\java\com\cyberaudit7e\event\AuditStartedEvent.ja
 >> "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" SHA256 | findstr /I /C:"72B78E649E44B1C3347CD61832F5B04C56C6130A1607EC4B7E4AC64988DB710B" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\TicketController.java
+> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( package com.cyberaudit7e.integration;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.domain.enums.TicketSeverity;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.domain.enums.TicketSource;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.domain.enums.TicketStatus;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.dto.PagedResponse;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.dto.integration.TicketDto;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.integration.sailpoint.SailPointClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.integration.servicenow.ServiceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import com.cyberaudit7e.repository.SecurityTicketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import io.swagger.v3.oas.annotations.Operation;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import io.swagger.v3.oas.annotations.Parameter;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import io.swagger.v3.oas.annotations.tags.Tag;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import jakarta.validation.Valid;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import jakarta.validation.constraints.NotBlank;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.data.domain.PageRequest;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.data.domain.Pageable;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.data.domain.Sort;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.http.HttpStatus;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(  * REST Controller pour les tickets de sécurité unifiés.
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(  * Pont central entre SailPoint, CyberAudit7E et ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( @RequestMapping("/api/tickets")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( @Tag(name = "Tickets", description = "Tickets de sécurité unifiés — SailPoint × CyberAudit7E × ServiceNow")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( public class TicketController {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     private final SecurityTicketRepository ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     private final TicketOrchestrator orchestrator;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     private final ServiceNowClient serviceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     private final SailPointClient sailPointClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public TicketController(SecurityTicketRepository ticketRepository,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                             TicketOrchestrator orchestrator,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                             ServiceNowClient serviceNowClient,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                             SailPointClient sailPointClient) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         this.ticketRepository = ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         this.orchestrator = orchestrator;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         this.serviceNowClient = serviceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         this.sailPointClient = sailPointClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // CRUD TICKETS
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Lister les tickets (paginé)")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public PagedResponse^<TicketDto^> listTickets(
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "10") int size,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "createdAt") String sortBy,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "desc") String direction,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @Parameter(description = "Filtrer par source : AUDIT, SAILPOINT, SERVICENOW, MANUAL")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(required = false) String source,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @Parameter(description = "Filtrer par statut : NEW, OPEN, IN_PROGRESS, RESOLVED, CLOSED")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(required = false) String status,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @Parameter(description = "Filtrer par sévérité : CRITICAL, HIGH, MEDIUM, LOW, INFO")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(required = false) String severity) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100), sort);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         if (source != null) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             return PagedResponse.from(ticketRepository.findBySource(TicketSource.valueOf(source.toUpperCase()), pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         if (status != null) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             return PagedResponse.from(ticketRepository.findByStatus(TicketStatus.valueOf(status.toUpperCase()), pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         if (severity != null) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             return PagedResponse.from(ticketRepository.findBySeverity(TicketSeverity.valueOf(severity.toUpperCase()), pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return PagedResponse.from(ticketRepository.findAll(pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Tickets ouverts (non résolus)")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping("/open")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public PagedResponse^<TicketDto^> openTickets(
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "20") int size) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return PagedResponse.from(ticketRepository.findOpenTickets(pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Détail d'un ticket")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping("/{id}")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public ResponseEntity^<TicketDto^> getTicket(@PathVariable Long id) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return ticketRepository.findById(id)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                 .map(TicketDto::from)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                 .map(ResponseEntity::ok)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(                 .orElse(ResponseEntity.notFound().build());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Rechercher des tickets")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping("/search")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public PagedResponse^<TicketDto^> searchTickets(
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam String q,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "0") int page,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestParam(defaultValue = "10") int size) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Pageable pageable = PageRequest.of(page, Math.min(size, 100), Sort.by("createdAt").descending());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return PagedResponse.from(ticketRepository.search(q, pageable).map(TicketDto::from));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ACTIONS SUR LES TICKETS
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Créer un ticket manuellement")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @PostMapping
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public ResponseEntity^<TicketDto^> createTicket(@Valid @RequestBody CreateTicketRequest request) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         SecurityTicket ticket = new SecurityTicket();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setTitle(request.title());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setDescription(request.description());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setSource(TicketSource.MANUAL);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setSeverity(TicketSeverity.valueOf(request.severity().toUpperCase()));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setCategory(request.category() != null ? request.category() : "manual");
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticket.setSiteUrl(request.siteUrl());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         SecurityTicket saved = orchestrator.processIncomingTicket(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return ResponseEntity.status(HttpStatus.CREATED).body(TicketDto.from(saved));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Résoudre un ticket (+ sync ServiceNow)")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @PostMapping("/{id}/resolve")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public ResponseEntity^<TicketDto^> resolveTicket(
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @PathVariable Long id,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @RequestBody(required = false) Map^<String, String^> body) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         String notes = body != null ? body.getOrDefault("closeNotes", "Résolu via CyberAudit7E") : "Résolu";
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         SecurityTicket ticket = orchestrator.resolveTicket(id, notes);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return ResponseEntity.ok(TicketDto.from(ticket));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Synchroniser les tickets non poussés vers ServiceNow")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @PostMapping("/sync")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public Map^<String, Object^> syncTickets() {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         int synced = orchestrator.syncUnsyncedTickets();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return Map.of("synced", synced, "message", synced + " ticket(s) synchronisé(s) avec ServiceNow");
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // STATISTIQUES ^& INTÉGRATIONS
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ═══════════════════════════════════════════
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Statistiques des tickets")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping("/stats")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Transactional(readOnly = true)
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public Map^<String, Object^> ticketStats() {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Object^> stats = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("total", ticketRepository.count());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Long^> bySource = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticketRepository.countBySourceGroup().forEach(r -^> bySource.put(r[0].toString(), (Long) r[1]));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("bySource", bySource);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Long^> byStatus = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticketRepository.countByStatusGroup().forEach(r -^> byStatus.put(r[0].toString(), (Long) r[1]));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("byStatus", byStatus);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Long^> bySeverity = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         ticketRepository.countBySeverityGroup().forEach(r -^> bySeverity.put(r[0].toString(), (Long) r[1]));
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("bySeverity", bySeverity);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("unsynced", ticketRepository.findUnsyncedWithServiceNow().size());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         stats.put("open", ticketRepository.findOpenTickets().size());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return stats;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @Operation(summary = "Statut des intégrations ServiceNow et SailPoint")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     @GetMapping("/integrations")
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public Map^<String, Object^> integrationStatus() {
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Object^> status = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         // ServiceNow
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         Map^<String, Object^> snow = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         snow.put("connected", serviceNowClient.testConnection());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         status.put("servicenow", snow);
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         // SailPoint
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         status.put("sailpoint", sailPointClient.getConnectionInfo());
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(         return status;
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     // ── Request DTOs ──
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     public record CreateTicketRequest(
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @NotBlank String title,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             String description,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             @NotBlank String severity,  // CRITICAL, HIGH, MEDIUM, LOW, INFO
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             String category,
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(             String siteUrl
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo(     ) {}
+>> "src\main\java\com\cyberaudit7e\integration\TicketController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\TicketController.java" SHA256 | findstr /I /C:"2A1718FA74F4429787494EA38297378BD64957146F9DF53304F0E05E134D5EDB" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\TicketController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\TicketController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java
+> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( package com.cyberaudit7e.integration;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.domain.enums.TicketSeverity;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.domain.enums.TicketSource;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.domain.enums.TicketStatus;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.integration.servicenow.ServiceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import com.cyberaudit7e.repository.SecurityTicketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import org.springframework.scheduling.annotation.Async;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * Orchestrateur de tickets — le pont central entre les trois systèmes.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * Responsabilités :
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * 1. Persister les SecurityTickets en BDD
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * 2. Pousser les tickets vers ServiceNow (création d'incidents)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * 3. Dédoublonner les violations SailPoint (ne pas créer 2 tickets pour la même)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * 4. Mettre à jour les tickets quand ServiceNow ou SailPoint notifie un changement
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * 5. Créer des tickets depuis les audits CyberAudit7E (score critique)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  * Flux cybernétique :
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  *   SailPoint Event → processIncomingTicket() → save + pushToServiceNow()
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  *   Audit complet   → createFromAudit()       → save + pushToServiceNow()
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  *   SNOW callback   → (géré par ServiceNowWebhookController)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( public class TicketOrchestrator {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     private static final Logger log = LoggerFactory.getLogger(TicketOrchestrator.class);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /** Seuil de score d'audit en dessous duquel un ticket est automatiquement créé */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     private static final double AUTO_TICKET_THRESHOLD = 0.5;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     private final SecurityTicketRepository ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     private final ServiceNowClient serviceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public TicketOrchestrator(SecurityTicketRepository ticketRepository,
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                               ServiceNowClient serviceNowClient) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         this.ticketRepository = ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         this.serviceNowClient = serviceNowClient;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Traite un ticket entrant (SailPoint webhook ou création manuelle).
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * 1. Vérifie le dédoublonnage (même violation SailPoint ?)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * 2. Persiste le ticket
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * 3. Pousse vers ServiceNow de façon asynchrone
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @param ticket Le ticket à traiter
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @return Le ticket persisté
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public SecurityTicket processIncomingTicket(SecurityTicket ticket) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] Traitement ticket — source: {}, sévérité: {}",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticket.getSource(), ticket.getSeverity());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         // ── Dédoublonnage SailPoint ──
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (ticket.getSource() == TicketSource.SAILPOINT
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ^&^& ticket.getSailpointViolationId() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             Optional^<SecurityTicket^> existing = ticketRepository
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     .findBySailpointViolationId(ticket.getSailpointViolationId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             if (existing.isPresent()) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 SecurityTicket existingTicket = existing.get();
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 log.info("[ORCHESTRATOR] Violation {} déjà connue → ticket #{}",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                         ticket.getSailpointViolationId(), existingTicket.getId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 // Mettre à jour si le ticket existant n'est pas fermé
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 if (existingTicket.getStatus() != TicketStatus.CLOSED
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                         ^&^& existingTicket.getStatus() != TicketStatus.CANCELLED) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     existingTicket.setDescription(ticket.getDescription());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     existingTicket.setSeverity(ticket.getSeverity());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     return ticketRepository.save(existingTicket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 return existingTicket;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         // ── Persister le nouveau ticket ──
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         ticket.setStatus(TicketStatus.NEW);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         SecurityTicket saved = ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] Ticket #{} persisté", saved.getId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         // ── Pousser vers ServiceNow (asynchrone) ──
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         pushToServiceNowAsync(saved.getId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         return saved;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Crée un ticket depuis un audit CyberAudit7E avec un score critique.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Appelé par le FeedbackLoopListener quand le score est sous le seuil.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @param reportId ID du rapport d'audit
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @param siteUrl  URL du site audité
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @param score    Score global de l'audit
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @param details  Détails du rapport
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * @return Le ticket créé, ou empty si le score est au-dessus du seuil
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public Optional^<SecurityTicket^> createFromAudit(Long reportId, String siteUrl,
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                                                      double score, String details) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (score ^>= AUTO_TICKET_THRESHOLD) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             log.debug("[ORCHESTRATOR] Score {} ≥ seuil {} — pas de ticket auto",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     score, AUTO_TICKET_THRESHOLD);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         // Vérifier si un ticket existe déjà pour ce rapport
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         Optional^<SecurityTicket^> existing = ticketRepository.findByAuditReportId(reportId);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (existing.isPresent()) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             log.info("[ORCHESTRATOR] Ticket existant pour le rapport #{}", reportId);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             SecurityTicket ex = existing.get();
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ex.setDescription(details);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ex.setSeverity(TicketSeverity.fromAuditScore(score));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             return Optional.of(ticketRepository.save(ex));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         SecurityTicket ticket = SecurityTicket.fromAudit(reportId, siteUrl, score, details);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         SecurityTicket saved = ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] Ticket #{} créé depuis audit #{} (score: {})",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 saved.getId(), reportId, score);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         pushToServiceNowAsync(saved.getId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         return Optional.of(saved);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Pousse un ticket vers ServiceNow de façon asynchrone.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Crée l'incident et met à jour les références croisées (sys_id, number, url).
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Async("taskExecutor")
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public void pushToServiceNowAsync(Long ticketId) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         SecurityTicket ticket = ticketRepository.findById(ticketId).orElse(null);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (ticket == null ^|^| ticket.isSyncedWithServiceNow()) return;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] Push vers ServiceNow — ticket #{}", ticketId);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         Optional^<Map^<String, String^>^> result = serviceNowClient.createIncident(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         result.ifPresent(snowResult -^> {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ticket.setServiceNowSysId(snowResult.get("sys_id"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ticket.setServiceNowNumber(snowResult.get("number"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ticket.setServiceNowUrl(snowResult.get("url"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ticket.setStatus(TicketStatus.OPEN);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             log.info("[ORCHESTRATOR] Ticket #{} → ServiceNow {} (sys_id: {})",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                     ticket.getId(), ticket.getServiceNowNumber(), ticket.getServiceNowSysId());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         });
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (result.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             log.warn("[ORCHESTRATOR] Échec push ServiceNow pour ticket #{} — sera réessayé", ticketId);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Synchronise les tickets non encore poussés vers ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Appelé manuellement ou par le scheduler.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public int syncUnsyncedTickets() {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         var unsynced = ticketRepository.findUnsyncedWithServiceNow();
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] {} ticket(s) non synchronisé(s)", unsynced.size());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         int synced = 0;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         for (SecurityTicket ticket : unsynced) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             Optional^<Map^<String, String^>^> result = serviceNowClient.createIncident(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             if (result.isPresent()) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticket.setServiceNowSysId(result.get().get("sys_id"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticket.setServiceNowNumber(result.get().get("number"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticket.setServiceNowUrl(result.get().get("url"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticket.setStatus(TicketStatus.OPEN);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 synced++;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] {}/{} ticket(s) synchronisé(s)", synced, unsynced.size());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         return synced;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      * Résout un ticket dans CyberAudit7E ET dans ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     public SecurityTicket resolveTicket(Long ticketId, String closeNotes) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         SecurityTicket ticket = ticketRepository.findById(ticketId)
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 .orElseThrow(() -^> new RuntimeException("Ticket #" + ticketId + " introuvable"));
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         ticket.setStatus(TicketStatus.RESOLVED);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         // Synchroniser vers ServiceNow
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         if (ticket.isSyncedWithServiceNow()) {
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(             serviceNowClient.resolveIncident(ticket.getServiceNowSysId(), closeNotes);
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         log.info("[ORCHESTRATOR] Ticket #{} résolu (SNOW: {})",
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(                 ticketId, ticket.getServiceNowNumber());
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" SHA256 | findstr /I /C:"8B6EFDEC2CA86A8662EE05A6513D7A51798E6FF12ACF646D0CA673E53698C234" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java
+> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( package com.cyberaudit7e.integration.sailpoint;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import com.cyberaudit7e.config.IntegrationProperties;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import com.fasterxml.jackson.databind.JsonNode;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import org.springframework.http.*;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import org.springframework.web.client.RestTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import java.time.Duration;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * Client REST pour SailPoint Identity Security Cloud (IdentityNow) V3 API.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * Fonctionnalités :
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * - Authentification OAuth 2.0 via Personal Access Token
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * - Recherche d'identités (GET /v3/public-identities)
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * - Détails d'une identité (GET /v3/identities/{id})
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * - Recherche de violations (GET /beta/policy-violations)
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * - Gestion des access profiles (GET /v3/access-profiles)
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * API : https://developer.sailpoint.com/docs/api/v3/
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * Auth : https://developer.sailpoint.com/docs/api/getting-started/
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * Note : le webhook ENTRANT (SailPoint → CyberAudit7E) est géré
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * par SailPointWebhookController, pas par ce client.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  * Ce client est pour les appels SORTANTS (CyberAudit7E → SailPoint).
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( public class SailPointClient {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private static final Logger log = LoggerFactory.getLogger(SailPointClient.class);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private final IntegrationProperties.SailPointConfig config;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private final RestTemplate restTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private final ObjectMapper objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /** Cache du token OAuth */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private String cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private long tokenExpiresAt = 0;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public SailPointClient(IntegrationProperties properties,
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                            RestTemplate restTemplate,
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                            ObjectMapper objectMapper) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         this.config = properties.getSailpoint();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         this.restTemplate = restTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         this.objectMapper = objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Recherche une identité par nom ou email.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * GET /v3/public-identities?filters=name eq "{query}" OR email eq "{query}"
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> searchIdentity(String query) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled()) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/v3/public-identities?limit=5^&filters="
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 + "name co \"" + query + "\"";
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         log.info("[SAILPOINT] Recherche identité : {}", query);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Récupère les détails d'une identité par son ID.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * GET /v3/identities/{id}
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> getIdentity(String identityId) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled() ^|^| identityId == null) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/v3/identities/" + identityId;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         log.debug("[SAILPOINT] Détail identité : {}", identityId);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Liste les violations de policy actives.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * GET /beta/policy-violations
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> listPolicyViolations() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled()) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/beta/policy-violations?limit=50";
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         log.info("[SAILPOINT] Liste des violations de politique");
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Récupère le détail d'une violation par son ID.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> getViolation(String violationId) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled() ^|^| violationId == null) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/beta/policy-violations/" + violationId;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         log.debug("[SAILPOINT] Détail violation : {}", violationId);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Liste les access profiles.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> listAccessProfiles(int limit) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled()) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/v3/access-profiles?limit=" + limit;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Liste les event trigger subscriptions configurées.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public Optional^<JsonNode^> listTriggerSubscriptions() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled()) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String url = config.getBaseUrl() + "/beta/trigger-subscriptions";
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Vérifie la connectivité avec SailPoint.
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public boolean testConnection() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (!config.isEnabled()) return false;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             String url = config.getBaseUrl() + "/v3/public-identities?limit=1";
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             Optional^<JsonNode^> result = apiGet(url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return result.isPresent();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             log.error("[SAILPOINT] Test connexion échoué : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return false;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Retourne les infos de configuration (sans secrets).
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     public java.util.Map^<String, Object^> getConnectionInfo() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return java.util.Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 "enabled", config.isEnabled(),
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 "tenant", config.getTenant(),
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 "baseUrl", config.getBaseUrl(),
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 "connected", config.isEnabled() ^&^& testConnection()
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     // ── Appels API génériques ──
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private Optional^<JsonNode^> apiGet(String url) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             HttpHeaders headers = buildHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             HttpEntity^<Void^> request = new HttpEntity^<^>(headers);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                     url, HttpMethod.GET, request, String.class);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             if (response.getStatusCode().is2xxSuccessful() ^&^& response.getBody() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 return Optional.of(objectMapper.readTree(response.getBody()));
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             log.warn("[SAILPOINT] Réponse {} pour {}", response.getStatusCode(), url);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             log.error("[SAILPOINT] Erreur API {} : {}", url, e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     // ── Authentification OAuth 2.0 ──
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private HttpHeaders buildHeaders() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         HttpHeaders headers = new HttpHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         headers.setContentType(MediaType.APPLICATION_JSON);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         headers.set("Accept", "application/json");
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         headers.setBearerAuth(getOAuthToken());
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         return headers;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * Obtient un token OAuth via Personal Access Token (client_credentials).
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      * POST https://{tenant}.api.identitynow.com/oauth/token
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      *   ?grant_type=client_credentials
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      *   ^&client_id={client_id}
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      *   ^&client_secret={client_secret}
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     private String getOAuthToken() {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         if (cachedToken != null ^&^& System.currentTimeMillis() ^< tokenExpiresAt) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         String tokenUrl = config.getBaseUrl() + "/oauth/token"
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 + "?grant_type=client_credentials"
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 + "^&client_id=" + config.getClientId()
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                 + "^&client_secret=" + config.getClientSecret();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         log.debug("[SAILPOINT] Demande de token OAuth");
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             HttpHeaders headers = new HttpHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(                     tokenUrl, HttpMethod.POST, new HttpEntity^<^>(headers), String.class);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             JsonNode json = objectMapper.readTree(response.getBody());
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             cachedToken = json.get("access_token").asText();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             int expiresIn = json.has("expires_in") ? json.get("expires_in").asInt() : 3600;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             tokenExpiresAt = System.currentTimeMillis() + Duration.ofSeconds(expiresIn - 60).toMillis();
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             log.info("[SAILPOINT] Token OAuth obtenu (expire dans {}s)", expiresIn);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             return cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             log.error("[SAILPOINT] Échec obtention token : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(             throw new RuntimeException("SailPoint OAuth failed", e);
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" SHA256 | findstr /I /C:"AF0DAE9C2E9757E466796FF06937DF972C70CA75E02890AD938A7020B91B1000" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java
+> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( package com.cyberaudit7e.integration.servicenow;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import com.cyberaudit7e.config.IntegrationProperties;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import com.fasterxml.jackson.databind.JsonNode;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.http.*;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.stereotype.Service;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.util.LinkedMultiValueMap;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.util.MultiValueMap;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.web.client.RestClientException;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import org.springframework.web.client.RestTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import java.time.Duration;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import java.util.LinkedHashMap;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * Client REST pour ServiceNow Table API.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * Fonctionnalités :
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Authentification OAuth 2.0 avec cache du token
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Fallback Basic Auth si OAuth non configuré
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Création d'incidents (POST /api/now/table/incident)
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Mise à jour d'incidents (PATCH /api/now/table/incident/{sys_id})
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Consultation d'incidents (GET /api/now/table/incident/{sys_id})
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * - Résolution/fermeture d'incidents
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * API utilisée : ServiceNow Table API
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  * Documentation : https://docs.servicenow.com/bundle/latest/page/integrate/inbound-rest/concept/c_TableAPI.html
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( @Service
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( public class ServiceNowClient {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private static final Logger log = LoggerFactory.getLogger(ServiceNowClient.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private static final String TABLE_API = "/api/now/table/incident";
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private final IntegrationProperties.ServiceNowConfig config;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private final RestTemplate restTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private final ObjectMapper objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /** Cache du token OAuth */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private String cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private long tokenExpiresAt = 0;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public ServiceNowClient(IntegrationProperties properties,
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                             RestTemplate restTemplate,
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                             ObjectMapper objectMapper) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         this.config = properties.getServicenow();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         this.restTemplate = restTemplate;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         this.objectMapper = objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Crée un incident dans ServiceNow à partir d'un SecurityTicket.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Retourne le sys_id et le numéro de l'incident créé.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * @param ticket Le ticket à pousser vers ServiceNow
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * @return Map avec "sys_id" et "number", ou empty si échec/désactivé
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public Optional^<Map^<String, String^>^> createIncident(SecurityTicket ticket) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (!config.isEnabled()) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.debug("[SNOW] Intégration désactivée — incident non créé");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         Map^<String, Object^> body = buildIncidentBody(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         String url = config.getBaseUrl() + TABLE_API;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         log.info("[SNOW] Création incident → {} ^| titre: {}", url, ticket.getTitle());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpHeaders headers = buildHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpEntity^<Map^<String, Object^>^> request = new HttpEntity^<^>(body, headers);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                     url, HttpMethod.POST, request, String.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             if (response.getStatusCode() == HttpStatus.CREATED ^&^& response.getBody() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 JsonNode result = objectMapper.readTree(response.getBody()).get("result");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 String sysId = result.get("sys_id").asText();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 String number = result.get("number").asText();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 log.info("[SNOW] Incident créé : {} (sys_id: {})", number, sysId);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 return Optional.of(Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                         "sys_id", sysId,
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                         "number", number,
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                         "url", config.getBaseUrl() + "/incident.do?sys_id=" + sysId
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 ));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.warn("[SNOW] Réponse inattendue : {}", response.getStatusCode());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (RestClientException e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Erreur création incident : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Erreur parsing réponse : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Met à jour un incident existant dans ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public boolean updateIncident(String sysId, Map^<String, Object^> fields) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (!config.isEnabled() ^|^| sysId == null) return false;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         String url = config.getBaseUrl() + TABLE_API + "/" + sysId;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         log.info("[SNOW] Mise à jour incident {} : {}", sysId, fields.keySet());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpHeaders headers = buildHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpEntity^<Map^<String, Object^>^> request = new HttpEntity^<^>(fields, headers);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                     url, HttpMethod.PATCH, request, String.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             boolean success = response.getStatusCode().is2xxSuccessful();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             if (success) log.info("[SNOW] Incident {} mis à jour", sysId);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return success;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Erreur mise à jour {} : {}", sysId, e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return false;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Récupère les détails d'un incident ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public Optional^<JsonNode^> getIncident(String sysId) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (!config.isEnabled() ^|^| sysId == null) return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         String url = config.getBaseUrl() + TABLE_API + "/" + sysId;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpHeaders headers = buildHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpEntity^<Void^> request = new HttpEntity^<^>(headers);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                     url, HttpMethod.GET, request, String.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             if (response.getStatusCode().is2xxSuccessful() ^&^& response.getBody() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 return Optional.of(objectMapper.readTree(response.getBody()).get("result"));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Erreur lecture {} : {}", sysId, e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return Optional.empty();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Résout un incident dans ServiceNow (state=6, close_code, close_notes).
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public boolean resolveIncident(String sysId, String closeNotes) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return updateIncident(sysId, Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 "state", "6",
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 "close_code", "Solved (Permanently)",
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                 "close_notes", closeNotes != null ? closeNotes : "Résolu via CyberAudit7E"
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         ));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Vérifie la connectivité avec ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     public boolean testConnection() {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (!config.isEnabled()) return false;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpHeaders headers = buildHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             HttpEntity^<Void^> request = new HttpEntity^<^>(headers);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             String url = config.getBaseUrl() + "/api/now/table/incident?sysparm_limit=1";
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                     url, HttpMethod.GET, request, String.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return response.getStatusCode().is2xxSuccessful();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Test connexion échoué : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return false;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     // ── Construction du body incident ──
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private Map^<String, Object^> buildIncidentBody(SecurityTicket ticket) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         Map^<String, Object^> body = new LinkedHashMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("short_description", truncate(ticket.getTitle(), 160));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("description", buildDescription(ticket));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("priority", String.valueOf(ticket.getSeverity().getSnowPriority()));
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("impact", ticket.getSeverity().getSnowPriority() ^<= 2 ? "1" : "2");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("urgency", ticket.getSeverity().getSnowPriority() ^<= 2 ? "1" : "2");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("category", config.getDefaultCategory());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("subcategory", config.getDefaultSubcategory());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.put("assignment_group", config.getAssignmentGroup());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         // Catégorisation selon la source
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSource() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             body.put("u_source_system", ticket.getSource().getLabel());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSailpointIdentityName() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             body.put("u_affected_user", ticket.getSailpointIdentityName());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSiteUrl() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             body.put("u_affected_resource", ticket.getSiteUrl());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return body;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private String buildDescription(SecurityTicket ticket) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         StringBuilder sb = new StringBuilder();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         sb.append("=== CyberAudit7E — Ticket #").append(ticket.getId()).append(" ===\n\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         sb.append("Source : ").append(ticket.getSource().getLabel()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         sb.append("Sévérité : ").append(ticket.getSeverity().getLabel()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         sb.append("Catégorie : ").append(ticket.getCategory()).append("\n\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getDescription() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             sb.append(ticket.getDescription()).append("\n\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSailpointViolationId() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             sb.append("SailPoint Violation ID : ").append(ticket.getSailpointViolationId()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSailpointIdentityName() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             sb.append("Identité SailPoint : ").append(ticket.getSailpointIdentityName()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getAuditReportId() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             sb.append("Rapport d'audit : #").append(ticket.getAuditReportId()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (ticket.getSiteUrl() != null) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             sb.append("Site concerné : ").append(ticket.getSiteUrl()).append("\n");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return sb.toString();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     // ── Authentification ──
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private HttpHeaders buildHeaders() {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         HttpHeaders headers = new HttpHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         headers.setContentType(MediaType.APPLICATION_JSON);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         headers.set("Accept", "application/json");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if ("oauth".equals(config.getAuthMethod())) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             String token = getOAuthToken();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             headers.setBearerAuth(token);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } else {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             headers.setBasicAuth(config.getUsername(), config.getPassword());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return headers;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      * Obtient un token OAuth 2.0 ServiceNow (avec cache).
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private String getOAuthToken() {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         if (cachedToken != null ^&^& System.currentTimeMillis() ^< tokenExpiresAt) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         String tokenUrl = config.getBaseUrl() + "/oauth_token.do";
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         log.debug("[SNOW] Demande de token OAuth → {}", tokenUrl);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         HttpHeaders headers = new HttpHeaders();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         MultiValueMap^<String, String^> body = new LinkedMultiValueMap^<^>();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.add("grant_type", "client_credentials");
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.add("client_id", config.getClientId());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         body.add("client_secret", config.getClientSecret());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             ResponseEntity^<String^> response = restTemplate.exchange(
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(                     tokenUrl, HttpMethod.POST, new HttpEntity^<^>(body, headers), String.class);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             JsonNode json = objectMapper.readTree(response.getBody());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             cachedToken = json.get("access_token").asText();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             int expiresIn = json.has("expires_in") ? json.get("expires_in").asInt() : 3600;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             tokenExpiresAt = System.currentTimeMillis() + Duration.ofSeconds(expiresIn - 60).toMillis();
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.info("[SNOW] Token OAuth obtenu (expire dans {}s)", expiresIn);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             return cachedToken;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             log.error("[SNOW] Échec obtention token OAuth : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(             throw new RuntimeException("ServiceNow OAuth failed", e);
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     private String truncate(String s, int max) {
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(         return s != null ^&^& s.length() ^> max ? s.substring(0, max) + "..." : s;
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" SHA256 | findstr /I /C:"F36F0EC26DCB11EDDB139F38C7A1F95A7B7EB592590496DC687A6A98482FC1D1" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java
+> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( package com.cyberaudit7e.integration.webhook;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import com.cyberaudit7e.config.IntegrationProperties;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import com.cyberaudit7e.integration.TicketOrchestrator;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import com.fasterxml.jackson.databind.JsonNode;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import io.swagger.v3.oas.annotations.Hidden;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import org.springframework.http.HttpStatus;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * Webhook receiver pour les Event Triggers SailPoint.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * SailPoint Identity Security Cloud envoie des HTTP POST à cet endpoint
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * quand un événement se produit (violation de policy, changement d'identité, etc.)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * Configuration côté SailPoint :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * 1. Admin → Event Triggers → Sélectionner un trigger
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * 2. + Subscribe → Type: HTTP
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * 3. Integration URL: https://cyberaudit7e.local/api/webhooks/sailpoint
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * 4. Auth Type: Bearer Token (utiliser le webhookSecret configuré)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * Événements supportés :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:policy-violation          → Violation SoD
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:identity-deleted          → Identité supprimée (compte orphelin)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:access-request-pre-approval  → Demande d'accès pré-approbation
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:access-request-post-approval → Demande d'accès post-approbation
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:account-aggregation-completed → Agrégation terminée
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * - idn:certification-signed-off     → Certification signée
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * Payload SailPoint (structure commune) :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *   "_metadata": { "triggerId": "idn:policy-violation", "invocationId": "..." },
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *   "identity": { "id": "...", "name": "John Doe", "type": "IDENTITY" },
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *   "policyName": "SoD - Finance",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *   "violatingAccessItems": [...],
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  *   ...
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  * }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( @RequestMapping("/api/webhooks")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( @Hidden  // Caché du Swagger public
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( public class SailPointWebhookController {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private static final Logger log = LoggerFactory.getLogger(SailPointWebhookController.class);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private final IntegrationProperties.SailPointConfig config;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private final TicketOrchestrator orchestrator;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private final ObjectMapper objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     public SailPointWebhookController(IntegrationProperties properties,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                                        TicketOrchestrator orchestrator,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                                        ObjectMapper objectMapper) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         this.config = properties.getSailpoint();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         this.orchestrator = orchestrator;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         this.objectMapper = objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * POST /api/webhooks/sailpoint — Réception des Event Triggers SailPoint.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * Flux :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * 1. Valider le token d'authentification (Bearer)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * 2. Parser le payload JSON
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * 3. Extraire le type d'événement et les données
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * 4. Créer un SecurityTicket via l'orchestrateur
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * 5. Retourner 200 OK (SailPoint attend un 2xx)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     @PostMapping("/sailpoint")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     public ResponseEntity^<Map^<String, Object^>^> receiveSailPointEvent(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             @RequestHeader(value = "Authorization", required = false) String authorization,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             @RequestBody String rawPayload) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         log.info("[WEBHOOK-SP] Événement reçu ({} octets)", rawPayload.length());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         // ── 1. Validation du token ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (!validateToken(authorization)) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             log.warn("[WEBHOOK-SP] Token invalide — rejet");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                     .body(Map.of("error", "Invalid token"));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             // ── 2. Parser le payload ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             JsonNode payload = objectMapper.readTree(rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             // ── 3. Extraire les données ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             String triggerId = extractTriggerId(payload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             String invocationId = extractField(payload, "_metadata", "invocationId");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             log.info("[WEBHOOK-SP] Trigger: {} ^| Invocation: {}", triggerId, invocationId);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             // ── 4. Mapper selon le type d'événement ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             SecurityTicket ticket = mapToTicket(triggerId, payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             if (ticket != null) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 // ── 5. Orchestrer (persister + pousser vers ServiceNow) ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 SecurityTicket saved = orchestrator.processIncomingTicket(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 log.info("[WEBHOOK-SP] Ticket #{} créé — source: {}, sévérité: {}",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                         saved.getId(), saved.getSource(), saved.getSeverity());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 return ResponseEntity.ok(Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                         "status", "accepted",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                         "ticketId", saved.getId(),
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                         "serviceNowNumber", saved.getServiceNowNumber() != null
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                                 ? saved.getServiceNowNumber() : "pending"
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 ));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             log.info("[WEBHOOK-SP] Événement {} ignoré (non mappé)", triggerId);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             return ResponseEntity.ok(Map.of("status", "ignored", "trigger", triggerId));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             log.error("[WEBHOOK-SP] Erreur traitement : {}", e.getMessage(), e);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                     .body(Map.of("error", e.getMessage()));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      * GET /api/webhooks/sailpoint/test — Endpoint de test (SailPoint peut vérifier la connectivité).
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     @GetMapping("/sailpoint/test")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     public Map^<String, Object^> testEndpoint() {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "status", "ready",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "service", "CyberAudit7E Webhook Receiver",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "sailpointEnabled", config.isEnabled()
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         );
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     // ── Mapping événement → SecurityTicket ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapToTicket(String triggerId, JsonNode payload, String rawPayload) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (triggerId == null) return null;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return switch (triggerId) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             case "idn:policy-violation" -^> mapPolicyViolation(payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             case "idn:identity-deleted" -^> mapIdentityDeleted(payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             case "idn:access-request-pre-approval",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                  "idn:access-request-post-approval" -^> mapAccessRequest(triggerId, payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             case "idn:account-aggregation-completed" -^> mapAccountAggregation(payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             case "idn:certification-signed-off" -^> mapCertification(payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             default -^> mapGenericEvent(triggerId, payload, rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         };
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapPolicyViolation(JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityId = extractField(payload, "identity", "id");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityName = extractField(payload, "identity", "name");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String policyName = payload.has("policyName") ? payload.get("policyName").asText() : "Politique inconnue";
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String description = String.format(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Violation de politique détectée par SailPoint.\n\n" +
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Politique : %%s\n" +
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Identité : %%s (ID: %%s)\n",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 policyName, identityName, identityId);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         // Détecter le niveau de risque depuis les tags
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String riskTag = "HIGH_RISK"; // Les violations SoD sont toujours high risk
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (payload.has("violatingAccessItems")) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             description += "Accès en violation : " + payload.get("violatingAccessItems").size() + " item(s)\n";
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "idn:policy-violation", identityId, identityId, identityName,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 riskTag, description);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapIdentityDeleted(JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityId = extractField(payload, "identity", "id");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityName = extractField(payload, "identity", "name");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "idn:identity-deleted", identityId, identityId, identityName,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "MEDIUM_RISK",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Identité supprimée dans SailPoint. Vérifier les comptes orphelins associés.");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapAccessRequest(String triggerId, JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityId = extractField(payload, "requestedFor", "id");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String identityName = extractField(payload, "requestedFor", "name");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         StringBuilder desc = new StringBuilder("Demande d'accès détectée par SailPoint.\n\n");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (payload.has("requestedItems") ^&^& payload.get("requestedItems").isArray()) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             for (JsonNode item : payload.get("requestedItems")) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 desc.append("- ").append(item.has("name") ? item.get("name").asText() : "?")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                     .append(" (").append(item.has("type") ? item.get("type").asText() : "?").append(")\n");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 triggerId, extractField(payload, "accessRequestId", null),
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 identityId, identityName, "MEDIUM_RISK", desc.toString());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapAccountAggregation(JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String sourceName = payload.has("source") ^&^& payload.get("source").has("name")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 ? payload.get("source").get("name").asText() : "Source inconnue";
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "idn:account-aggregation-completed", null, null, null,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "LOW_RISK",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Agrégation de comptes terminée pour la source : " + sourceName);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapCertification(JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String certName = payload.has("certification") ^&^& payload.get("certification").has("name")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 ? payload.get("certification").get("name").asText() : "Certification inconnue";
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "idn:certification-signed-off", null, null, null,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "LOW_RISK",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Campagne de certification signée : " + certName);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private SecurityTicket mapGenericEvent(String triggerId, JsonNode payload, String raw) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         SecurityTicket ticket = SecurityTicket.fromSailpoint(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 triggerId, null, null, null,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "LOW_RISK",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(                 "Événement SailPoint : " + triggerId);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         ticket.setRawPayload(raw);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return ticket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     // ── Helpers ──
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private boolean validateToken(String authorization) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (!config.isEnabled()) return true; // Accept all if disabled (dev mode)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (config.getWebhookSecret() == null ^|^| config.getWebhookSecret().isBlank()) return true;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (authorization == null ^|^| !authorization.startsWith("Bearer ")) return false;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         String token = authorization.substring(7);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return config.getWebhookSecret().equals(token);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private String extractTriggerId(JsonNode payload) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (payload.has("_metadata") ^&^& payload.get("_metadata").has("triggerId")) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             return payload.get("_metadata").get("triggerId").asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (payload.has("triggerId")) return payload.get("triggerId").asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (payload.has("type")) return payload.get("type").asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return null;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     private String extractField(JsonNode payload, String parent, String field) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (parent != null ^&^& payload.has(parent)) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             JsonNode node = payload.get(parent);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             if (field != null ^&^& node.has(field)) return node.get(field).asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(             if (field == null ^&^& node.isTextual()) return node.asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         if (field != null ^&^& payload.has(field)) return payload.get(field).asText();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(         return null;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" SHA256 | findstr /I /C:"72CB6FCF9AC1D3850A6E0DF84D67E5FE7EA683C8A019215046A7130F332CE3AB" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java)
+echo Décompression de src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java
+> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( package com.cyberaudit7e.integration.webhook;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import com.cyberaudit7e.domain.enums.TicketStatus;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import com.cyberaudit7e.repository.SecurityTicketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import com.fasterxml.jackson.databind.JsonNode;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import com.fasterxml.jackson.databind.ObjectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import io.swagger.v3.oas.annotations.Hidden;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import org.slf4j.Logger;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import org.slf4j.LoggerFactory;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import org.springframework.http.ResponseEntity;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import org.springframework.transaction.annotation.Transactional;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import org.springframework.web.bind.annotation.*;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import java.util.Map;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * Webhook receiver pour les callbacks ServiceNow.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * ServiceNow peut envoyer des notifications quand un incident change
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * d'état, via une Business Rule (on Update) qui appelle ce webhook.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * Configuration côté ServiceNow :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * 1. System Web Services → Outbound → REST Message
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * 2. Endpoint: https://cyberaudit7e.local/api/webhooks/servicenow
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * 3. Method: POST
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * 4. Business Rule sur "incident" (on Update, condition: state changes)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  * 5. Payload: { "sys_id": current.sys_id, "number": current.number,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  *               "state": current.state, "close_notes": current.close_notes }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(  */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( @RestController
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( @RequestMapping("/api/webhooks")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( @Hidden
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( public class ServiceNowWebhookController {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     private static final Logger log = LoggerFactory.getLogger(ServiceNowWebhookController.class);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     private final SecurityTicketRepository ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     private final ObjectMapper objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     public ServiceNowWebhookController(SecurityTicketRepository ticketRepository,
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                                         ObjectMapper objectMapper) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         this.ticketRepository = ticketRepository;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         this.objectMapper = objectMapper;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      * POST /api/webhooks/servicenow — Callback de mise à jour d'incident.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      * Payload attendu :
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      * {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "sys_id": "abc123...",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "number": "INC0012345",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "state": "6",      // 1=New, 2=InProgress, 6=Resolved, 7=Closed
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "assigned_to": "John Doe",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "close_notes": "Résolu par l'équipe sécurité",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      *   "close_code": "Solved (Permanently)"
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      * }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     @PostMapping("/servicenow")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     @Transactional
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     public ResponseEntity^<Map^<String, Object^>^> receiveServiceNowCallback(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             @RequestBody String rawPayload) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         log.info("[WEBHOOK-SNOW] Callback reçu ({} octets)", rawPayload.length());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         try {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             JsonNode payload = objectMapper.readTree(rawPayload);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             String sysId = payload.has("sys_id") ? payload.get("sys_id").asText() : null;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             String number = payload.has("number") ? payload.get("number").asText() : null;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             int state = payload.has("state") ? payload.get("state").asInt() : 0;
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             if (sysId == null ^&^& number == null) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                 return ResponseEntity.badRequest()
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                         .body(Map.of("error", "sys_id ou number requis"));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             // Trouver le ticket correspondant
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             Optional^<SecurityTicket^> ticketOpt = sysId != null
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     ? ticketRepository.findByServiceNowSysId(sysId)
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     : ticketRepository.findByServiceNowNumber(number);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             if (ticketOpt.isEmpty()) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                 log.warn("[WEBHOOK-SNOW] Ticket non trouvé pour sys_id={}, number={}", sysId, number);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                 return ResponseEntity.ok(Map.of("status", "ignored", "reason", "ticket not found"));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             SecurityTicket ticket = ticketOpt.get();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             TicketStatus oldStatus = ticket.getStatus();
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             TicketStatus newStatus = TicketStatus.fromSnowState(state);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             // Mettre à jour le statut
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             ticket.setStatus(newStatus);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             // Mettre à jour l'assignation si présente
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             if (payload.has("assigned_to")) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                 ticket.setAssignedTo(payload.get("assigned_to").asText());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             ticketRepository.save(ticket);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             log.info("[WEBHOOK-SNOW] Ticket #{} mis à jour : {} → {} (SNOW: {})",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     ticket.getId(), oldStatus, newStatus, number);
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             return ResponseEntity.ok(Map.of(
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     "status", "updated",
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     "ticketId", ticket.getId(),
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     "oldStatus", oldStatus.name(),
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     "newStatus", newStatus.name()
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             ));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         } catch (Exception e) {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             log.error("[WEBHOOK-SNOW] Erreur : {}", e.getMessage());
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(             return ResponseEntity.internalServerError()
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(                     .body(Map.of("error", e.getMessage()));
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( 
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     /**
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      * GET /api/webhooks/servicenow/test — Test de connectivité.
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(      */
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     @GetMapping("/servicenow/test")
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     public Map^<String, Object^> testEndpoint() {
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(         return Map.of("status", "ready", "service", "CyberAudit7E ServiceNow Webhook");
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo(     }
+>> "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" SHA256 | findstr /I /C:"4E4804F989422332DDB5549514BBC95E46BF0F6BFBD079B3734E640EC384E123" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java)
 echo Décompression de src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java
 > "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( package com.cyberaudit7e.repository;
 >> "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" echo( 
@@ -6524,6 +9260,91 @@ echo Décompression de src\main\java\com\cyberaudit7e\repository\RuleConfigRepos
 >> "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" echo( }
 certutil -hashfile "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" SHA256 | findstr /I /C:"0A6B756C22E0AE1FB6A585FC87C70C78BA8AEC78F17B53E00C40FBA5551D684E" >nul
 if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java)
+echo Décompression de src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java
+> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( package com.cyberaudit7e.repository;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import com.cyberaudit7e.domain.entity.SecurityTicket;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import com.cyberaudit7e.domain.enums.TicketSeverity;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import com.cyberaudit7e.domain.enums.TicketSource;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import com.cyberaudit7e.domain.enums.TicketStatus;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.data.domain.Page;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.data.domain.Pageable;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.data.jpa.repository.JpaRepository;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.data.jpa.repository.Query;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.data.repository.query.Param;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import org.springframework.stereotype.Repository;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import java.util.List;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( import java.util.Optional;
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( @Repository
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( public interface SecurityTicketRepository extends JpaRepository^<SecurityTicket, Long^> {
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Recherches par référence croisée ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Optional^<SecurityTicket^> findBySailpointViolationId(String violationId);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Optional^<SecurityTicket^> findByServiceNowSysId(String sysId);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Optional^<SecurityTicket^> findByServiceNowNumber(String number);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Optional^<SecurityTicket^> findByAuditReportId(Long reportId);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<SecurityTicket^> findBySailpointIdentityId(String identityId);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Filtres courants ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> findBySource(TicketSource source, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> findByStatus(TicketStatus status, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> findBySeverity(TicketSeverity severity, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> findByStatusNot(TicketStatus status, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<SecurityTicket^> findByStatusIn(List^<TicketStatus^> statuses);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Tickets ouverts (non résolus/fermés/annulés) ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t FROM SecurityTicket t WHERE t.status NOT IN ('RESOLVED','CLOSED','CANCELLED') ORDER BY t.severity ASC, t.createdAt DESC")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<SecurityTicket^> findOpenTickets();
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t FROM SecurityTicket t WHERE t.status NOT IN ('RESOLVED','CLOSED','CANCELLED') ORDER BY t.severity ASC, t.createdAt DESC")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> findOpenTickets(Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Tickets non synchronisés avec ServiceNow ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t FROM SecurityTicket t WHERE t.serviceNowSysId IS NULL AND t.status NOT IN ('CLOSED','CANCELLED')")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<SecurityTicket^> findUnsyncedWithServiceNow();
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Comptages ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     long countBySource(TicketSource source);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     long countByStatus(TicketStatus status);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     long countBySeverity(TicketSeverity severity);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t.source, COUNT(t) FROM SecurityTicket t GROUP BY t.source")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<Object[]^> countBySourceGroup();
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t.status, COUNT(t) FROM SecurityTicket t GROUP BY t.status")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<Object[]^> countByStatusGroup();
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t.severity, COUNT(t) FROM SecurityTicket t GROUP BY t.severity")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     List^<Object[]^> countBySeverityGroup();
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     // ── Recherche ──
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( 
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     @Query("SELECT t FROM SecurityTicket t WHERE " +
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(            "LOWER(t.title) LIKE LOWER(CONCAT('%%',:q,'%%')) OR " +
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(            "LOWER(t.sailpointIdentityName) LIKE LOWER(CONCAT('%%',:q,'%%')) OR " +
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(            "LOWER(t.serviceNowNumber) LIKE LOWER(CONCAT('%%',:q,'%%')) OR " +
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(            "LOWER(t.siteUrl) LIKE LOWER(CONCAT('%%',:q,'%%'))")
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo(     Page^<SecurityTicket^> search(@Param("q") String query, Pageable pageable);
+>> "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" echo( }
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" SHA256 | findstr /I /C:"3F6BFE515039345941CA8796C1F04071D037A19217AE81FB63C20F7CCD915901" >nul
+if %errorlevel%==0 (echo    [OK] src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java) else (echo    [ERREUR] src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java)
 echo Décompression de src\main\java\com\cyberaudit7e\repository\SiteRepository.java
 > "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( package com.cyberaudit7e.repository;
 >> "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" echo( 
@@ -8186,7 +11007,7 @@ if %errorlevel%==0 (echo    [OK] src\main\resources\application-prod.yml) else (
 echo Décompression de src\main\resources\application.yml
 > "src\main\resources\application.yml" echo( ##############################################
 >> "src\main\resources\application.yml" echo( # CyberAudit7E — Configuration de base
->> "src\main\resources\application.yml" echo( # M6 : API REST complète + OpenAPI/Swagger
+>> "src\main\resources\application.yml" echo( # M7+ : API REST + OpenAPI + Intégrations
 >> "src\main\resources\application.yml" echo( ##############################################
 >> "src\main\resources\application.yml" echo( 
 >> "src\main\resources\application.yml" echo( spring:
@@ -8214,13 +11035,10 @@ echo Décompression de src\main\resources\application.yml
 >> "src\main\resources\application.yml" echo(   swagger-ui:
 >> "src\main\resources\application.yml" echo(     path: /swagger-ui.html
 >> "src\main\resources\application.yml" echo(     enabled: true
->> "src\main\resources\application.yml" echo(     # Grouper par tag et trier alphabétiquement
 >> "src\main\resources\application.yml" echo(     tags-sorter: alpha
 >> "src\main\resources\application.yml" echo(     operations-sorter: method
->> "src\main\resources\application.yml" echo(     # Afficher le modèle de requête par défaut
 >> "src\main\resources\application.yml" echo(     default-models-expand-depth: 2
 >> "src\main\resources\application.yml" echo(     doc-expansion: list
->> "src\main\resources\application.yml" echo(   # Inclure les endpoints Spring Boot Actuator (si présent)
 >> "src\main\resources\application.yml" echo(   show-actuator: false
 >> "src\main\resources\application.yml" echo( 
 >> "src\main\resources\application.yml" echo( # ── Configuration CyberAudit7E ──
@@ -8229,13 +11047,38 @@ echo Décompression de src\main\resources\application.yml
 >> "src\main\resources\application.yml" echo(     enabled: false
 >> "src\main\resources\application.yml" echo(     cron: "0 0 2 * * *"
 >> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo(   integrations:
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo(     # ── ServiceNow ──
+>> "src\main\resources\application.yml" echo(     servicenow:
+>> "src\main\resources\application.yml" echo(       enabled: true
+>> "src\main\resources\application.yml" echo(       instance: ${SNOW_INSTANCE:mon-instance.service-now.com}
+>> "src\main\resources\application.yml" echo(       auth-method: basic    # "oauth" ou "basic"
+>> "src\main\resources\application.yml" echo(       client-id: ${SNOW_CLIENT_ID:}
+>> "src\main\resources\application.yml" echo(       client-secret: ${SNOW_CLIENT_SECRET:}
+>> "src\main\resources\application.yml" echo(       username: ${SNOW_USERNAME:admin}
+>> "src\main\resources\application.yml" echo(       password: ${SNOW_PASSWORD:}
+>> "src\main\resources\application.yml" echo(       assignment-group: "Accessibility Team"
+>> "src\main\resources\application.yml" echo(       default-category: "Security"
+>> "src\main\resources\application.yml" echo(       default-subcategory: "Vulnerability"
+>> "src\main\resources\application.yml" echo(       timeout: 30
+>> "src\main\resources\application.yml" echo( 
+>> "src\main\resources\application.yml" echo(     # ── SailPoint IdentityNow ──
+>> "src\main\resources\application.yml" echo(     sailpoint:
+>> "src\main\resources\application.yml" echo(       enabled: true
+>> "src\main\resources\application.yml" echo(       tenant: ${SP_TENANT:mon-tenant}
+>> "src\main\resources\application.yml" echo(       client-id: ${SP_CLIENT_ID:}
+>> "src\main\resources\application.yml" echo(       client-secret: ${SP_CLIENT_SECRET:}
+>> "src\main\resources\application.yml" echo(       webhook-secret: ${SP_WEBHOOK_SECRET:}
+>> "src\main\resources\application.yml" echo(       timeout: 30
+>> "src\main\resources\application.yml" echo( 
 >> "src\main\resources\application.yml" echo( logging:
 >> "src\main\resources\application.yml" echo(   level:
 >> "src\main\resources\application.yml" echo(     com.cyberaudit7e: INFO
 >> "src\main\resources\application.yml" echo(     org.springframework: WARN
 >> "src\main\resources\application.yml" echo(   pattern:
 >> "src\main\resources\application.yml" echo(     console: "%%d{HH:mm:ss.SSS} [%%thread] %%-5level %%logger{36} - %%msg%%n"
-certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"63CCA7F0BB1B9107B5FDD7C7EC4FC3BC5C5B3BA7463A7472CF347F95000E9435" >nul
+certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"8823E02805AE788E2DB2007DCCE1268996EA75DF656C9628DEAE51D1B3676406" >nul
 if %errorlevel%==0 (echo    [OK] src\main\resources\application.yml) else (echo    [ERREUR] src\main\resources\application.yml)
 echo Décompression de src\main\resources\banner.txt
 > "src\main\resources\banner.txt" echo( 
@@ -8358,20 +11201,82 @@ echo Décompression de src\main\resources\db\migration\V4__indexes_pagination.sq
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- ============================================================
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Index composites pour les requêtes paginées fréquentes
->> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_site_audited
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX idx_reports_site_audited
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(site_id, audited_at DESC);
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
->> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_score_audited
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX idx_reports_score_audited
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(score_global, audited_at DESC);
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
->> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_reports_trend
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX idx_reports_trend
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON audit_reports(trend);
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( 
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( -- Index pour la recherche full-text M6
->> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX IF NOT EXISTS idx_sites_name
+>> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo( CREATE INDEX idx_sites_name
 >> "src\main\resources\db\migration\V4__indexes_pagination.sql" echo(     ON sites(name);
-certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"CBE8AA3C1E2813E0FE511647AC9C80AA8461D9959EFBCFBC05F33A0A9D4A2BDF" >nul
+certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"B2E52F01A45A76EDD93CF124B6EE725F5DE9B729EEB3EBBD483DB7CD9F57C72F" >nul
 if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V4__indexes_pagination.sql) else (echo    [ERREUR] src\main\resources\db\migration\V4__indexes_pagination.sql)
+echo Décompression de src\main\resources\db\migration\V5__security_tickets.sql
+> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- V5__security_tickets.sql
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- CyberAudit7E — Tickets de sécurité unifiés
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- Pont entre SailPoint, CyberAudit7E et ServiceNow
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- ============================================================
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE TABLE security_tickets (
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     id                      BIGINT AUTO_INCREMENT PRIMARY KEY,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Identité du ticket
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     title                   VARCHAR(500)   NOT NULL,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     description             CLOB,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     source                  VARCHAR(20)    NOT NULL,    -- AUDIT, SAILPOINT, SERVICENOW, MANUAL
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     status                  VARCHAR(20)    NOT NULL DEFAULT 'NEW',
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     severity                VARCHAR(20)    NOT NULL,    -- CRITICAL, HIGH, MEDIUM, LOW, INFO
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     category                VARCHAR(100),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Références croisées SailPoint
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     sailpoint_violation_id  VARCHAR(100),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     sailpoint_event_type    VARCHAR(100),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     sailpoint_identity_id   VARCHAR(100),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     sailpoint_identity_name VARCHAR(255),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Références croisées ServiceNow
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     servicenow_sys_id       VARCHAR(50),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     servicenow_number       VARCHAR(20),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     servicenow_url          VARCHAR(500),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Référence CyberAudit7E
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     audit_report_id         BIGINT,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     site_url                VARCHAR(500),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Assignation
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     assigned_to             VARCHAR(255),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     assignment_group        VARCHAR(255),
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Payload brut (debug)
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     raw_payload             CLOB,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Timestamps
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     created_at              TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     updated_at              TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     resolved_at             TIMESTAMP,
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     -- Foreign keys
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(     CONSTRAINT fk_ticket_audit_report
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(         FOREIGN KEY (audit_report_id) REFERENCES audit_reports(id)
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo(         ON DELETE SET NULL
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( );
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( 
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( -- Index pour les requêtes courantes
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_source    ON security_tickets(source);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_status    ON security_tickets(status);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_severity  ON security_tickets(severity);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_sp_id     ON security_tickets(sailpoint_violation_id);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_snow_id   ON security_tickets(servicenow_sys_id);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_snow_num  ON security_tickets(servicenow_number);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_audit_id  ON security_tickets(audit_report_id);
+>> "src\main\resources\db\migration\V5__security_tickets.sql" echo( CREATE INDEX idx_tickets_created   ON security_tickets(created_at);
+certutil -hashfile "src\main\resources\db\migration\V5__security_tickets.sql" SHA256 | findstr /I /C:"3A4493CBED1B702B0C9BEC3599A3629F16D87D62277DD4D23FBD168C6FA6544D" >nul
+if %errorlevel%==0 (echo    [OK] src\main\resources\db\migration\V5__security_tickets.sql) else (echo    [ERREUR] src\main\resources\db\migration\V5__security_tickets.sql)
 echo Décompression de src\main\resources\static\admin.html
 > "src\main\resources\static\admin.html" echo( ^<!DOCTYPE html^>
 >> "src\main\resources\static\admin.html" echo( ^<html lang="fr"^>
@@ -9764,6 +12669,14 @@ if not exist ".dockerignore" (echo MANQUANT : .dockerignore & goto next_.dockeri
 certutil -hashfile ".dockerignore" SHA256 | findstr /I /C:"02887CC7342C9F3E4FA94CCFE5D10EC3D6E5DB18C96FC6E107E2C5E34F389923" >nul
 if %errorlevel%==0 (echo IDENTIQUE : .dockerignore) else (echo DIFFERENT : .dockerignore)
 :next_.dockerignore
+if not exist ".env" (echo MANQUANT : .env & goto next_.env)
+certutil -hashfile ".env" SHA256 | findstr /I /C:"DAB0E7E5B029B200542087719D70B76551A8A9CF64BFEC1E74053FDBFBAD82DD" >nul
+if %errorlevel%==0 (echo IDENTIQUE : .env) else (echo DIFFERENT : .env)
+:next_.env
+if not exist "Before-ServiceNow-SailPoint.md" (echo MANQUANT : Before-ServiceNow-SailPoint.md & goto next_Before-ServiceNow-SailPoint.md)
+certutil -hashfile "Before-ServiceNow-SailPoint.md" SHA256 | findstr /I /C:"781DE186A675185E2138FA2C580DC1660F17D46FD3EB634F18231168902510B3" >nul
+if %errorlevel%==0 (echo IDENTIQUE : Before-ServiceNow-SailPoint.md) else (echo DIFFERENT : Before-ServiceNow-SailPoint.md)
+:next_Before-ServiceNow-SailPoint.md
 if not exist "docker-compose.yml" (echo MANQUANT : docker-compose.yml & goto next_docker-compose.yml)
 certutil -hashfile "docker-compose.yml" SHA256 | findstr /I /C:"C87EE84C5049191862F2BADF623FEBDBF39C97074E94E395E5CE72F394B5AD7B" >nul
 if %errorlevel%==0 (echo IDENTIQUE : docker-compose.yml) else (echo DIFFERENT : docker-compose.yml)
@@ -9777,7 +12690,7 @@ certutil -hashfile "nginx.conf" SHA256 | findstr /I /C:"C73F169445EFA61DC15AC3E4
 if %errorlevel%==0 (echo IDENTIQUE : nginx.conf) else (echo DIFFERENT : nginx.conf)
 :next_nginx.conf
 if not exist "pom.xml" (echo MANQUANT : pom.xml & goto next_pom.xml)
-certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"A5D727D5770786C0FBD198A8E4B9AD1D1A3FE30E5CAD3AC621EABE7F4F622C95" >nul
+certutil -hashfile "pom.xml" SHA256 | findstr /I /C:"4BEB3E353771182218A5514E9098736E301DC8059DD488323B85E832B0037964" >nul
 if %errorlevel%==0 (echo IDENTIQUE : pom.xml) else (echo DIFFERENT : pom.xml)
 :next_pom.xml
 if not exist "README-new.md" (echo MANQUANT : README-new.md & goto next_README-new.md)
@@ -9792,6 +12705,14 @@ if not exist "README7.md" (echo MANQUANT : README7.md & goto next_README7.md)
 certutil -hashfile "README7.md" SHA256 | findstr /I /C:"071C50AE7DD4C94675DD714DE70A8CD0212C500FE20AA8CD3F13925A835FD6B3" >nul
 if %errorlevel%==0 (echo IDENTIQUE : README7.md) else (echo DIFFERENT : README7.md)
 :next_README7.md
+if not exist "Test-Dev.cmd" (echo MANQUANT : Test-Dev.cmd & goto next_Test-Dev.cmd)
+certutil -hashfile "Test-Dev.cmd" SHA256 | findstr /I /C:"2D814CC7C3C058FF37AE3B486461ADA4CF8F1DBFCC9F45100FDFC3FFC60F7FDA" >nul
+if %errorlevel%==0 (echo IDENTIQUE : Test-Dev.cmd) else (echo DIFFERENT : Test-Dev.cmd)
+:next_Test-Dev.cmd
+if not exist "tests-cyberaudit7e.bat" (echo MANQUANT : tests-cyberaudit7e.bat & goto next_tests-cyberaudit7e.bat)
+certutil -hashfile "tests-cyberaudit7e.bat" SHA256 | findstr /I /C:"3DA1DBBC41C87FB94382607F193583A2D79B6FD306618C24E26D678A23300965" >nul
+if %errorlevel%==0 (echo IDENTIQUE : tests-cyberaudit7e.bat) else (echo DIFFERENT : tests-cyberaudit7e.bat)
+:next_tests-cyberaudit7e.bat
 if not exist "TESTS-REFERENCE.md" (echo MANQUANT : TESTS-REFERENCE.md & goto next_TESTS-REFERENCE.md)
 certutil -hashfile "TESTS-REFERENCE.md" SHA256 | findstr /I /C:"FBBC2D0EE7446C02B984555C8F0BB686E5EC74B8BBD31796A7091383C5F4B344" >nul
 if %errorlevel%==0 (echo IDENTIQUE : TESTS-REFERENCE.md) else (echo DIFFERENT : TESTS-REFERENCE.md)
@@ -9832,18 +12753,26 @@ if not exist "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" (echo MANQ
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\AsyncConfig.java" SHA256 | findstr /I /C:"FCDC3EB189D431EB28F08FCD2FCB3019B1AD525AC2EDEB3AF20F916A39FBB7F7" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\AsyncConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\AsyncConfig.java)
 :next_src_main_java_com_cyberaudit7e_config_AsyncConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\IntegrationProperties.java & goto next_src_main_java_com_cyberaudit7e_config_IntegrationProperties.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\IntegrationProperties.java" SHA256 | findstr /I /C:"59AB4D7FA5333DA82F53086CBD7D4273E27F9F01D26AC4152893BACD12F2AC24" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\IntegrationProperties.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\IntegrationProperties.java)
+:next_src_main_java_com_cyberaudit7e_config_IntegrationProperties.java
 if not exist "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\JacksonConfig.java & goto next_src_main_java_com_cyberaudit7e_config_JacksonConfig.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\JacksonConfig.java" SHA256 | findstr /I /C:"356FA2C47AFE1BDB7927836E74532F64B42BC7DCBFE627B77B5E0B91E7BFBEF7" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\JacksonConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\JacksonConfig.java)
 :next_src_main_java_com_cyberaudit7e_config_JacksonConfig.java
 if not exist "src\main\java\com\cyberaudit7e\config\JpaConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\JpaConfig.java & goto next_src_main_java_com_cyberaudit7e_config_JpaConfig.java)
-certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"1995B94C3382DD3E5F025296A36354E182EB7C6BB8A9B3432EEA36FDE5EFA3BA" >nul
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\JpaConfig.java" SHA256 | findstr /I /C:"49E2F6ADC6FA8F80874EA3D5D1ACECEBDD4F42B8A847A91C4BDF8DC7C31D8D4D" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\JpaConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\JpaConfig.java)
 :next_src_main_java_com_cyberaudit7e_config_JpaConfig.java
 if not exist "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java & goto next_src_main_java_com_cyberaudit7e_config_OpenApiConfig.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\OpenApiConfig.java" SHA256 | findstr /I /C:"B36CC866F34D9C2A101C28AB4F1E795185032D0EC7A58EEC1181FC1810FE4163" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\OpenApiConfig.java)
 :next_src_main_java_com_cyberaudit7e_config_OpenApiConfig.java
+if not exist "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java & goto next_src_main_java_com_cyberaudit7e_config_RestTemplateConfig.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java" SHA256 | findstr /I /C:"4129B1F4C128A5E50514FBFEEC61280ABC477BA641276DDFB697881DB7369FE7" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\RestTemplateConfig.java)
+:next_src_main_java_com_cyberaudit7e_config_RestTemplateConfig.java
 if not exist "src\main\java\com\cyberaudit7e\config\WebConfig.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\config\WebConfig.java & goto next_src_main_java_com_cyberaudit7e_config_WebConfig.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\config\WebConfig.java" SHA256 | findstr /I /C:"D2B4A4EFF2297EF567C975A6931CEB7F33F7CB05E3E29816BA486B4D9C805915" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\config\WebConfig.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\config\WebConfig.java)
@@ -9880,6 +12809,10 @@ if not exist "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConvert
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java" SHA256 | findstr /I /C:"C0EC19A9BE2ACB9EE9C2254E8CFD255AFE3D4E44E7312715F08BD1B94F707980" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\RuleResultListConverter.java)
 :next_src_main_java_com_cyberaudit7e_domain_entity_RuleResultListConverter.java
+if not exist "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_SecurityTicket.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java" SHA256 | findstr /I /C:"0F26677D3824994DDBA3454427C570621D153CEF5AC52FEC5123DC9A28DB8774" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\SecurityTicket.java)
+:next_src_main_java_com_cyberaudit7e_domain_entity_SecurityTicket.java
 if not exist "src\main\java\com\cyberaudit7e\domain\entity\Site.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\entity\Site.java & goto next_src_main_java_com_cyberaudit7e_domain_entity_Site.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\entity\Site.java" SHA256 | findstr /I /C:"4F5D89EE64E408E14670F608BFD08974DCA3F1A11B566D6FDDF28F00C653055D" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\entity\Site.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\entity\Site.java)
@@ -9892,6 +12825,18 @@ if not exist "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" (ec
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java" SHA256 | findstr /I /C:"AC9F8F3AB1D4AA0CC60FA0989A1FB017DFBF15936DE518409F77F7795F83273B" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\RuleCategory.java)
 :next_src_main_java_com_cyberaudit7e_domain_enums_RuleCategory.java
+if not exist "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java & goto next_src_main_java_com_cyberaudit7e_domain_enums_TicketSeverity.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java" SHA256 | findstr /I /C:"64B8A8012FB84F3103B4F75646A55EEB6696FAA9B95CA498468000F3756D6EBA" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\TicketSeverity.java)
+:next_src_main_java_com_cyberaudit7e_domain_enums_TicketSeverity.java
+if not exist "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java & goto next_src_main_java_com_cyberaudit7e_domain_enums_TicketSource.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java" SHA256 | findstr /I /C:"77E6B1ED56201087AAEFF3C24B9BC599FA4C9B4CB6E344F43CAAC752A50E0C32" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\TicketSource.java)
+:next_src_main_java_com_cyberaudit7e_domain_enums_TicketSource.java
+if not exist "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java & goto next_src_main_java_com_cyberaudit7e_domain_enums_TicketStatus.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java" SHA256 | findstr /I /C:"0E760C0F6821DB89BF468C985AA8DD31C00054C5DB6F3E21CA9EE95E4492DE28" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\enums\TicketStatus.java)
+:next_src_main_java_com_cyberaudit7e_domain_enums_TicketStatus.java
 if not exist "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java & goto next_src_main_java_com_cyberaudit7e_domain_rule_AriaLandmarkRule.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java" SHA256 | findstr /I /C:"E802267B423FF85996C6492635FB8A12A6DD7B18234F8182D2C272AD9B4F44BE" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\domain\rule\AriaLandmarkRule.java)
@@ -9984,6 +12929,10 @@ if not exist "src\main\java\com\cyberaudit7e\dto\SiteDto.java" (echo MANQUANT : 
 certutil -hashfile "src\main\java\com\cyberaudit7e\dto\SiteDto.java" SHA256 | findstr /I /C:"B936677724DEE6DF5099D3FF2B35D2FAAA5BFDECB6F8CFB71AAA07096FF12A98" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\SiteDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\SiteDto.java)
 :next_src_main_java_com_cyberaudit7e_dto_SiteDto.java
+if not exist "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java & goto next_src_main_java_com_cyberaudit7e_dto_integration_TicketDto.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java" SHA256 | findstr /I /C:"DDC691BDEBF6832C7416A2EEE66F0C63DC971A9C8604ECC203B525B156913C80" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\dto\integration\TicketDto.java)
+:next_src_main_java_com_cyberaudit7e_dto_integration_TicketDto.java
 if not exist "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java & goto next_src_main_java_com_cyberaudit7e_event_AuditCompletedEvent.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java" SHA256 | findstr /I /C:"FD68F8012BEC92CFB38B9CB45A829DBCF4F186022BEF0BBEC3446DAEE29FB8F6" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\event\AuditCompletedEvent.java)
@@ -9996,6 +12945,30 @@ if not exist "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" (echo
 certutil -hashfile "src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java" SHA256 | findstr /I /C:"72B78E649E44B1C3347CD61832F5B04C56C6130A1607EC4B7E4AC64988DB710B" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\event\AuditStartedEvent.java)
 :next_src_main_java_com_cyberaudit7e_event_AuditStartedEvent.java
+if not exist "src\main\java\com\cyberaudit7e\integration\TicketController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\TicketController.java & goto next_src_main_java_com_cyberaudit7e_integration_TicketController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\TicketController.java" SHA256 | findstr /I /C:"2A1718FA74F4429787494EA38297378BD64957146F9DF53304F0E05E134D5EDB" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\TicketController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\TicketController.java)
+:next_src_main_java_com_cyberaudit7e_integration_TicketController.java
+if not exist "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java & goto next_src_main_java_com_cyberaudit7e_integration_TicketOrchestrator.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java" SHA256 | findstr /I /C:"8B6EFDEC2CA86A8662EE05A6513D7A51798E6FF12ACF646D0CA673E53698C234" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\TicketOrchestrator.java)
+:next_src_main_java_com_cyberaudit7e_integration_TicketOrchestrator.java
+if not exist "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java & goto next_src_main_java_com_cyberaudit7e_integration_sailpoint_SailPointClient.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java" SHA256 | findstr /I /C:"AF0DAE9C2E9757E466796FF06937DF972C70CA75E02890AD938A7020B91B1000" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\sailpoint\SailPointClient.java)
+:next_src_main_java_com_cyberaudit7e_integration_sailpoint_SailPointClient.java
+if not exist "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java & goto next_src_main_java_com_cyberaudit7e_integration_servicenow_ServiceNowClient.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java" SHA256 | findstr /I /C:"F36F0EC26DCB11EDDB139F38C7A1F95A7B7EB592590496DC687A6A98482FC1D1" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\servicenow\ServiceNowClient.java)
+:next_src_main_java_com_cyberaudit7e_integration_servicenow_ServiceNowClient.java
+if not exist "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java & goto next_src_main_java_com_cyberaudit7e_integration_webhook_SailPointWebhookController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java" SHA256 | findstr /I /C:"72CB6FCF9AC1D3850A6E0DF84D67E5FE7EA683C8A019215046A7130F332CE3AB" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\webhook\SailPointWebhookController.java)
+:next_src_main_java_com_cyberaudit7e_integration_webhook_SailPointWebhookController.java
+if not exist "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java & goto next_src_main_java_com_cyberaudit7e_integration_webhook_ServiceNowWebhookController.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java" SHA256 | findstr /I /C:"4E4804F989422332DDB5549514BBC95E46BF0F6BFBD079B3734E640EC384E123" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\integration\webhook\ServiceNowWebhookController.java)
+:next_src_main_java_com_cyberaudit7e_integration_webhook_ServiceNowWebhookController.java
 if not exist "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_AuditReportRepository.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java" SHA256 | findstr /I /C:"F8FBEC1CB689FC2B87DCF8A2F01812C24DDD39290F4B6343731CB8CCB32C8906" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\AuditReportRepository.java)
@@ -10004,6 +12977,10 @@ if not exist "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.jav
 certutil -hashfile "src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java" SHA256 | findstr /I /C:"0A6B756C22E0AE1FB6A585FC87C70C78BA8AEC78F17B53E00C40FBA5551D684E" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\RuleConfigRepository.java)
 :next_src_main_java_com_cyberaudit7e_repository_RuleConfigRepository.java
+if not exist "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_SecurityTicketRepository.java)
+certutil -hashfile "src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java" SHA256 | findstr /I /C:"3F6BFE515039345941CA8796C1F04071D037A19217AE81FB63C20F7CCD915901" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\SecurityTicketRepository.java)
+:next_src_main_java_com_cyberaudit7e_repository_SecurityTicketRepository.java
 if not exist "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" (echo MANQUANT : src\main\java\com\cyberaudit7e\repository\SiteRepository.java & goto next_src_main_java_com_cyberaudit7e_repository_SiteRepository.java)
 certutil -hashfile "src\main\java\com\cyberaudit7e\repository\SiteRepository.java" SHA256 | findstr /I /C:"AD2088E1BF1C29DB96A4EF454904D068B43E997B1E6AABAD7B47DE2102587A86" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\java\com\cyberaudit7e\repository\SiteRepository.java) else (echo DIFFERENT : src\main\java\com\cyberaudit7e\repository\SiteRepository.java)
@@ -10077,7 +13054,7 @@ certutil -hashfile "src\main\resources\application-prod.yml" SHA256 | findstr /I
 if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\application-prod.yml) else (echo DIFFERENT : src\main\resources\application-prod.yml)
 :next_src_main_resources_application-prod.yml
 if not exist "src\main\resources\application.yml" (echo MANQUANT : src\main\resources\application.yml & goto next_src_main_resources_application.yml)
-certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"63CCA7F0BB1B9107B5FDD7C7EC4FC3BC5C5B3BA7463A7472CF347F95000E9435" >nul
+certutil -hashfile "src\main\resources\application.yml" SHA256 | findstr /I /C:"8823E02805AE788E2DB2007DCCE1268996EA75DF656C9628DEAE51D1B3676406" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\application.yml) else (echo DIFFERENT : src\main\resources\application.yml)
 :next_src_main_resources_application.yml
 if not exist "src\main\resources\banner.txt" (echo MANQUANT : src\main\resources\banner.txt & goto next_src_main_resources_banner.txt)
@@ -10097,9 +13074,13 @@ certutil -hashfile "src\main\resources\db\migration\V3__rule_configs.sql" SHA256
 if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V3__rule_configs.sql) else (echo DIFFERENT : src\main\resources\db\migration\V3__rule_configs.sql)
 :next_src_main_resources_db_migration_V3__rule_configs.sql
 if not exist "src\main\resources\db\migration\V4__indexes_pagination.sql" (echo MANQUANT : src\main\resources\db\migration\V4__indexes_pagination.sql & goto next_src_main_resources_db_migration_V4__indexes_pagination.sql)
-certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"CBE8AA3C1E2813E0FE511647AC9C80AA8461D9959EFBCFBC05F33A0A9D4A2BDF" >nul
+certutil -hashfile "src\main\resources\db\migration\V4__indexes_pagination.sql" SHA256 | findstr /I /C:"B2E52F01A45A76EDD93CF124B6EE725F5DE9B729EEB3EBBD483DB7CD9F57C72F" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V4__indexes_pagination.sql) else (echo DIFFERENT : src\main\resources\db\migration\V4__indexes_pagination.sql)
 :next_src_main_resources_db_migration_V4__indexes_pagination.sql
+if not exist "src\main\resources\db\migration\V5__security_tickets.sql" (echo MANQUANT : src\main\resources\db\migration\V5__security_tickets.sql & goto next_src_main_resources_db_migration_V5__security_tickets.sql)
+certutil -hashfile "src\main\resources\db\migration\V5__security_tickets.sql" SHA256 | findstr /I /C:"3A4493CBED1B702B0C9BEC3599A3629F16D87D62277DD4D23FBD168C6FA6544D" >nul
+if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\db\migration\V5__security_tickets.sql) else (echo DIFFERENT : src\main\resources\db\migration\V5__security_tickets.sql)
+:next_src_main_resources_db_migration_V5__security_tickets.sql
 if not exist "src\main\resources\static\admin.html" (echo MANQUANT : src\main\resources\static\admin.html & goto next_src_main_resources_static_admin.html)
 certutil -hashfile "src\main\resources\static\admin.html" SHA256 | findstr /I /C:"E1EA7028B0A3E1E4C989115E7E35B6D6E661C79A0EE2E78DB4540D796E97DFB7" >nul
 if %errorlevel%==0 (echo IDENTIQUE : src\main\resources\static\admin.html) else (echo DIFFERENT : src\main\resources\static\admin.html)

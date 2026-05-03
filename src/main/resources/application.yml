@@ -1,6 +1,6 @@
 ##############################################
 # CyberAudit7E — Configuration de base
-# M6 : API REST complète + OpenAPI/Swagger
+# M7+ : API REST + OpenAPI + Intégrations
 ##############################################
 
 spring:
@@ -28,13 +28,10 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
-    # Grouper par tag et trier alphabétiquement
     tags-sorter: alpha
     operations-sorter: method
-    # Afficher le modèle de requête par défaut
     default-models-expand-depth: 2
     doc-expansion: list
-  # Inclure les endpoints Spring Boot Actuator (si présent)
   show-actuator: false
 
 # ── Configuration CyberAudit7E ──
@@ -42,6 +39,31 @@ cyberaudit7e:
   scheduler:
     enabled: false
     cron: "0 0 2 * * *"
+
+  integrations:
+
+    # ── ServiceNow ──
+    servicenow:
+      enabled: true
+      instance: ${SNOW_INSTANCE:mon-instance.service-now.com}
+      auth-method: basic    # "oauth" ou "basic"
+      client-id: ${SNOW_CLIENT_ID:}
+      client-secret: ${SNOW_CLIENT_SECRET:}
+      username: ${SNOW_USERNAME:admin}
+      password: ${SNOW_PASSWORD:}
+      assignment-group: "Accessibility Team"
+      default-category: "Security"
+      default-subcategory: "Vulnerability"
+      timeout: 30
+
+    # ── SailPoint IdentityNow ──
+    sailpoint:
+      enabled: true
+      tenant: ${SP_TENANT:mon-tenant}
+      client-id: ${SP_CLIENT_ID:}
+      client-secret: ${SP_CLIENT_SECRET:}
+      webhook-secret: ${SP_WEBHOOK_SECRET:}
+      timeout: 30
 
 logging:
   level:

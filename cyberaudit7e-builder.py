@@ -15,7 +15,7 @@ from pathlib import Path
 PROJECT_ROOT = "."
 OUTPUT_CMD = "cyberaudit-rebuild.cmd"
 EXCLUDED_DIRS = {".git", ".vscode", "target"}
-EXCLUDED_FILES = {".gitignore", ".gitattributes", "mvnw", "mvnw.cmd", "cyberaudit7e-builder.py", OUTPUT_CMD}
+EXCLUDED_FILES = {"*.md", ".gitignore", ".gitattributes", "mvnw", "mvnw.cmd", "cyberaudit7e-builder.py", OUTPUT_CMD}
 
 # ============== Fonctions utilitaires ==============
 
@@ -141,19 +141,18 @@ def generate_cmd():
 
 
 if __name__ == "__main__":
+    # 1. Générer le fichier .cmd
     generate_cmd()
-    # ============== POST-TRAITEMENT : Nettoyage des lignes vides ==============
-print(f"Nettoyage de {OUTPUT_CMD} en cours...")
 
-with open(OUTPUT_CMD, "r", encoding="utf-8-sig") as f:
-    lines = f.readlines()
+    # 2. Nettoyage des lignes vides (ou contenant uniquement des espaces)
+    print("Nettoyage des lignes vides...")
+    with open(OUTPUT_CMD, "r", encoding="utf-8-sig") as f:
+        lines = f.readlines()
 
-# Supprimer uniquement les lignes réellement vides
-clean_lines = [line for line in lines if line.rstrip("\r\n") != ""]
+    # Utilisation de .strip() pour supprimer les lignes qui semblent vides (espaces, tabulations)
+    clean_lines = [line for line in lines if line.strip() != ""]
 
-with open(OUTPUT_CMD, "w", encoding="utf-8-sig", newline="\r\n") as f:
-    f.writelines(clean_lines)
+    with open(OUTPUT_CMD, "w", encoding="utf-8-sig", newline="\r\n") as f:
+        f.writelines(clean_lines)
 
-print(f"✅ {OUTPUT_CMD} généré et compacté avec succès.")
-if __name__ == "__main__":
-    generate_cmd()
+    print(f"✅ {OUTPUT_CMD} généré et compacté avec succès.")

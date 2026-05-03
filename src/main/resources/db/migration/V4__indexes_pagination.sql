@@ -14,15 +14,15 @@
 -- ============================================================
 
 -- Index composites pour les requêtes paginées fréquentes
-CREATE INDEX IF NOT EXISTS idx_reports_site_audited
+CREATE INDEX idx_reports_site_audited
     ON audit_reports(site_id, audited_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_reports_score_audited
+CREATE INDEX idx_reports_score_audited
     ON audit_reports(score_global, audited_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_reports_trend
+CREATE INDEX idx_reports_trend
     ON audit_reports(trend);
 
 -- Index pour la recherche full-text M6
-CREATE INDEX IF NOT EXISTS idx_sites_name
+CREATE INDEX idx_sites_name
     ON sites(name);
