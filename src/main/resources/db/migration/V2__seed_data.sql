@@ -8,4 +8,6 @@ INSERT INTO sites (url, name, current_phase, created_at, updated_at) VALUES
     ('https://www.service-public.fr', 'Service Public', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('https://www.gouvernement.gouv.fr', 'Gouvernement FR', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
     ('https://www.legifrance.gouv.fr', 'Légifrance', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-    ('https://www.example.com', 'Example.com', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    ('https://www.example.com', 'Example.com', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('https://crawlerone.net/non-conforme', 'non-conforme', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+    ('http://arcesi-ea.com', 'ARCESI', 'EVALUER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

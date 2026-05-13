@@ -493,9 +493,35 @@ tr:hover td { background:var(--bg-2); }
           <button class="btn btn-sm btn-orange" @click="resetWeights">↩ Reset défaut</button>
         </div>
       </div>
+      <!-- ═══════════════════════════════════════════════════════
+      Dans la section template v-if="page==='config'"
+      Apres le bloc des poids de scoring
+      ═══════════════════════════════════════════════════════ -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-header">
+          <h3>Seuil de creation auto de tickets</h3>
+          <button class="btn btn-sm" @click="fetchThreshold">Rafraichir</button>
+        </div>
+        <p style="font-size:12px;color:var(--text-1);margin-bottom:12px">
+          Un ticket de securite est cree automatiquement quand un audit retourne un score inferieur a ce seuil.
+          Valeur entre 0% (jamais) et 100% (toujours).
+        </p>
+        <div style="display:flex;align-items:center;gap:16px">
+          <input type="range" v-model.number="thresholdValue" min="0" max="100" step="5"
+                style="flex:1;accent-color:var(--blue)">
+          <span style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--blue);min-width:60px;text-align:right">
+            {{ thresholdValue }}%
+          </span>
+          <button class="btn btn-primary btn-sm" @click="saveThreshold">Appliquer</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text-2)">
+          Actuellement : un ticket est cree si le score est inferieur a {{ thresholdValue }}%.
+          <span v-if="thresholdValue===0"> (desactive — aucun ticket auto)</span>
+          <span v-if="thresholdValue===100"> (toujours — chaque audit cree un ticket)</span>
+        </div>
+      </div>
       <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
     </template>
-
     <!-- ═══ SCHEDULER ═══ -->
     <template v-if="page==='scheduler'">
       <div class="page-title">Scheduler</div>
@@ -511,15 +537,12 @@ tr:hover td { background:var(--bg-2); }
       </div>
       <div class="card" v-if="lastResponse"><div class="card-header"><h3>Réponse</h3></div><div class="json-viewer">{{ formatJson(lastResponse) }}</div></div>
     </template>
-
   </div>
 </div>
-
 <!-- Toasts -->
 <div class="toast-container">
   <div v-for="(t,i) in toasts" :key="i" class="toast" :class="t.type">{{ t.message }}</div>
 </div>
-
 </div>
 
 <script>
@@ -680,6 +703,17 @@ createApp({
     function formatDate(d) { if(!d) return '—'; return new Date(d).toLocaleString('fr-FR'); }
     function toast(type,message) { toasts.value.push({type,message}); setTimeout(()=>toasts.value.shift(),4000); }
 
+      // Threshold
+    const thresholdValue = ref(50);
+    async function fetchThreshold() {
+      const r = await api('GET', '/api/config/settings/ticket-threshold');
+      thresholdValue.value = r.thresholdPercent || 50;
+    }
+    async function saveThreshold() {
+      lastResponse.value = await api('PUT', '/api/config/settings/ticket-threshold',
+        { threshold: thresholdValue.value / 100 });
+      toast('success', 'Seuil mis a jour : ' + thresholdValue.value + '%');
+    }
     // Watch page changes to auto-load data
     watch(page,v=>{
       lastResponse.value=null; selectedReport.value=null;
@@ -690,6 +724,7 @@ createApp({
       if(v==='jobs') fetchJobs();
       if(v==='config') fetchWeights();
       if(v==='scheduler') fetchScheduler();
+      if(v==='config') fetchThreshold();
     });
 
     onMounted(()=>{ fetchHealth(); setInterval(fetchHealth,30000); });
@@ -705,7 +740,8 @@ createApp({
       jobs,fetchJobs,clearJobs,viewJob,
       weights,weightEdits,fetchWeights,updateWeight,resetWeights,
       schedulerInfo,fetchScheduler,triggerScheduler,fetchHealth,fetchStats,
-      formatJson,scoreClass,formatDate,toast
+      formatJson,scoreClass,formatDate,toast,
+      thresholdValue, fetchThreshold, saveThreshold
     };
   }
 }).mount('#app');

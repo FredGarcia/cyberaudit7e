@@ -225,7 +225,25 @@ input:focus,select:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79
             </div>
           </div>
         </div>
-
+        <!-- Seuil de ticket auto (integrations.html) -->
+        <div class="card">
+          <h3>Seuil de creation auto <span class="pill n">Configurable</span></h3>
+          <p style="font-size:12px;color:var(--text2);margin-bottom:12px">
+            Score en dessous duquel un audit cree automatiquement un ticket de securite.
+          </p>
+          <div style="display:flex;align-items:center;gap:16px;padding:12px;background:var(--bg);border-radius:8px">
+            <input type="range" v-model.number="autoTh" min="0" max="100" step="5"
+                  style="flex:1;accent-color:var(--indigo)">
+            <div style="font-size:28px;font-weight:700;font-family:var(--mono);color:var(--indigo);min-width:60px;text-align:right">
+              {{ autoTh }}%
+            </div>
+            <button class="btn btn-p btn-sm" @click="saveAutoTh">Appliquer</button>
+          </div>
+          <div style="margin-top:8px;font-size:11px;color:var(--text2)">
+            Score < {{ autoTh }}% = ticket cree automatiquement + incident ServiceNow
+            <span v-if="autoTh===0"> (desactive)</span>
+          </div>
+        </div>
         <!-- Recent tickets -->
         <div class="card">
           <h3>Derniers tickets <span class="pill n">{{ recent.length }}</span></h3>
@@ -644,7 +662,7 @@ createApp({
     }
 
     async function loadAll(){
-      await Promise.all([loadStats(),loadInteg(),loadRecent()]);
+      await Promise.all([loadStats(),loadInteg(),loadRecent(),loadAutoTh()]);
     }
 
     // Actions
@@ -694,7 +712,16 @@ createApp({
 
     async function testSnow(){lastResp.value=await api('GET','/api/webhooks/servicenow/test')}
     async function testSp(){lastResp.value=await api('GET','/api/webhooks/sailpoint/test')}
-
+    const autoTh = ref(50);
+    async function loadAutoTh() {
+      const r = await api('GET', '/api/config/settings/ticket-threshold');
+      autoTh.value = r.thresholdPercent || 50;
+    }
+    async function saveAutoTh() {
+      await api('PUT', '/api/config/settings/ticket-threshold', { threshold: autoTh.value / 100 });
+      toast('ok', 'Seuil : ' + autoTh.value + '%');
+      loadStats();
+    }
     // Watch
     watch(pg,v=>{
       selected.value=null;lastResp.value=null;
@@ -715,7 +742,8 @@ createApp({
       ticketData,tPage,fSource,fSev,fStatus,fQ,loadTickets,searchTickets,
       cf,resId,resNotes,simType,simName,simId,simPolicy,
       loadAll,loadStats,loadInteg,viewTicket,createTicket,resolveTicket,resolveSelected,syncSnow,simulate,testSnow,testSp,
-      fmt,statusTag,toast};
+      fmt,statusTag,toast,autoTh, loadAutoTh, saveAutoTh
+    };
   }
 }).mount('#app');
 </script>
